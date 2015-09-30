@@ -51,8 +51,9 @@ describe('Commando', function () {
         .option('-x','--expand', 'force it', false)
         .command(
           Commando.Command({ name: 'list' })
-          .action(function (args, rootArgs) {
-            console.log('running action:', args, rootArgs);
+          .action(function (args, rootArgs, options) {
+            console.log('running action:', args, rootArgs, options);
+            console.log(options.getIn(['short']));
           })
         )
       )
@@ -91,6 +92,22 @@ describe('Commando', function () {
 
 });
 
+describe('Option', function () {
+  var commando = new Commando()
+  .version('1.0.0')
+  .option('-f','--force', 'force it', false, false)
+  .option('-s','--short', 'shortent it');
+  describe('#get()', function () {
+    it ('returns an option', function(){
+      var o = commando.getOption('f');
+      expect(o).to.be.ok();
+      expect(o.get('short')).to.be('-f');
+      expect(o.get('long')).to.be('--force');
+      expect(o.get('key')).to.be('force');
+      expect(commando.getOption('force')).to.be(o);
+    });
+  });
+});
 describe('Argument Parsing', function () {
   describe('?', function () {
     var commando = new Commando()
