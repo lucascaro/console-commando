@@ -1,14 +1,10 @@
 {
-  "browser": true,
-  "node": false,
+  "browser": false,
+  "node": true,
   "esnext": true,
   "globals": {
-    "console": true,
-    "require": true,
-    "$": true,
-    "jQuery": true,
-    "module": true,
-    "moment": true
+    "describe": true,
+    "it": true
   },
   "globalstrict": true,
   "quotmark": "single",

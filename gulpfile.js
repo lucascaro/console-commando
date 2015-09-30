@@ -11,25 +11,25 @@ var allSources = [
   'lib/**/*.js',
 ];
 
-gulp.task('lint', function() {
+gulp.task('lint', function () {
   return gulp.src(allSources)
   .pipe(jshint('.jshintrc'))
   // .pipe(jshint.reporter('fail'))
   .pipe(jshint.reporter('jshint-stylish'));
 });
 
-gulp.task('jscs', function() {
+gulp.task('jscs', ['lint'], function () {
   return gulp.src(allSources)
   .pipe(jscs())
   // .pipe(jscs.reporter('fail'))
   .pipe(jscs.reporter('console'));
 });
 
-gulp.task('test', function() {
+gulp.task('test', ['jscs'], function () {
   return gulp.src('test/**/*.test.js', { read: false })
-  .pipe(mocha({ reporter: 'nyan' }));
+  .pipe(mocha({ reporter: 'spec' }));
 });
 
-gulp.task('dev',['lint', 'jscs', 'test'], function() {
-  return gulp.watch(allSources, ['lint', 'jscs', 'test']);
+gulp.task('dev',['lint', 'jscs', 'test'], function () {
+  return gulp.watch(allSources, ['test']);
 });

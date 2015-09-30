@@ -89,7 +89,7 @@
   "requireSpacesInFunctionExpression": {
     "beforeOpeningCurlyBrace": true
   },
-  "disallowSpacesInAnonymousFunctionExpression": {
+  "requireSpacesInAnonymousFunctionExpression": {
     "beforeOpeningRoundBrace": true
   },
   "requireSpacesInsideObjectBrackets": "allButNested",
@@ -102,8 +102,7 @@
   "disallowKeywords": [
     "with"
   ],
-  "disallowSpacesInFunctionDeclaration": {
-    "beforeOpeningRoundBrace": true,
+  "requireSpacesInFunctionDeclaration": {
     "beforeOpeningCurlyBrace": true
   },
   "disallowSpacesInCallExpression": true,
