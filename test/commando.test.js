@@ -1,6 +1,7 @@
 'use strict';
 
 var expect = require('expect.js');
+var sinon = require('sinon');
 
 var Commando = require('../lib/commando');
 
@@ -90,6 +91,34 @@ describe('Commando', function () {
     commando.args(['job', 'wat', '-f', 'thing']).run();
   });
 
+});
+
+describe('Action', function(){
+  describe('simple command with one action', function () {
+    var commando = new Commando()
+      .version('1.0.0');
+    it('calls the action without calling args', function () {
+      var spyAction = sinon.spy();
+      commando.action(spyAction).run();
+      expect(spyAction.calledOnce);
+    });
+    it('calls the action with null args', function () {
+      var spyAction = sinon.spy();
+      commando.action(spyAction).args().run();
+      expect(spyAction.calledOnce);
+    });
+    it('calls the action with empty args', function () {
+      var spyAction = sinon.spy();
+      commando.action(spyAction).args([]).run();
+      expect(spyAction.calledOnce);
+    });
+    it('calls the action with one argument', function () {
+      var spyAction = sinon.spy();
+      commando.action(function () {
+        spyAction(); console.log(arguments);}).args(['arg1']).run();
+      expect(spyAction.calledOnce);
+    });
+  });
 });
 
 describe('Option', function () {
