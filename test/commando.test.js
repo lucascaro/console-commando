@@ -46,7 +46,7 @@ describe.only('Commando', function () {
 
   describe('#getCommand()', function () {
     it('gets the command', function () {
-      var subCommand = new Commando.Command({ name: 'subc1' })
+      var subCommand = new Commando.Command({ name: 'subc1' });
       var commando = new Commando({ name: 'base command' })
         .version('1.0.0')
         .command(subCommand);
@@ -276,7 +276,6 @@ describe('Action', function () {
       expect(defaultAction.calledOnce).to.be(true);
       expect(defaultAction.calledWith(thisCommand)).to.be(true);
     });
-
 
     it('calls sub command action if subcommand given', function () {
       defaultAction.reset();
