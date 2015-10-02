@@ -1,6 +1,6 @@
 {
   "name": "console-commando",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A tool for creating console commands",
   "main": "lib/commando.js",
   "scripts": {
@@ -9,8 +9,8 @@
   "author": "Lucas Caro <lucascaro@gmail.com>",
   "license": "MIT",
   "repository": {
-    "type" : "git",
-    "url" : "git@github.com:lucascaro/console-commando.git"
+    "type": "git",
+    "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
     "expect.js": "^0.3.1",
