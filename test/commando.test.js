@@ -1,11 +1,13 @@
 'use strict';
 
+var Commando = require('../lib/commando');
+var Immutable = require('immutable');
+
 var expect = require('expect.js');
+var minimist = require('minimist');
 var sinon = require('sinon');
 
-var Commando = require('../lib/commando');
-
-describe('Commando', function () {
+describe.only('Commando', function () {
   describe('#constructor()', function () {
     it('can be created with no config', function () {
       var commando = new Commando();
@@ -42,30 +44,42 @@ describe('Commando', function () {
     });
   });
 
+  describe('#getCommand()', function () {
+    it('gets the command', function () {
+      var subCommand = new Commando.Command({ name: 'subc1' })
+      var commando = new Commando({ name: 'base command' })
+        .version('1.0.0')
+        .command(subCommand);
+
+      expect(commando.getCommand('subc1')).to.be(subCommand);
+    });
+  });
+
   describe('Multi command', function () {
     var commando = new Commando();
 
     commando = commando.version('1.0.0');
     commando = commando.command(
         Commando.Command({ name: 'job' })
-        .option('-f','--force', 'force it', false)
-        .option('-x','--expand', 'force it', false)
+        .option('-f', '--force', 'force it', false)
+        .option('-x', '--expand', 'force it', false)
         .command(
           Commando.Command({ name: 'list' })
-          .action(function (args, rootArgs, options) {
-            console.log('running action:', args, rootArgs, options);
+          .action(function (command, options) {
+            console.log('running action:', command, options);
+            // TODO:
             console.log(options.getIn(['short']));
           })
         )
       )
-      .option('-a','--another', 'add another', false);
+      .option('-a', '--another', 'add another', false);
 
     commando = commando.command(
           Commando.Command({ name: 'schedule' })
-          .option('-j','--jobName', 'force it', false)
+          .option('-j', '--jobName', 'force it', false)
           .command({ name: 'list' })
         )
-        .option('-a','--another', 'add another', false);
+        .option('-a', '--another', 'add another', false);
     commando.debug();
     console.log(commando.get('commands'));
     console.log();
@@ -91,32 +105,199 @@ describe('Commando', function () {
     commando.args(['job', 'wat', '-f', 'thing']).run();
   });
 
+  describe('#args()', function () {
+    var baseAction = sinon.spy();
+    var subAction = sinon.spy();
+    var subCommand = new Commando.Command({ name: 'subc1' })
+    .action(subAction);
+    var commando = new Commando({ name: 'base command' })
+      .version('1.0.0')
+      .action(baseAction)
+      .command(subCommand);
+
+    it('sees arguments', function () {
+      var inputArgs = ['wat'];
+      var args = minimist(inputArgs);
+      var thisCommand = commando.args(inputArgs);
+      var expectedArgs = new Immutable.fromJS(args);
+
+      expect(thisCommand.get('args').equals(expectedArgs)).to.be(true);
+    });
+    it('passes args to subcommands', function () {
+      var inputArgs = ['subc1', 'wat'];
+      var subArgs = ['wat'];
+      var args = minimist(inputArgs);
+      var subArgs = minimist(subArgs);
+      var thisCommand = commando.args(inputArgs);
+      var thisSubCommand = thisCommand.getCommand('subc1');
+      var expectedArgs = new Immutable.fromJS(args);
+      var expectedSubArgs = new Immutable.fromJS(subArgs);
+
+      expect(thisCommand.get('args').equals(expectedArgs)).to.be(true);
+      expect(thisSubCommand.get('args').equals(expectedSubArgs)).to.be(true);
+    });
+  });
 });
 
-describe('Action', function(){
+describe('Action', function () {
   describe('simple command with one action', function () {
     var commando = new Commando()
       .version('1.0.0');
     it('calls the action without calling args', function () {
       var spyAction = sinon.spy();
       commando.action(spyAction).run();
-      expect(spyAction.calledOnce);
+      expect(spyAction.calledOnce).to.be(true);
     });
     it('calls the action with null args', function () {
       var spyAction = sinon.spy();
       commando.action(spyAction).args().run();
-      expect(spyAction.calledOnce);
+      expect(spyAction.calledOnce).to.be(true);
     });
     it('calls the action with empty args', function () {
       var spyAction = sinon.spy();
       commando.action(spyAction).args([]).run();
-      expect(spyAction.calledOnce);
+      expect(spyAction.calledOnce).to.be(true);
     });
     it('calls the action with one argument', function () {
       var spyAction = sinon.spy();
-      commando.action(function () {
-        spyAction(); console.log(arguments);}).args(['arg1']).run();
-      expect(spyAction.calledOnce);
+      var inputArgs = ['arg1'];
+      var args = minimist(inputArgs);
+      var expectedArgs = new Immutable.fromJS(args);
+      var thisCommand = commando
+      .action(function (command, optionsList) {
+        spyAction();
+        var args = command.get('args');
+        var rootArgs = command.get('rootArgs');
+        expect(command).to.be(thisCommand);
+        expect(expectedArgs.equals(args)).to.be.ok();
+        expect(args.get('_').toArray()).to.eql(inputArgs);
+        expect(rootArgs.get('_').toArray()).to.eql(inputArgs);
+        console.log(optionsList);
+      }).args(inputArgs);
+      thisCommand.run();
+      expect(spyAction.calledOnce).to.be(true);
+    });
+    it('calls the action with one short option', function () {
+      var spyAction = sinon.spy();
+      var inputArgs = ['-f'];
+      var args = minimist(inputArgs);
+      var expectedArgs = new Immutable.fromJS(args);
+      var thisCommand = commando
+      .action(function (command, optionsList) {
+        var args = command.get('args');
+        var rootArgs = command.get('rootArgs');
+        spyAction();
+        expect(command).to.be(thisCommand);
+        expect(expectedArgs.equals(args)).to.be(true);
+        expect(args.get('_').toArray()).to.eql([]);
+        expect(rootArgs.get('_').toArray()).to.eql([]);
+        // expect(args.get('f')).to.be.ok();
+        console.log(optionsList);
+      }).args(inputArgs);
+      thisCommand.run();
+      expect(spyAction.calledOnce).to.be(true);
+    });
+    it('calls the action with one long option', function () {
+      var spyAction = sinon.spy();
+      var inputArgs = ['--test-pass'];
+      var args = minimist(inputArgs);
+      var expectedArgs = new Immutable.fromJS(args);
+      var thisCommand = commando
+      .action(function (command, args, optionsList) {
+        var cmdArgs = command.get('args');
+        var rootArgs = command.get('rootArgs');
+        spyAction();
+        expect(command).to.be(thisCommand);
+        expect(cmdArgs).to.be(args);
+        expect(expectedArgs.equals(cmdArgs)).to.be(true);
+        expect(cmdArgs.get('_').toArray()).to.eql([]);
+        expect(rootArgs.get('_').toArray()).to.eql([]);
+        expect(cmdArgs.get('test-pass')).to.be.ok();
+        console.log(cmdArgs, optionsList);
+      }).args(inputArgs);
+      thisCommand.run();
+      expect(spyAction.calledOnce).to.be(true);
+    });
+    it('calls the action with many options', function () {
+      var spyAction = sinon.spy();
+      var inputArgs = [
+        'cmd',
+        'subc',
+        '-f',
+        '--test-pass',
+        'tp1',
+        'arg1'
+      ];
+      var args = minimist(inputArgs);
+      var expectedArgs = new Immutable.fromJS(args);
+      var expectPositional = ['cmd', 'subc', 'arg1'];
+      var thisCommand = commando
+      .action(function (command, args, optionsList) {
+        var cmdArgs = command.get('args');
+        var rootArgs = command.get('rootArgs');
+        spyAction();
+        expect(command).to.be(thisCommand);
+        expect(cmdArgs).to.be(args);
+        expect(expectedArgs.equals(cmdArgs)).to.be(true);
+        expect(cmdArgs.get('_').toArray()).to.eql(expectPositional);
+        expect(rootArgs.get('_').toArray()).to.eql(expectPositional);
+        expect(cmdArgs.get('test-pass')).to.be.ok();
+        expect(cmdArgs.get('f')).to.be.ok();
+        expect(cmdArgs.get('cmd')).to.be(undefined);
+        expect(cmdArgs.get('subc')).to.be(undefined);
+        expect(cmdArgs.get('arg1')).to.be(undefined);
+        console.log(cmdArgs, optionsList);
+      }).args(inputArgs);
+      thisCommand.run();
+      expect(spyAction.calledOnce).to.be(true);
+    });
+  });
+  describe('Subcommand', function () {
+    var defaultAction = sinon.spy();
+    var subcAction = sinon.spy();
+    var subCommand = new Commando.Command({ name: 'subc1' })
+    .action(subcAction);
+
+    var commando = new Commando()
+      .version('1.0.0')
+      .action(defaultAction)
+      .command(subCommand);
+
+    it('calls command action if no subcommand given', function () {
+      defaultAction.reset();
+      commando.run();
+      expect(defaultAction.calledOnce).to.be(true);
+    });
+
+    it('calls command action if unknown subcommand given', function () {
+      defaultAction.reset();
+      var thisCommand = commando.args(['wat']);
+      thisCommand.run();
+      expect(defaultAction.calledOnce).to.be(true);
+      expect(defaultAction.calledWith(thisCommand)).to.be(true);
+    });
+
+
+    it('calls sub command action if subcommand given', function () {
+      defaultAction.reset();
+      subcAction.reset();
+      var thisCommand = commando.args(['subc1']);
+      var thisSubCommand = thisCommand.get('commands').get('subc1');
+      thisCommand.run();
+      // console.log('CMD', thisCommand);
+      // console.log('CMD', subCommand);
+      // console.log('CMD', thisSubCommand);
+      // console.log('CMD', defaultAction.getCall(0));
+      // console.log('CMD', subcAction.getCall(0));
+      console.log('CMD ARGS', subcAction.args[0][0]);
+      console.log('CMD EQ', thisSubCommand);
+
+      expect(defaultAction.called).to.be(false);
+      expect(subcAction.calledOnce).to.be(true);
+      expect(thisSubCommand).to.be(subCommand);
+      expect(subcAction.args).to.not.be.empty();
+      expect(subcAction.args[0][0]).to.be(thisSubCommand);
+      expect(subcAction.calledWith(thisCommand)).to.be(false);
     });
   });
 });
@@ -124,10 +305,10 @@ describe('Action', function(){
 describe('Option', function () {
   var commando = new Commando()
   .version('1.0.0')
-  .option('-f','--force', 'force it', false, false)
-  .option('-s','--short', 'shortent it');
+  .option('-f', '--force', 'force it', false, false)
+  .option('-s', '--short', 'shortent it');
   describe('#get()', function () {
-    it ('returns an option', function(){
+    it('returns an option', function () {
       var o = commando.getOption('f');
       expect(o).to.be.ok();
       expect(o.get('short')).to.be('-f');
@@ -141,7 +322,7 @@ describe('Argument Parsing', function () {
   describe('?', function () {
     var commando = new Commando()
     .version('1.0.0')
-    .option('-f','--force', 'force it', false, false);
+    .option('-f', '--force', 'force it', false, false);
 
     commando.args([]).run();
     commando.args(['job']).run();
