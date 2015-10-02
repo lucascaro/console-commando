@@ -8,6 +8,10 @@
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "git@github.com:lucascaro/console-commando.git"
+  },
   "devDependencies": {
     "expect.js": "^0.3.1",
     "gulp": "^3.9.0",
