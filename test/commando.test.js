@@ -323,7 +323,7 @@ var sinon = require('sinon');
 //   });
 // });
 
-describe.only('Option', function () {
+describe('Option', function () {
   var commando = new Commando()
   .version('1.0.0')
   .option('-f --force', 'force it', false)
@@ -469,17 +469,6 @@ describe.only('Option', function () {
       expect(o.get('required')).to.be(true);
     });
   });
-
-  // describe.only('#get()', function () {
-  //   it('returns an option', function () {
-  //     var o = commando.getOption('f');
-  //     expect(o).to.be.ok();
-  //     expect(o.get('short')).to.be('-f');
-  //     expect(o.get('long')).to.be('--force');
-  //     expect(o.get('key')).to.be('force');
-  //     expect(commando.getOption('force')).to.be(o);
-  //   });
-  // });
 });
 
 describe('Argument Parsing', function () {
