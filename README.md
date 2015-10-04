@@ -71,6 +71,12 @@ var command = new Commando('command-name')
         // Or get global options for the root command.
         var verbose = rootCommand.getOption('verbose');
       })
+
+      // And you can add sub commands to sub commands too.
+      .command(
+        // ...
+        // and so on, and so forth
+      )
   );
 
   // Pass arguments to the command and run it.
