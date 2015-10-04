@@ -84,7 +84,7 @@ describe('Commando', function () {
         .option('-x', '--expand', 'force it', false)
         .command(
           new Commando.Command('list')
-          .action(function (command, options) {
+          .action(function (command) {
             expect(command.get('name')).to.be('list');
           })
         )
@@ -199,7 +199,7 @@ describe('Action', function () {
       var args = minimist(inputArgs);
       var expectedArgs = new Immutable.fromJS(args);
       var thisCommand = commando
-      .action(function (command, optionsList) {
+      .action(function (command) {
         spyAction();
         var args = command.get('args');
         var rootArgs = command.get('rootArgs');
@@ -217,7 +217,7 @@ describe('Action', function () {
       var args = minimist(inputArgs);
       var expectedArgs = new Immutable.fromJS(args);
       var thisCommand = commando
-      .action(function (command, optionsList) {
+      .action(function (command) {
         var args = command.get('args');
         var rootArgs = command.get('rootArgs');
         spyAction();
@@ -235,12 +235,12 @@ describe('Action', function () {
       var args = minimist(inputArgs);
       var expectedArgs = new Immutable.fromJS(args);
       var thisCommand = commando
-      .action(function (command, args, optionsList) {
+      .action(function (command) {
         var cmdArgs = command.get('args');
         var rootArgs = command.get('rootArgs');
         spyAction();
         expect(command).to.be(thisCommand);
-        expect(cmdArgs).to.be(args);
+        expect(cmdArgs).to.be(rootArgs);
         expect(expectedArgs.equals(cmdArgs)).to.be(true);
         expect(cmdArgs.get('_').toArray()).to.eql([]);
         expect(rootArgs.get('_').toArray()).to.eql([]);
@@ -263,12 +263,12 @@ describe('Action', function () {
       var expectedArgs = new Immutable.fromJS(args);
       var expectPositional = ['cmd', 'subc', 'arg1'];
       var thisCommand = commando
-      .action(function (command, args, optionsList) {
+      .action(function (command) {
         var cmdArgs = command.get('args');
         var rootArgs = command.get('rootArgs');
         spyAction();
         expect(command).to.be(thisCommand);
-        expect(cmdArgs).to.be(args);
+        expect(cmdArgs).to.be(rootArgs);
         expect(expectedArgs.equals(cmdArgs)).to.be(true);
         expect(cmdArgs.get('_').toArray()).to.eql(expectPositional);
         expect(rootArgs.get('_').toArray()).to.eql(expectPositional);

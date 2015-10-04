@@ -208,7 +208,7 @@ class Commando {
     var action = this.get('action');
     if (action) {
       debug.log('RUN ACTION: %s', this.get('name'));
-      var res = action(this, this.get('rootArgs'), optionsList);
+      var res = action(this, rootCommand, optionsList);
       if (res === undefined) {
         res = RETURN_VALUE_SUCCESS;
       }
@@ -234,9 +234,9 @@ class Commando {
     if (this.validateArgs(args)) {
 
       return new Commando(this._config.set('args', args)
-      .set('rootArgs', rootArgs)
-      .set('commands', this.subcommandsWitArgs(args, rootArgs))
-    );
+        .set('rootArgs', rootArgs)
+        .set('commands', this.subcommandsWitArgs(args, rootArgs))
+      );
     } else {
       debug.log('invalid args');
       this.help();

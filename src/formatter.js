@@ -25,9 +25,7 @@ class Formatter {
     debug.log('Formatter: %j', this._config.toObject());
   }
 
-  pad (amount, character, direction, prefix) {
-    if (direction === undefined) { direction = 'LEFT'; }
-    if (character === undefined) { character = ' '; }
+  pad (amount, character, direction = 'LEFT', prefix = ' ') {
     return text => {
       if (typeof text !== 'string') {
         text = '';
