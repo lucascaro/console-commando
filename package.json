@@ -13,8 +13,10 @@
     "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
+    "del": "^2.0.2",
     "expect.js": "^0.3.1",
     "gulp": "^3.9.0",
+    "gulp-babel": "^5.2.1",
     "gulp-jscs": "^3.0.0",
     "gulp-jshint": "^1.11.2",
     "gulp-mocha": "^2.1.3",

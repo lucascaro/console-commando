@@ -1,5 +1,7 @@
 'use strict';
 
+var babel = require('gulp-babel');
+var del = require('del');
 var gulp = require('gulp');
 var jscs = require('gulp-jscs');
 var jshint = require('gulp-jshint');
@@ -8,8 +10,12 @@ var mocha = require('gulp-mocha');
 var allSources = [
   'gulpfile.js',
   'test/**/*.js',
-  'lib/**/*.js',
+  'src/**/*.js',
 ];
+
+gulp.task('clean', function () {
+  return del('lib/**/*');
+});
 
 gulp.task('lint', function () {
   return gulp.src(allSources)
@@ -25,7 +31,7 @@ gulp.task('jscs', ['lint'], function () {
   .pipe(jscs.reporter('console'));
 });
 
-gulp.task('test', ['jscs'], function () {
+gulp.task('test', ['babel'], function () {
   return gulp.src('test/**/*.test.js', { read: false })
   .pipe(mocha({ reporter: 'spec' }));
 });
@@ -33,3 +39,11 @@ gulp.task('test', ['jscs'], function () {
 gulp.task('dev',['lint', 'jscs', 'test'], function () {
   return gulp.watch(allSources, ['test']);
 });
+
+gulp.task('babel', ['jscs'], function () {
+  return gulp.src('src/**.js')
+    .pipe(babel())
+    .pipe(gulp.dest('lib'));
+});
+
+gulp.task('build', ['babel']);
