@@ -151,20 +151,16 @@ describe('Commando', function () {
 
     it('ignores undefined options', function () {
       var inputArgs = ['--wat'];
-      var args = minimist(inputArgs);
       var thisCommand = commando.args(inputArgs);
-      var expectedArgs = new Immutable.fromJS(args);
 
       expect(thisCommand.getOption('wat')).to.be(undefined);
     });
 
     it('sees options', function () {
       var inputArgs = ['--wat'];
-      var args = minimist(inputArgs);
       var thisCommand = commando
         .option('-w --wat')
         .args(inputArgs);
-      var expectedArgs = new Immutable.fromJS(args);
 
       console.log('GETOPT', thisCommand.getOption('wat'));
       // TODO
@@ -420,21 +416,22 @@ describe('Option', function () {
     });
 
     it('fails on duplicated values', function () {
-      expect(option.parseOptstring).withArgs('-s -s').to.throwException();
-      expect(option.parseOptstring).withArgs('--ss --ss').to.throwException();
-      expect(option.parseOptstring).withArgs('-s --ss -s').to.throwException();
-      expect(option.parseOptstring).withArgs('-s --ss').to.not.throwException();
-      expect(option.parseOptstring).withArgs('-s --ss [abc] [abc]').to.throwException();
-      expect(option.parseOptstring).withArgs('-s --ss [abc] <abc>').to.throwException();
-      expect(option.parseOptstring).withArgs('[abc] <abc>').to.throwException();
-      expect(option.parseOptstring).withArgs('[abc]').to.throwException();
-      expect(option.parseOptstring).withArgs('<abc>').to.throwException();
+      var e = expect(option.parseOptstring);
+
+      e.withArgs('-s -s').to.throwException();
+      e.withArgs('--ss --ss').to.throwException();
+      e.withArgs('-s --ss -s').to.throwException();
+      e.withArgs('-s --ss').to.not.throwException();
+      e.withArgs('-s --ss [abc] [abc]').to.throwException();
+      e.withArgs('-s --ss [abc] <abc>').to.throwException();
+      e.withArgs('[abc] <abc>').to.throwException();
+      e.withArgs('[abc]').to.throwException();
+      e.withArgs('<abc>').to.throwException();
     });
   });
   describe('#constructor()', function () {
     it('creates short flags', function () {
       var o = new Commando.Option('-o', 'an option', false);
-      var commando = Commando('testRootCommand').option(o);
 
       expect(o).to.be.ok();
       expect(o.get('short')).to.be('o');
@@ -446,7 +443,6 @@ describe('Option', function () {
 
     it('creates long flags', function () {
       var o = new Commando.Option('--opt', 'an option', true);
-      var commando = Commando('testRootCommand').option(o);
 
       expect(o).to.be.ok();
       expect(o.get('short')).to.be(undefined);
@@ -592,16 +588,16 @@ describe('Argument Parsing', function () {
   });
 
   describe('Required arguments', function () {
-    var commando = new Commando('rootCmd')
-      .version('1.0.0')
-      .option('-r --required <requiredArg>', 'a required argument', false)
-      .action(commandSpyAction);
-
-    it('validates required arguments', function () {
-      // expect(commando.args(['-r']).run()).to.not.be.ok();
-      // expect(commando.args(['--required']).run()).to.not.be.ok();
-      // expect(commando.args(['-r a']).run()).to.be.ok();
-    });
+    // var commando = new Commando('rootCmd')
+    //   .version('1.0.0')
+    //   .option('-r --required <requiredArg>', 'a required argument', false)
+    //   .action(commandSpyAction);
+    //
+    // it('validates required arguments', function () {
+    //   expect(commando.args(['-r']).run()).to.not.be.ok();
+    //   expect(commando.args(['--required']).run()).to.not.be.ok();
+    //   expect(commando.args(['-r a']).run()).to.be.ok();
+    // });
 
   });
 });
