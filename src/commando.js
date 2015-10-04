@@ -86,13 +86,17 @@ class Commando {
   }
 
   usage () {
+    let fmt      = this.get('formatter');
+    let padCmd   = fmt.padSubCommand();
+    let padOpts  = fmt.padSubCommandOption();
+    let options  = this.get('options').isEmpty() ? '' : '[options] ';
+    let commands = this.get('commands').isEmpty() ? '' : '[commands]';
     console.log();
     console.log(chalk.yellow('Usage:'));
 
-    console.log('%s    %s%s      %s',
-      chalk.green(this.get('name')),
-      this.get('options').isEmpty() ? '' : '[options] ',
-      this.get('commands').isEmpty() ? '' : '[commands] ',
+    console.log('%s%s%s',
+      padCmd(chalk.green(this.get('name'))),
+      padOpts(options + commands),
       this.get('description')
     );
   }
@@ -101,6 +105,7 @@ class Commando {
     var fmt      = this.get('formatter');
     var padCmd   = fmt.padCommand();
     var padOpt   = fmt.padOption();
+    var padArg   = fmt.padArgument();
     var padShort = fmt.padShortOption();
     var padDesc  = fmt.padDescription();
     var version  = this.get('version');
@@ -117,6 +122,7 @@ class Commando {
         console.log('%s %s%s',
           padShort(option.get('short')),
           padOpt(option.get('long')),
+          padArg(option.get('arg'), option.get('required')),
           option.get('description'));
       });
     }
@@ -267,9 +273,21 @@ class Commando {
   validateArgs (args) {
     debug.log('validate', args);
     var valid = true;
-    // this.get('options').forEach(function (option) {
-    //
-    // });
+    console.log(args);
+    args.forEach((value, arg) => {
+      console.log('arg', arg);
+      if (arg !== '_') {
+        this.get('options').forEach(option => {
+          console.log('option', option);
+          console.log('val', typeof value);
+          if (option.get('required') == true && typeof value === 'boolean') {
+            debug.error(`Missing required value for argument ${arg}`);
+            this.help();
+            process.exit();
+          }
+        });
+      }
+    });
     return valid;
   }
 

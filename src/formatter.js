@@ -3,7 +3,7 @@
 var Immutable = require('immutable');
 
 var debug = require('./debug');
-var pad = require('node-string-pad');
+var stringPad = require('node-string-pad');
 
 class Formatter {
   constructor (config) {
@@ -25,7 +25,7 @@ class Formatter {
     debug.log('Formatter: %j', this._config.toObject());
   }
 
-  pad (amount, character, direction = 'LEFT', prefix = ' ') {
+  pad (amount, character, direction = 'LEFT', prefix = ' ', suffix = '') {
     return text => {
       if (typeof text !== 'string') {
         text = '';
@@ -33,12 +33,23 @@ class Formatter {
       if (prefix && text.length > 0) {
         text = prefix + text;
       }
-      return pad(text, amount, direction, character);
+      if (suffix && text.length > 0) {
+        text = text + suffix;
+      }
+      return stringPad(text, amount, direction, character);
     };
   }
 
   padCommand () {
     return this.pad(this.get('padCommands'), ' ', 'RIGHT');
+  }
+
+  padSubCommand () {
+    return this.pad(this.get('padSubCommands'), ' ', 'RIGHT');
+  }
+
+  padSubCommandOption () {
+    return this.pad(this.get('padSubCommandOptions'), ' ', 'RIGHT');
   }
 
   padShortOption () {
@@ -49,6 +60,16 @@ class Formatter {
     return this.pad(this.get('padOptions'), ' ', 'RIGHT', '--');
   }
 
+  padArgument () {
+    let size = this.get('padArguments');
+    return (text = '', required = false) => {
+      let prefix = required ? '<' : '[';
+      let suffix = required ? '>' : ']';
+      let padFn = this.pad(size, ' ', 'RIGHT', prefix, suffix);
+      return padFn(text);
+    }
+  }
+
   padDescription () {
     return this.pad(this.get('padDescriptions'), ' ', 'RIGHT');
   }
@@ -57,13 +78,18 @@ class Formatter {
    * Formatter default configuration.
    *
    * @return {Immutable.Map} the default (empty) configuration for commando.
+   * TODO: All this will need to be automatically calculated based on the sizes
+   * of the actual commands, options, arguments and descriptions.
    */
   static defaultConfig () {
     return Immutable.fromJS({
-      'padCommands': 30,
+      'padArguments': 10,
+      'padCommands': 40,
       'padDescriptions': 30,
-      'padOptions': 13,
+      'padOptions': 16,
       'padShortOptions': 6,
+      'padSubCommands': 20,
+      'padSubCommandOptions': 24,
     });
   }
 }
