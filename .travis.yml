@@ -1,8 +1,16 @@
 language: node_js
 node_js:
-  - "4.1"
-  - "4.0"
-  - "0.12"
-  - "0.11"
-  - "0.10"
-  - "iojs"
+- '4.1'
+- '4.0'
+- '0.12'
+- '0.11'
+- '0.10'
+- iojs
+deploy:
+  provider: npm
+  email: lucascaro@gmail.com
+  api_key:
+    secure: 5Cin5W09HoiI1fWAvZBUxhc9ZVhmtM99YXlS92gByLMff5TPQtL/HUiExdxrJza02mp/yBhp9MNA34l0UcQH+KNDLKgoqjBmaB7/YJwK94srXrNQsjNxjFLNA/nc0PYQQwGTmUD9h7eQoyoYmpTiB4sz53V5Okf/opbcRd77B22jyNqIORAcVypEkaBM5J5+LgT6B+s5TTqqpc+FVK8q0wnmRPNFKWi1H6nQjdKq1EIfw4Lfc4p3PCgK7oajDp6LrJPabIKBvJ+vljmvPw7f3QOfYoJaeT2UDXwxysCAC/mM3kWLRKTRfnS34pHec7dX/tmjD8j5boZWm9eApDVEclTVLx88D0SM/CRv1M/mGThNndrdWzxmuNB12g15Z2iTEDAewvKpurH9Il0WMFBWxJErsMrayJClVGeu5aYCZvrcBZnd0OHJEtPAeFtFf0wycPDU69x3TAh+TOrWyoC2dZ8Z42ChXVXDF5wBa5c3+O6VqGfDDSSN65q6+/bQUWcFMB3+F2xC4q2uytRvL5mJEUGfyrDd9BVbbcRMxgEXPZ2RhR/gFZcJSSpOIN+4vp7vGdkcgT5WY0c7sYpBSg9j/6sW/LnjLi74rAECmJJTECBpjxGOb77BMd+P7KD5Yk0xXoFQ+hPFIWVA+fEsxgiOxQiOUOKnB+KBRl4mLXZ4mGo=
+  on:
+    tags: true
+    repo: lucascaro/console-commando
