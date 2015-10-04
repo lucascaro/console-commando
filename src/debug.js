@@ -6,9 +6,9 @@ var debug = module.exports = {
   DEBUG_LEVEL_WARN:  30,
   DEBUG_LEVEL_ERROR: 50,
   debugLevel: 30,
-  log: log,
-  warn: warn,
-  error: error,
+  log,
+  warn,
+  error,
 };
 
 function log() {
