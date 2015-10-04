@@ -25,8 +25,13 @@ class Formatter {
     debug.log('Formatter: %j', this._config.toObject());
   }
 
-  pad ({amount, character = ' ', direction = 'LEFT', prefix = ' ',
-    suffix = ''}) {
+  pad ({
+    amount,
+    character = ' ',
+    direction = 'LEFT',
+    prefix = ' ',
+    suffix = ''
+  }) {
     return text => {
       if (typeof text !== 'string') {
         text = '';
@@ -84,7 +89,10 @@ class Formatter {
   }
 
   padDescription () {
-    return this.pad({ amount: this.get('padDescriptions'), direction: 'RIGHT'});
+    return this.pad({
+      amount: this.get('padDescriptions'),
+      direction: 'RIGHT',
+    });
   }
 
   /**
