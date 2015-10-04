@@ -179,28 +179,22 @@ class Commando {
     }
   }
 
-  run (optionsList, rootCommand) {
+  run (command, rootCommand) {
     var args = this.get('args');
-
-    if (optionsList === undefined) {
-      optionsList = this.get('options');
-    } else {
-      optionsList = optionsList.concat(this.get('options'));
-    }
-
+    var positionalArgs = args.get('_');
     var before = this.get('before');
+
     if (before) {
       debug.log('RUN ACTION: %s', this.get('name'));
-      var res = before(this, this.get('rootArgs'), optionsList);
+      var res = before(this, this.get('rootArgs'), positionalArgs);
     }
     debug.log('running %s with args:', this.get('name'), args);
-    var positionalArgs = args.get('_');
     if (positionalArgs && positionalArgs.size > 0) {
       var commandArg = positionalArgs.get(0);
       var command = this._config.getIn(['commands', commandArg]);
       if (command !== undefined) {
         // var recursionArgs = args.set('_', positionalArgs.shift());
-        var res = command.run(optionsList, rootCommand);
+        var res = command.run(command, rootCommand, positionalArgs);
         if (res === RETURN_VALUE_FAILURE) {
           // command.help();
         }
@@ -214,7 +208,7 @@ class Commando {
     var action = this.get('action');
     if (action) {
       debug.log('RUN ACTION: %s', this.get('name'));
-      var res = action(this, rootCommand, optionsList);
+      var res = action(this, rootCommand, positionalArgs);
       if (res === undefined) {
         res = RETURN_VALUE_SUCCESS;
       }
