@@ -4,7 +4,7 @@
   "description": "A tool for creating console commands",
   "main": "lib/commando.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "gulp test"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
   "license": "MIT",
