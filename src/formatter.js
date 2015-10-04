@@ -25,7 +25,8 @@ class Formatter {
     debug.log('Formatter: %j', this._config.toObject());
   }
 
-  pad (amount, character, direction = 'LEFT', prefix = ' ', suffix = '') {
+  pad ({amount, character = ' ', direction = 'LEFT', prefix = ' ',
+    suffix = ''}) {
     return text => {
       if (typeof text !== 'string') {
         text = '';
@@ -41,23 +42,30 @@ class Formatter {
   }
 
   padCommand () {
-    return this.pad(this.get('padCommands'), ' ', 'RIGHT');
+    return this.pad({ amount: this.get('padCommands'), direction: 'RIGHT' });
   }
 
   padSubCommand () {
-    return this.pad(this.get('padSubCommands'), ' ', 'RIGHT');
+    return this.pad({ amount: this.get('padSubCommands'), direction: 'RIGHT' });
   }
 
   padSubCommandOption () {
-    return this.pad(this.get('padSubCommandOptions'), ' ', 'RIGHT');
+    return this.pad({
+      amount: this.get('padSubCommandOptions'),
+      direction: 'RIGHT',
+    });
   }
 
   padShortOption () {
-    return this.pad(this.get('padShortOptions'), ' ', 'LEFT', '-');
+    return this.pad({ amount: this.get('padShortOptions'), prefix: '-' });
   }
 
   padOption () {
-    return this.pad(this.get('padOptions'), ' ', 'RIGHT', '--');
+    return this.pad({
+      amount: this.get('padOptions'),
+      direction: 'RIGHT',
+      prefix: '--',
+    });
   }
 
   padArgument () {
@@ -65,13 +73,18 @@ class Formatter {
     return (text = '', required = false) => {
       let prefix = required ? '<' : '[';
       let suffix = required ? '>' : ']';
-      let padFn = this.pad(size, ' ', 'RIGHT', prefix, suffix);
+      let padFn = this.pad({
+        amount: size,
+        direction: 'RIGHT',
+        prefix,
+        suffix,
+      });
       return padFn(text);
-    }
+    };
   }
 
   padDescription () {
-    return this.pad(this.get('padDescriptions'), ' ', 'RIGHT');
+    return this.pad({ amount: this.get('padDescriptions'), direction: 'RIGHT'});
   }
 
   /**

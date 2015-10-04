@@ -273,14 +273,14 @@ class Commando {
   validateArgs (args) {
     debug.log('validate', args);
     var valid = true;
-    console.log(args);
+    debug.log('validate arguments', args);
     args.forEach((value, arg) => {
-      console.log('arg', arg);
+      debug.log('arg', arg);
       if (arg !== '_') {
         this.get('options').forEach(option => {
-          console.log('option', option);
-          console.log('val', typeof value);
-          if (option.get('required') == true && typeof value === 'boolean') {
+          debug.log('option', option);
+          debug.log('val', typeof value);
+          if (option.get('required') === true && typeof value === 'boolean') {
             debug.error(`Missing required value for argument ${arg}`);
             this.help();
             process.exit();
