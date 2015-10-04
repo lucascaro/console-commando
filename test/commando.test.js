@@ -12,12 +12,12 @@ describe('Commando', function () {
   describe('#constructor()', function () {
     it('can be created with no config', function () {
       var commando = new Commando();
-      expect(commando._config).to.eql(commando.defaultConfig());
+      expect(commando._config).to.eql(Commando.defaultConfig());
     });
 
     it('can be created with name', function () {
       var commando = new Commando('myname');
-      expect(commando._config).not.to.eql(commando.defaultConfig());
+      expect(commando._config).not.to.eql(Commando.defaultConfig());
       expect(commando.get('name')).to.be('myname');
     });
 
@@ -31,12 +31,11 @@ describe('Commando', function () {
       expect(commando.get('version')).to.eql('1.1.1');
     });
 
-    it('will test things soon', function () {
-      expect(1).to.be(1);
+    it('has immutable version', function () {
       var commando = new Commando('testRootCommand');
 
       // Test default version
-      var initialVersion = commando.defaultConfig().get('version');
+      var initialVersion = Commando.defaultConfig().get('version');
       expect(commando.get('version')).to.be(initialVersion);
       var commando2 = commando.version('1.0.1-test');
 
@@ -46,11 +45,19 @@ describe('Commando', function () {
     });
   });
   describe('#command()', function () {
+    it('rejects unnamed commands', function () {
+      var commando = new Commando('testRootCommand');
+      var command = new Commando.Command();
+
+      expect(commando.command.bind(commando)).withArgs(command)
+        .to.throwException();
+    });
+
     it('can add a command', function () {
       var commando = new Commando('testRootCommand');
       var command = new Commando.Command({ name: 'cmd1' });
 
-      var testCmd = commando.command(command).get('commands').get('cmd1');
+      var testCmd = commando.command(command).getCommand('cmd1');
       expect(testCmd).to.eql(command);
 
     });
@@ -72,22 +79,20 @@ describe('Commando', function () {
 
     commando = commando.version('1.0.0');
     commando = commando.command(
-        Commando.Command({ name: 'job' })
+        new Commando.Command({ name: 'job' })
         .option('-f', '--force', 'force it', false)
         .option('-x', '--expand', 'force it', false)
         .command(
-          Commando.Command({ name: 'list' })
+          new Commando.Command('list')
           .action(function (command, options) {
-            console.log('running action:', command, options);
-            // TODO:
-            console.log(options.getIn(['short']));
+            expect(command.get('name')).to.be('list');
           })
         )
       )
-      .option('-a', '--another', 'add another', false);
+      .option('-a --another', 'add another', false);
 
     commando = commando.command(
-          Commando.Command({ name: 'schedule' })
+          new Commando.Command({ name: 'schedule' })
           .option('-j', '--jobName', 'force it', false)
           .command({ name: 'list' })
         )
@@ -202,7 +207,6 @@ describe('Action', function () {
         expect(expectedArgs.equals(args)).to.be.ok();
         expect(args.get('_').toArray()).to.eql(inputArgs);
         expect(rootArgs.get('_').toArray()).to.eql(inputArgs);
-        console.log(optionsList);
       }).args(inputArgs);
       thisCommand.run();
       expect(spyAction.calledOnce).to.be(true);
@@ -221,8 +225,6 @@ describe('Action', function () {
         expect(expectedArgs.equals(args)).to.be(true);
         expect(args.get('_').toArray()).to.eql([]);
         expect(rootArgs.get('_').toArray()).to.eql([]);
-        // expect(args.get('f')).to.be.ok();
-        console.log(optionsList);
       }).args(inputArgs);
       thisCommand.run();
       expect(spyAction.calledOnce).to.be(true);
@@ -243,7 +245,6 @@ describe('Action', function () {
         expect(cmdArgs.get('_').toArray()).to.eql([]);
         expect(rootArgs.get('_').toArray()).to.eql([]);
         expect(cmdArgs.get('test-pass')).to.be.ok();
-        console.log(cmdArgs, optionsList);
       }).args(inputArgs);
       thisCommand.run();
       expect(spyAction.calledOnce).to.be(true);
@@ -276,7 +277,6 @@ describe('Action', function () {
         expect(cmdArgs.get('cmd')).to.be(undefined);
         expect(cmdArgs.get('subc')).to.be(undefined);
         expect(cmdArgs.get('arg1')).to.be(undefined);
-        console.log(cmdArgs, optionsList);
       }).args(inputArgs);
       thisCommand.run();
       expect(spyAction.calledOnce).to.be(true);
@@ -313,13 +313,6 @@ describe('Action', function () {
       var thisCommand = commando.args(['subc1']);
       var thisSubCommand = thisCommand.get('commands').get('subc1');
       thisCommand.run();
-      // console.log('CMD', thisCommand);
-      // console.log('CMD', subCommand);
-      // console.log('CMD', thisSubCommand);
-      // console.log('CMD', defaultAction.getCall(0));
-      // console.log('CMD', subcAction.getCall(0));
-      console.log('CMD ARGS', subcAction.args[0][0]);
-      console.log('CMD EQ', thisSubCommand);
 
       expect(defaultAction.called).to.be(false);
       expect(subcAction.calledOnce).to.be(true);

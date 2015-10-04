@@ -36,7 +36,7 @@ gulp.task('test', ['babel'], function () {
   .pipe(mocha({ reporter: 'spec' }));
 });
 
-gulp.task('dev',['lint', 'jscs', 'test'], function () {
+gulp.task('dev',['lint', 'jscs'], function () {
   return gulp.watch(allSources, ['test']);
 });
 

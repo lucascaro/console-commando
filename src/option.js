@@ -6,6 +6,9 @@ var debug = require('./debug');
 
 class Option {
   constructor (config, description, defaultValue) {
+    if (config instanceof Option) {
+      return config;
+    }
     if (typeof config === 'string') {
       config = this.parseOptstring(config);
       config.description = description;
@@ -79,7 +82,7 @@ class Option {
    *
    * @return {Immutable.Map} the default (empty) configuration for commando.
    */
-  static defaultConfig() {
+  static defaultConfig () {
     return Immutable.fromJS({
       'short': undefined,
       'long': undefined,
