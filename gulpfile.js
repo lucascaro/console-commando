@@ -40,7 +40,7 @@ gulp.task('dev',['lint', 'jscs', 'test'], function () {
   return gulp.watch(allSources, ['test']);
 });
 
-gulp.task('babel', ['jscs'], function () {
+gulp.task('babel', ['clean', 'jscs'], function () {
   return gulp.src('src/**.js')
     .pipe(babel())
     .pipe(gulp.dest('lib'));

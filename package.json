@@ -4,7 +4,9 @@
   "description": "A tool for creating console commands",
   "main": "lib/commando.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "compile": "gulp build",
+    "prepublish": "npm run compile"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
   "license": "MIT",
