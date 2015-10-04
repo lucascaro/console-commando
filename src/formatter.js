@@ -28,7 +28,7 @@ class Formatter {
   pad (amount, character, direction, prefix) {
     if (direction === undefined) { direction = 'LEFT'; }
     if (character === undefined) { character = ' '; }
-    return function (text) {
+    return text => {
       if (typeof text !== 'string') {
         text = '';
       }

@@ -77,10 +77,10 @@ class Commando {
   debug () {
     debug.log('Command:');
     debug.log('Name: %s, Version: %s', this.get('name'), this.get('version'));
-    this.get('options').forEach(function (option) {
+    this.get('options').forEach(option => {
       option.debug();
     });
-    this.get('commands').forEach(function (command) {
+    this.get('commands').forEach(command => {
       command.debug();
     });
   }
@@ -113,7 +113,7 @@ class Commando {
     if (!this.get('options').isEmpty()) {
       console.log();
       console.log(chalk.yellow('Options:'));
-      this.get('options').forEach(function (option) {
+      this.get('options').forEach(option => {
         console.log('%s %s%s',
           padShort(option.get('short')),
           padOpt(option.get('long')),
@@ -124,7 +124,7 @@ class Commando {
       console.log();
       console.log(chalk.yellow('Available Subcommands:'));
 
-      this.get('commands').forEach(function (command) {
+      this.get('commands').forEach(command => {
         var subCommands = command.get('commands').keySeq().toArray();
         if (subCommands.length > 0) {
           subCommands = util.format('[%s]', subCommands.join(' | '));
@@ -151,7 +151,7 @@ class Commando {
    */
   getOption (key) {
     var args = this.get('args');
-    var option = this.get('options').find(function (v) {
+    var option = this.get('options').find(v => {
 
       var res = v.get('arg') === key ||
         v.get('short') === key ||
@@ -163,7 +163,7 @@ class Commando {
       return option.getArgValue(args);
     } else {
       // If not here, serach for the option in subcommands.
-      this.get('commands').forEach(function (command) {
+      this.get('commands').forEach(command => {
         debug.log('GETOPTION: SEARCH SUBCOMMAND');
         var subOption = command.getOption(key);
         if (subOption !== undefined) {
@@ -251,7 +251,7 @@ class Commando {
     if (positionalArgs && positionalArgs.size > 0) {
       var commandArg = positionalArgs.get(0);
       // debug.log('subcommandsWitArgs arg', commandArg);
-      subcommands = subcommands.map(function (command, name) {
+      subcommands = subcommands.map((command, name) => {
         // debug.log('subcommandsWitArgs cmd', name);
         if (name === commandArg) {
           var recursionArgs = args.set('_', positionalArgs.shift());
@@ -276,7 +276,7 @@ class Commando {
   helpCommand () {
     var parentCommand = this;
     return new Commando({ name: 'help' })
-    .action(function () {
+    .action(() => {
       debug.log('args', arguments);
       return parentCommand.help();
     });
