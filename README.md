@@ -1,5 +1,6 @@
 # Console Commando
 [![Build Status](https://travis-ci.org/lucascaro/console-commando.svg?branch=master)](https://travis-ci.org/lucascaro/console-commando)
+[![Documentation](https://doc.esdoc.org/github.com/lucascaro/console-commando/badge.svg)](https://doc.esdoc.org/github.com/lucascaro/console-commando/)
 
 A library for creating command line tools with node.
 
