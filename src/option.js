@@ -4,7 +4,35 @@ import Immutable from 'immutable';
 
 import debug from './debug';
 
+/**
+ * Defines options with short and long names.
+ *
+ * Options can also have optional or required arguments.
+ *
+ * @see {@link Option#constructor}
+ */
 export default class Option {
+  /**
+   * Creates a new Option.
+   *
+   * Option strings can have a short and long name, as well as a named
+   * argument, which can be optional or required. It's defined as a string:
+   *
+   * ```
+   * -o --long-option [argumentName]
+   * ```
+   *
+   * where:
+   * * `-o` represents the short name (o),
+   * * `--long-option` is the long name (`long-option`)
+   * * and `[argumentName]` represents an optional argument.
+   * * use `<argumentName>` for required arguments.
+   *
+   * @param  {string|object} config   An optString or configuration object.
+   * @param  {string} [description]   A description, shown in help.
+   * @param  {?*} [defaultValue]      A default value for this option.
+   * @return {Option}                 A new Option object.
+   */
   constructor (config, description, defaultValue) {
     if (config instanceof Option) {
       return config;
@@ -22,10 +50,20 @@ export default class Option {
     return this._config.get(key);
   }
 
+  /**
+   * Prints out debugging information.
+   */
   debug () {
     debug.log('Option: %j', this._config.toObject());
   }
 
+  /**
+   * Utility function to parse option strings.
+   *
+   * @param  {string} optstring an option string
+   *
+   * @access private
+   */
   parseOptstring (optstring) {
     var opts = optstring.split(/ +/);
     var parsed = {};
@@ -65,6 +103,12 @@ export default class Option {
     return parsed;
   }
 
+  /**
+   * Returns the argument value for this option, according to a list of args.
+   *
+   * @param  {Immutable.List} args List of arguments.
+   * @return {?mixed}              The value of the argument.
+   */
   getArgValue (args) {
     var short = this.get('short');
     var long = this.get('long');
@@ -81,6 +125,8 @@ export default class Option {
    * Option default configuration.
    *
    * @return {Immutable.Map} the default (empty) configuration for commando.
+   *
+   * @access private
    */
   static defaultConfig () {
     return Immutable.fromJS({
