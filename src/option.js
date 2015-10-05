@@ -45,7 +45,12 @@ export default class Option {
     this._config = Option.defaultConfig().merge(Immutable.fromJS(config));
   }
 
-  // Setters / getters
+  /**
+   * Gets a property of the Option instance.
+   *
+   * @param  {string} key The name of the property to get.
+   * @return {*}          The value of the property.
+   */
   get (key) {
     return this._config.get(key);
   }
