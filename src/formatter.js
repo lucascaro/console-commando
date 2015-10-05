@@ -1,11 +1,11 @@
 'use strict';
 
-var Immutable = require('immutable');
+import Immutable from 'immutable';
 
 var debug = require('./debug');
 var stringPad = require('node-string-pad');
 
-class Formatter {
+export default class Formatter {
   constructor (config) {
     if (config instanceof Formatter) {
       return config;
@@ -114,5 +114,3 @@ class Formatter {
     });
   }
 }
-
-module.exports = Formatter;

@@ -1,22 +1,34 @@
 'use strict';
 
-// Classes
-var Formatter = require('./formatter');
-var Immutable = require('immutable');
-// var Command = require('./command');
-var Option = require('./option');
+/**
+ * Commando class definition.
+ */
 
-// Libraries
-var chalk = require('chalk');
-var debug = require('./debug');
-var minimist = require('minimist');
-var util = require('util');
+// Import Classes
+import Formatter from './formatter';
+import Immutable from 'immutable';
+import Option    from './option';
 
-// Constants
+// Import Libraries
+import chalk    from 'chalk';
+import debug    from './debug';
+import minimist from 'minimist';
+import util     from 'util';
+
+// Define Constants
 const RETURN_VALUE_SUCCESS = true;
 const RETURN_VALUE_FAILURE = false;
 
-class Commando {
+/**
+ * Represents a command or subcommand.
+ */
+export default class Commando {
+  /**
+   * Create a Commando from a string, object or Commando.
+   *
+   * @param  {string|object|Commando} config A name, config object or Commando.
+   * @return {Commando}               A Commando with the fiven config.
+   */
   constructor (config) {
     if (config instanceof Commando) {
       return config;
@@ -29,27 +41,54 @@ class Commando {
     Object.freeze(this);
   }
 
-  // Class methods
-  // Setters / getters
+  /**
+   * Returns a new Commando with the same config and a given version number.
+   *
+   * @param  {string} version A version number.
+   * @return {Commando}       A Commando with the given version number.
+   */
   version (version) {
     return new Commando(this._config.set('version', version));
   }
 
+  /**
+   * Returns a new Commando with the same config and a given name.
+   *
+   * @param  {string} name  A name string.
+   * @return {Commando}     A Commando with the given name apllied to it.
+   */
   name (name) {
     return new Commando(this._config.set('name', name));
   }
 
+  /**
+   * Returns a new Commando with the same config and a given description.
+   *
+   * @param  {string} description  A description string.
+   * @return {Commando}     A Commando with the given description apllied to it.
+   */
   description (description) {
     return new Commando(this._config.set('description', description));
   }
 
+  /**
+   * Gets a property of the Commando instance.
+   *
+   * @param  {string} key The name of the property to get.
+   * @return {*}          The value of the property.
+   */
   get (key) {
     return this._config.get(key);
   }
 
-  // Command related methods
-  command (options) {
-    var command = new Commando(options);
+  /**
+   * Returns a commando with a new subcommand added to it.
+   *
+   * @param  {Commando} command  A sub command to add to the current instance.
+   * @return {Commando}          A Commando with the given command.
+   */
+  command (command) {
+    var command = new Commando(command);
     if (!command.get('name')) {
       throw new Error('Command needs a name');
     }
@@ -59,6 +98,17 @@ class Commando {
     return new Commando(newConfig);
   }
 
+  /**
+   * Returns a commando with a new option added to it.
+   *
+   * @param  {string} optstring     An opstring for the new Option.
+   * @param  {string} description   A description for the new Option.
+   * @param  {*}      defaultValue  A default value for the Option.
+   *
+   * @return {Commando}       A Commando with the given option.
+   *
+   * @see {@link Option#constructor}
+   */
   option (optstring, description, defaultValue) {
     var option = new Option(optstring, description, defaultValue);
     var options = this.get('options');
@@ -66,14 +116,29 @@ class Commando {
     return new Commando(this._config.set('options', options.push(option)));
   }
 
+  /**
+   * Returns a commando with a new action added to it.
+   *
+   * @param  {function} action  An action callback for this command.
+   * @return {Commando}         A Commando with the given action.
+   */
   action (action) {
     return new Commando(this._config.set('action', action));
   }
 
+  /**
+   * Returns a commando with a before callback set to 'before'.
+   *
+   * @param  {Commando} before  A sub command to add to the current instance.
+   * @return {Commando}         A Commando with the given command.
+   */
   before (before) {
     return new Commando(this._config.set('before', before));
   }
 
+  /**
+   * Prints out debugging information.
+   */
   debug () {
     debug.log('Command:');
     debug.log('Name: %s, Version: %s', this.get('name'), this.get('version'));
@@ -85,6 +150,11 @@ class Commando {
     });
   }
 
+  /**
+   * Prints usage information.
+   *
+   * @access private
+   */
   usage () {
     let fmt      = this.get('formatter');
     let padCmd   = fmt.padSubCommand();
@@ -101,6 +171,9 @@ class Commando {
     );
   }
 
+  /**
+   * Prints user facing command help.
+   */
   help () {
     var fmt      = this.get('formatter');
     var padCmd   = fmt.padCommand();
@@ -145,6 +218,13 @@ class Commando {
     console.log();
   }
 
+  /**
+   * Gets a sub command by name.
+   *
+   * @param  {string} name          The name of the desired sub command.
+   * @return {Commando|undefined}   The requested command or undefined if
+   *  not found.
+   */
   getCommand (name) {
     return this._config.getIn(['commands', name]);
   }
@@ -179,7 +259,15 @@ class Commando {
     }
   }
 
-  run (command, rootCommand) {
+  /**
+   * Runs the command based on previously set arguments.
+   *
+   * @param  {Command} [rootCommand] The root command, if different from this.
+   * @return {boolean}               The return value from the run.
+   *
+   * @see {@link Commando#args}
+   */
+  run (rootCommand) {
     var args = this.get('args');
     var positionalArgs = args.get('_');
     var before = this.get('before');
@@ -194,7 +282,7 @@ class Commando {
       var command = this._config.getIn(['commands', commandArg]);
       if (command !== undefined) {
         // var recursionArgs = args.set('_', positionalArgs.shift());
-        var res = command.run(command, rootCommand, positionalArgs);
+        var res = command.run(rootCommand, positionalArgs);
         if (res === RETURN_VALUE_FAILURE) {
           // command.help();
         }
@@ -220,6 +308,14 @@ class Commando {
     }
   }
 
+  /**
+   * Returns a Command with arguments applied to it.
+   *
+   * @param  {array} args               Arguments array. Usually they will be
+   * process.argv.slice([2]).
+   * @param  {Immutable.Map} [rootArgs] Arguments of the root command.
+   * @return {Commando}                 The new Commando.
+   */
   args (args, rootArgs) {
     if (!args) {
       return this;
@@ -244,6 +340,16 @@ class Commando {
     }
   }
 
+  /**
+   * Returns all subcommands with 'args' applied to them.
+   *
+   * @access private
+   * @param  {array|Immutable.Map} args     Arguments
+   * @param  {array|Immutable.Map} rootArgs Root level arguments.
+   * @return {Immutable.List}               Commands with arguments applied
+   *
+   * @see {@link Commando#args}
+   */
   subcommandsWitArgs (args, rootArgs) {
     var positionalArgs = args.get('_');
     var subcommands = this.get('commands');
@@ -264,6 +370,13 @@ class Commando {
     return subcommands;
   }
 
+  /**
+   * Validates arguments.
+   *
+   * @access private
+   * @param  {Immutable.Map} args Arguments map to validate.
+   * @return {boolean}            True if arguments are valid.
+   */
   validateArgs (args) {
     debug.log('validate', args);
     var valid = true;
@@ -285,6 +398,12 @@ class Commando {
     return valid;
   }
 
+  /**
+   * Returns a new Command that prints help.
+   *
+   * @access private
+   * @return {Commando} A command with an action that prints help.
+   */
   helpCommand () {
     var parentCommand = this;
     return new Commando({ name: 'help' })
@@ -297,6 +416,7 @@ class Commando {
   /**
    * Commando default configuration.
    *
+   * @access private
    * @return {Immutable.Map} the default (empty) configuration for commando.
    */
   static defaultConfig () {
@@ -315,6 +435,13 @@ class Commando {
     });
   }
 
+  /**
+   * Sets the debug level for which messages will be printed.
+   *
+   * @param {int} level the debug level
+   *
+   * @see {@link option.js}
+   */
   static setDebugLevel (level) {
     debug.debugLevel = level;
   }

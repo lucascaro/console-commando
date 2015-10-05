@@ -114,7 +114,13 @@
   "validateParameterSeparator": ", ",
   "requireDollarBeforejQueryAssignment": true,
   "jsDoc": {
-    "checkAnnotations": "closurecompiler",
+    "checkAnnotations": {
+      "preset": "closurecompiler",
+      "extra": {
+        "test": true,
+        "access": true
+      }
+    },
     "checkParamNames": true,
     "requireParamTypes": true,
     "checkRedundantParams": true,

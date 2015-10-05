@@ -8,7 +8,9 @@ var expect = require('expect.js');
 var minimist = require('minimist');
 var sinon = require('sinon');
 
+/** @test {Commando} */
 describe('Commando', function () {
+  /** @test {Commando#constructor} */
   describe('#constructor()', function () {
     it('can be created with no config', function () {
       var commando = new Commando();
@@ -44,6 +46,7 @@ describe('Commando', function () {
       expect(Object.isFrozen(commando)).to.be(true);
     });
   });
+  /** @test {Commando#command} */
   describe('#command()', function () {
     it('rejects unnamed commands', function () {
       var commando = new Commando('testRootCommand');
@@ -63,6 +66,7 @@ describe('Commando', function () {
     });
   });
 
+  /** @test {Commando#getCommand} */
   describe('#getCommand()', function () {
     it('gets the command', function () {
       var subCommand = new Commando.Command({ name: 'subc1' });
@@ -74,6 +78,7 @@ describe('Commando', function () {
     });
   });
 
+  /** @test {Commando#command} */
   describe('Multi command', function () {
     var commando = new Commando('testRootCommand');
 
@@ -122,6 +127,7 @@ describe('Commando', function () {
     commando.args(['job', 'wat', '-f', 'thing']).run();
   });
 
+  /** @test {Commando#args} */
   describe('#args()', function () {
     var baseAction = sinon.spy();
     var subAction = sinon.spy();
@@ -174,6 +180,7 @@ describe('Commando', function () {
   });
 });
 
+/** @test {Commando#action} */
 describe('Action', function () {
   describe('simple command with one action', function () {
     var commando = new Commando('testRootCommand')
@@ -324,7 +331,9 @@ describe('Action', function () {
   });
 });
 
+/** @test {Option} */
 describe('Option', function () {
+  /** @test {Option#parseOptString} */
   describe('#parseOptString()', function () {
     var option = new Option();
     it('Parses short options', function () {
@@ -422,6 +431,8 @@ describe('Option', function () {
       e.withArgs('<abc>').to.throwException();
     });
   });
+
+  /** @test {Option#constructor} */
   describe('#constructor()', function () {
     it('creates short flags', function () {
       var o = new Commando.Option('-o', 'an option', false);
@@ -468,6 +479,7 @@ describe('Option', function () {
   });
 });
 
+/** @test {Option} */
 describe('Argument Parsing', function () {
   var commandSpyAction = sinon.spy();
   function expectCallToSetValue(commando, args, value, argNames) {

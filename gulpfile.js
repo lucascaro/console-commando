@@ -2,6 +2,8 @@
 
 var babel = require('gulp-babel');
 var del = require('del');
+var esdoc = require('gulp-esdoc');
+var fs = require('fs');
 var gulp = require('gulp');
 var jscs = require('gulp-jscs');
 var jshint = require('gulp-jshint');
@@ -47,3 +49,10 @@ gulp.task('babel', ['clean', 'jscs'], function () {
 });
 
 gulp.task('build', ['babel']);
+// Documentation generation
+
+gulp.task('docs', function () {
+  var esdocSettings = JSON.parse(fs.readFileSync('esdoc.json'));
+  return gulp.src('src')
+  .pipe(esdoc(esdocSettings));
+});

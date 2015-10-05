@@ -1,10 +1,10 @@
 'use strict';
 
-var Immutable = require('immutable');
+import Immutable from 'immutable';
 
-var debug = require('./debug');
+import debug from './debug';
 
-class Option {
+export default class Option {
   constructor (config, description, defaultValue) {
     if (config instanceof Option) {
       return config;
@@ -92,5 +92,3 @@ class Option {
     });
   }
 }
-
-module.exports = Option;
