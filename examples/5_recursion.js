@@ -26,7 +26,7 @@ var commando = new Commando()
     .action(subAction)
     .command(
       new Commando('sub2')
-      .action(subAction)
+      // Actions are optional.
       .command(
         new Commando('sub3')
         .action(subAction)
