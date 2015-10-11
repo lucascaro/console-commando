@@ -9,6 +9,24 @@ A library for creating command line tools with node.
 ```
 npm install --save console-commando
 ```
+## Why use this instead of <x>
+
+This library is greatly inspired in Commander, but optimized for recursive
+commands. I couldn't find a library that would let me easily set up simple
+commands as well as complicated command structures in a consistent way.
+
+This library aims to provide a very simple way of creating all kinds of
+commands, from simple commands with options, to semantic commands with
+several levels of recursion.
+
+With this library you can create commands that make sense very easily. The
+following for example would be trivial to set up:
+
+```js
+mycommand my-resource my-action --an-option --another=option and arbitrary arguments
+```
+
+This library also produces easy to read help automatically.
 
 ## Usage
 
@@ -140,3 +158,19 @@ invoked.
 
 The action can return a value of `Commando.RETURN_VALUE_SUCCESS` or
 `Commando.RETURN_VALUE_FAILURE` to indicate the exit state.
+
+## Contributing
+
+I would love to hear from anyone using this library, and if there's anything
+that you thing may improve it, please [add an issue in github](https://github.com/lucascaro/console-commando/issues/new)!
+
+I'd also welcome any pull requests, although I'd suggest that you create an
+issue first to start the discussion.
+
+The main points of improvement at the moment are:
+
+- better test case coverage.
+- documentation improvements.
+- stronger option parsing and validation.
+- option to manually set help text.
+- and any issues that are still open in github.
