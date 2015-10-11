@@ -3,7 +3,6 @@
 var Commando = require('../lib/commando');
 var Immutable = require('immutable');
 var Option = require('../lib/option');
-var Arguments = require('../lib/arguments');
 
 var expect = require('expect.js');
 var minimist = require('minimist');
