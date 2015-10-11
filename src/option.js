@@ -175,6 +175,7 @@ export default class Option {
       'short': undefined,
       'long': undefined,
       'arg': undefined,
+      'required': false,
       'default': undefined,
       'description': undefined,
     });

@@ -443,7 +443,7 @@ describe('Option', function () {
       expect(o.get('long')).to.be(undefined);
       expect(o.get('arg')).to.be(undefined);
       expect(o.get('default')).to.be(false);
-      expect(o.get('required')).to.be(undefined);
+      expect(o.get('required')).to.be(false);
     });
 
     it('creates long flags', function () {
@@ -454,7 +454,7 @@ describe('Option', function () {
       expect(o.get('long')).to.be('opt');
       expect(o.get('arg')).to.be(undefined);
       expect(o.get('default')).to.be(true);
-      expect(o.get('required')).to.be(undefined);
+      expect(o.get('required')).to.be(false);
     });
 
     it('creates options with optional values', function () {
@@ -487,6 +487,7 @@ describe('Argument Parsing', function () {
     var spyAction = commando.get('action');
     spyAction.reset();
     var thisCommand = commando.args(args);
+    var rootCommand = thisCommand;
     if (argNames === undefined) {
       argNames = ['f', 'force'];
     }
@@ -497,7 +498,9 @@ describe('Argument Parsing', function () {
     expect(spyAction.calledOnce).to.be(true);
     var call = spyAction.getCall(0);
     var invokedCommand = call.args[0];
+    var invokedRootCommand = call.args[0];
     expect(invokedCommand).to.be(thisCommand);
+    expect(invokedRootCommand).to.be(rootCommand);
     argNames.forEach(function (argName) {
       expect(invokedCommand.getOption(argName)).to.be(value);
     });
@@ -594,16 +597,42 @@ describe('Argument Parsing', function () {
   });
 
   describe('Required arguments', function () {
-    // var commando = new Commando('rootCmd')
-    //   .version('1.0.0')
-    //   .option('-r --required <requiredArg>', 'a required argument', false)
-    //   .action(commandSpyAction);
-    //
-    // it('validates required arguments', function () {
-    //   expect(commando.args(['-r']).run()).to.not.be.ok();
-    //   expect(commando.args(['--required']).run()).to.not.be.ok();
-    //   expect(commando.args(['-r a']).run()).to.be.ok();
-    // });
+    var commando = new Commando('rootCmd')
+      .version('1.0.0')
+      .option('-r --required <requiredArg>', 'a required argument', false)
+      .action(commandSpyAction);
 
+    it('validates required arguments', function () {
+      // expect(commando.args(['-r']).run()).to.not.be.ok();
+      // expect(commando.args(['--required']).run()).to.not.be.ok();
+      expect(commando.args(['-r a']).run()).to.be.ok();
+      expect(commando.args(['-required b']).run()).to.be.ok();
+    });
+  });
+
+  describe('Action arguments', function () {
+    var spyAction = sinon.spy();
+    var spySubAction = sinon.spy();
+    var subCommand = new Commando('subCommand').action(spySubAction);
+    var rootCommand = new Commando('rootCommand')
+      .version('1.0.0')
+      .action(spyAction)
+      .command(subCommand);
+
+    it('passes the root command to the root action', function () {
+      rootCommand.run();
+      expect(spyAction.calledOnce).to.be(true);
+      var args = spyAction.getCall(0).args;
+      expect(args[0]).to.be(rootCommand);
+    });
+    it('passes the sub command to the sub action', function () {
+      var rootWithArgs = rootCommand.args(['subCommand']);
+      var subWithArgs = rootWithArgs.getCommand('subCommand');
+      rootWithArgs.run();
+      expect(spySubAction.calledOnce).to.be(true);
+      var args = spySubAction.getCall(0).args;
+      expect(args[0]).to.be(subWithArgs);
+      expect(args[1]).to.be(rootWithArgs);
+    });
   });
 });

@@ -292,7 +292,7 @@ export default class Commando {
    *
    * @see {@link Commando#args}
    */
-  run (rootCommand) {
+  run (rootCommand = this) {
     var args = this.get('args');
     var positionalArgs = args.get('_');
     var before = this.get('before');
@@ -406,15 +406,17 @@ export default class Commando {
     args.forEach((value, arg) => {
       debug.log('arg', arg);
       if (arg !== '_') {
-        this.get('options').forEach(option => {
+        let option = this.getOption('arg');
+        if (option) {
           debug.log('option', option);
           debug.log('val', typeof value);
+
           if (option.get('required') === true && typeof value === 'boolean') {
             debug.error(`Missing required value for argument ${arg}`);
             this.help();
             process.exit();
           }
-        });
+        }
       }
     });
     return valid;
