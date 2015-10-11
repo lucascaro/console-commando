@@ -5,15 +5,16 @@
  */
 
 // Import Classes
-import Formatter from './formatter';
-import Immutable from 'immutable';
-import Option    from './option';
+import Formatter  from './formatter';
+import Immutable  from 'immutable';
+import Option     from './option';
 
 // Import Libraries
-import chalk    from 'chalk';
-import debug    from './debug';
-import minimist from 'minimist';
-import util     from 'util';
+import chalk      from 'chalk';
+import completion from './completion';
+import debug      from './debug';
+import minimist   from 'minimist';
+import util       from 'util';
 
 // Define Constants
 const RETURN_VALUE_SUCCESS = true;
@@ -219,6 +220,30 @@ export default class Commando {
   }
 
   /**
+   * Utility function for handling default help and completion commands.
+   *
+   * @param  {string} commandArg             The command argument.
+   * @param  {Immutable.List} positionalArgs The list of remaining positional
+   * arguments.
+   * @return {boolean}                       True if a default command was found
+   *
+   * @access private
+   */
+  handleDefaultCommands (commandArg, positionalArgs) {
+    if (commandArg === 'help') {
+      _handleHelpCommand(this, positionalArgs);
+      return true;
+    } else if (commandArg === 'completion') {
+      console.log(completion.bashCompletion(this));
+      return true;
+    } else if (commandArg === 'get-commando-completions') {
+      console.log(completion.getCompletions(this));
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Gets a sub command by name.
    *
    * @param  {string} name          The name of the desired sub command.
@@ -283,13 +308,10 @@ export default class Commando {
       if (command !== undefined) {
         // var recursionArgs = args.set('_', positionalArgs.shift());
         var res = command.run(rootCommand, positionalArgs);
-        if (res === RETURN_VALUE_FAILURE) {
-          // command.help();
-        }
         return res;
       } else {
-        if (commandArg === 'help') {
-          _handleHelpCommand(this, positionalArgs);
+        if (this.handleDefaultCommands(commandArg, positionalArgs)) {
+          return;
         }
       }
     }

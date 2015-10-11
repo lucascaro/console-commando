@@ -30,6 +30,7 @@
     "chalk": "^1.1.1",
     "immutable": "^3.7.5",
     "minimist": "^1.2.0",
-    "node-string-pad": "0.0.4"
+    "node-string-pad": "0.0.4",
+    "tabtab": "https://github.com/mklabs/node-tabtab/tarball/master"
   }
 }

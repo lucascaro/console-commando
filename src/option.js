@@ -78,7 +78,7 @@ export default class Option {
       this.parseLongOption(parsed, option);
       this.parseNamedArgument(parsed, option);
     }
-    console.log('PARSED', parsed);
+    debug.log('PARSED', parsed);
     if (parsed.arg && !parsed.short && !parsed.long) {
       throw new Error('Arguments need an option name');
     }
