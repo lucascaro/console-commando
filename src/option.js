@@ -70,37 +70,15 @@ export default class Option {
    * @access private
    */
   parseOptstring (optstring) {
-    var opts = optstring.split(/ +/);
+    var options = optstring.split(/ +/);
     var parsed = {};
-    for (var i = 0; i < opts.length; i++) {
-      var opt = opts[i];
-      var matches = null;
-      if ((matches = opt.match(/^-([a-zA-Z0-9])$/))) {
-        if (parsed.short) {
-          throw new Error('There can be only one short option');
-        }
-        parsed.short = matches[1];
-      } else if ((matches = opt.match(/^--([\w-]+)$/))) {
-        if (parsed.long) {
-          throw new Error('There can be only one long option');
-        }
-        parsed.long = matches[1];
-      } else if ((matches = opt.match(/^\[([\w-]+)\]$/))) {
-        // optional argument
-        if (parsed.arg) {
-          throw new Error('There can be only one argument');
-        }
-        parsed.arg = matches[1];
-        parsed.required = false;
-      } else if ((matches = opt.match(/^<([\w-]+)>$/))) {
-        // required argument
-        if (parsed.arg) {
-          throw new Error('There can be only one argument');
-        }
-        parsed.arg = matches[1];
-        parsed.required = true;
-      }
+    for (var i = 0; i < options.length; i++) {
+      var option = options[i];
+      this.parseShortOption(parsed, option);
+      this.parseLongOption(parsed, option);
+      this.parseNamedArgument(parsed, option);
     }
+    console.log('PARSED', parsed);
     if (parsed.arg && !parsed.short && !parsed.long) {
       throw new Error('Arguments need an option name');
     }
@@ -108,6 +86,65 @@ export default class Option {
     return parsed;
   }
 
+  /**
+   * Helper function for parsing short options from an optstring.
+   *
+   * @param  {object} parsed  the object containing parsed options.
+   * @param  {string} opt     the optstring that should be parsed.
+   * @access private
+   */
+  parseShortOption (parsed, opt) {
+    var regex = /^-([a-zA-Z0-9])$/;
+    this.parseGenericOption(parsed, opt, regex, 'short');
+  }
+
+  /**
+   * Helper function for parsing long options from an optstring.
+   *
+   * @param  {object} parsed  the object containing parsed options.
+   * @param  {string} opt     the optstring that should be parsed.
+   * @access private
+   */
+  parseLongOption (parsed, opt) {
+    var regex = /^--([\w-]+)$/;
+    this.parseGenericOption(parsed, opt, regex, 'long');
+  }
+
+  /**
+   * Helper function for parsing long options from an optstring.
+   *
+   * @param  {object} parsed  the object containing parsed options.
+   * @param  {string} opt     the optstring that should be parsed.
+   * @access private
+   */
+  parseNamedArgument (parsed, opt) {
+    var optionalArgRegex = /^\[([\w-]+)\]$/;
+    var requiredArgRegex = /^<([\w-]+)>$/;
+    if (this.parseGenericOption(parsed, opt, optionalArgRegex, 'arg')) {
+      parsed.required = false;
+    } else if (this.parseGenericOption(parsed, opt, requiredArgRegex, 'arg')) {
+      parsed.required = true;
+    }
+  }
+
+  /**
+   * Helper function for parsing generic options from an optstring.
+   *
+   * @param  {object} parsed  the object containing parsed options.
+   * @param  {string} opt     the optstring that should be parsed.
+   * @return {boolean}        true if there were any matches, false otherwise.
+   * @access private
+   */
+  parseGenericOption (parsed, opt, regex, keyName) {
+    var matches = [];
+    if ((matches = opt.match(regex))) {
+      if (parsed[keyName]) {
+        throw new Error('There can be only one ' + keyName + ' option');
+      }
+      parsed[keyName] = matches[1];
+    }
+    return !!matches;
+  }
   /**
    * Returns the argument value for this option, according to a list of args.
    *

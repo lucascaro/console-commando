@@ -3,6 +3,7 @@
 var Commando = require('../lib/commando');
 var Immutable = require('immutable');
 var Option = require('../lib/option');
+var Arguments = require('../lib/arguments');
 
 var expect = require('expect.js');
 var minimist = require('minimist');
@@ -418,7 +419,8 @@ describe('Option', function () {
     });
 
     it('fails on duplicated values', function () {
-      var e = expect(option.parseOptstring);
+      // bind function to the object to allow calling within expect.
+      var e = expect(option.parseOptstring.bind(option));
 
       e.withArgs('-s -s').to.throwException();
       e.withArgs('--ss --ss').to.throwException();
