@@ -9,7 +9,7 @@ A library for creating command line tools with node.
 ```
 npm install --save console-commando
 ```
-## Why use this instead of <x>
+## Why use this instead of [insert library here]
 
 This library is greatly inspired in Commander, but optimized for recursive
 commands. I couldn't find a library that would let me easily set up simple
