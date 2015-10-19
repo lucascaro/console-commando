@@ -12,7 +12,7 @@ import debug from './debug';
 function getCompletions(command) {
   let args = command.get('args').get('_');
   debug.log('INITIAL ARGS', args);
-  return _getCompletions(command, args);
+  return _getCompletions(command, args).join(' ');
 }
 /**
  * Utility function to return valid list of args.
@@ -41,13 +41,13 @@ function _getCompletions(command, args) {
     completeOptions(command, completions, commandArg);
   } else {
     if (subcommand) {
-      getCompletions(subcommand, args);
+      completions = completions.concat(_getCompletions(subcommand, args));
     } else {
       completeSubcommands(command, completions, commandArg);
     }
     completeOptions(command, completions);
   }
-  return completions.join(' ');
+  return completions;
 }
 
 /**
@@ -64,7 +64,7 @@ function completeSubcommands(command, completions, prefix) {
   commands.forEach((command) => {
     let name = command.get('name');
     if (!prefix || name.indexOf(prefix) >= 0) {
-      completions.push(command.get('name'));
+      completions.push(name);
     }
   });
 }

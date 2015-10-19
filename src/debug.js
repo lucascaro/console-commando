@@ -5,7 +5,7 @@ var debug = module.exports = {
   DEBUG_LEVEL_INFO:  10,
   DEBUG_LEVEL_WARN:  30,
   DEBUG_LEVEL_ERROR: 50,
-  debugLevel: 30,
+  debugLevel: process.env.DEBUG_LEVEL || 30,
   log,
   warn,
   error,
