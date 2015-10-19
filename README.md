@@ -103,6 +103,20 @@ var command = new Commando('command-name')
   commando.args(process.argv.slice(2)).run();
 ```
 
+## CLI auto completion
+
+Similarly to [npm completion](https://docs.npmjs.com/cli/completion), console-commando makes it easy to get auto completion for your commands.
+
+Simply run the following in your terminal:
+
+```sh
+source <(your-command completion)
+```
+
+Note that this assumes the command has been installed as an exacutable command with the name specified in the root `Commando`.
+
+After doing this you should be able to auto complete your command, subcommands and options when hitting the `tab` key twice.
+
 ## API
 
 Console commando's public API is based in the `Commando` class. Instances of
