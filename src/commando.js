@@ -285,6 +285,23 @@ export default class Commando {
   }
 
   /**
+   * Returns an object with option names as keys and option values as values.
+   *
+   * @return {object}     the option hash.
+   */
+  getOptionsHash () {
+    let args = this.get('args');
+    let optHash = {};
+    this.get('options').forEach(v => {
+      let val = v.getArgValue(args);
+      optHash[v.get('arg')] = val;
+      optHash[v.get('short')] = val;
+      optHash[v.get('long')] = val;
+    });
+    return optHash;
+  }
+
+  /**
    * Runs the command based on previously set arguments.
    *
    * @param  {Command} [rootCommand] The root command, if different from this.

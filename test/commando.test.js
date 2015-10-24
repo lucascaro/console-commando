@@ -178,6 +178,60 @@ describe('Commando', function () {
       // expect(thisCommand.getOption('wat')).to.be(true);
     });
   });
+
+  describe('#getOptionsHash', function () {
+    it('returns empty object for no options', function () {
+      function testAction(command) {
+        expect(command.getOptionsHash()).to.eql({});
+      }
+      var spyTestAction = sinon.spy(testAction);
+      new Commando({ name: 'base command' })
+        .version('1.0.0')
+        .action(spyTestAction)
+        .run();
+      expect(spyTestAction.calledOnce).to.be(true);
+    });
+    it('returns default options', function () {
+      var defaultValue = 'defaultValue123';
+      function testAction(command) {
+        expect(command.getOptionsHash()).to.eql({
+          a: defaultValue,
+          'opt-a': defaultValue,
+          'optionA': defaultValue,
+        });
+      }
+      var spyTestAction = sinon.spy(testAction);
+      new Commando({ name: 'base command' })
+        .version('1.0.0')
+        .option('-a --opt-a [optionA]', 'option a', defaultValue)
+        .action(spyTestAction)
+        .run();
+      expect(spyTestAction.calledOnce).to.be(true);
+    });
+    it('returns default and overriden options', function () {
+      var defaultValue = 'defaultValue123';
+      var passedValue = 'passedValue123';
+      function testAction(command) {
+        expect(command.getOptionsHash()).to.eql({
+          a: defaultValue,
+          'opt-a': defaultValue,
+          optionA: defaultValue,
+          b: passedValue,
+          'opt-b': passedValue,
+          optionB: passedValue,
+        });
+      }
+      var spyTestAction = sinon.spy(testAction);
+      new Commando({ name: 'base command' })
+        .version('1.0.0')
+        .option('-a --opt-a [optionA]', 'option a', defaultValue)
+        .option('-b --opt-b [optionB]', 'option b', defaultValue)
+        .action(spyTestAction)
+        .args(['-b', passedValue])
+        .run();
+      expect(spyTestAction.calledOnce).to.be(true);
+    });
+  });
 });
 
 /** @test {Commando#action} */
