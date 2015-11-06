@@ -1,6 +1,6 @@
 {
   "name": "console-commando",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "A tool for creating console commands",
   "main": "lib/commando.js",
   "scripts": {
