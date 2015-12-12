@@ -2,7 +2,6 @@
 
 var Commando = require('../lib/commando');
 var Immutable = require('immutable');
-var Option = require('../lib/option');
 
 var expect = require('expect.js');
 var minimist = require('minimist');
@@ -389,7 +388,7 @@ describe('Action', function () {
 describe('Option', function () {
   /** @test {Option#parseOptString} */
   describe('#parseOptString()', function () {
-    var option = new Option();
+    var option = new Commando.Option();
     it('Parses short options', function () {
       var e = {
         short: 'x',

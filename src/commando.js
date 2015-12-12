@@ -130,9 +130,9 @@ export default class Commando {
      * @see {@link Option#constructor}
      */
     argument (optstring, description, defaultValue) {
-      let argument = new Argument(optstring, description, defaultValue);
+      let arg = new Argument(optstring, description, defaultValue);
       let args = this.get('arguments');
-      let newConfig = this._config.set('arguments', args.push(argument));
+      let newConfig = this._config.set('arguments', args.push(arg));
       return new Commando(newConfig);
     }
 

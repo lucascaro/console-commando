@@ -44,7 +44,9 @@ gulp.task('dev',['lint', 'jscs'], function () {
 
 gulp.task('babel', ['clean', 'jscs'], function () {
   return gulp.src('src/**.js')
-    .pipe(babel())
+    .pipe(babel({
+      presets: ['es2015']
+    }))
     .pipe(gulp.dest('lib'));
 });
 

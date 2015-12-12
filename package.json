@@ -15,11 +15,12 @@
     "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.3.13",
     "del": "^2.0.2",
     "expect.js": "^0.3.1",
     "gulp": "^3.9.0",
-    "gulp-babel": "^5.2.1",
-    "gulp-esdoc": "0.0.5",
+    "gulp-babel": "^6.0.0",
+    "gulp-esdoc": "^0.2.0",
     "gulp-jscs": "^3.0.0",
     "gulp-jshint": "^1.11.2",
     "gulp-mocha": "^2.1.3",
