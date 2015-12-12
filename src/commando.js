@@ -8,6 +8,7 @@
 import Formatter  from './formatter';
 import Immutable  from 'immutable';
 import Option     from './option';
+import Argument   from './arguments';
 
 // Import Libraries
 import chalk      from 'chalk';
@@ -117,6 +118,24 @@ export default class Commando {
     return new Commando(this._config.set('options', options.push(option)));
   }
 
+    /**
+     * Returns a commando with a new option added to it.
+     *
+     * @param  {string} optstring     An opstring for the new Option.
+     * @param  {string} description   A description for the new Option.
+     * @param  {*}      defaultValue  A default value for the Option.
+     *
+     * @return {Commando}       A Commando with the given option.
+     *
+     * @see {@link Option#constructor}
+     */
+    argument (optstring, description, defaultValue) {
+      let argument = new Argument(optstring, description, defaultValue);
+      let args = this.get('arguments');
+      let newConfig = this._config.set('arguments', args.push(argument));
+      return new Commando(newConfig);
+    }
+
   /**
    * Returns a commando with a new action added to it.
    *
@@ -215,6 +234,12 @@ export default class Commando {
           subCommands
         );
       });
+      console.log('\n run %s for more help.',
+        chalk.yellow(
+          this.get('name'),
+          ' help <subcommand>'
+        )
+      );
     }
     console.log();
   }
@@ -261,10 +286,10 @@ export default class Commando {
    * @return {string}     the value for the specified option.
    */
   getOption (key) {
-    var args = this.get('args');
-    var option = this.get('options').find(v => {
+    let args = this.get('args');
+    let option = this.get('options').find(v => {
 
-      var res = v.get('arg') === key ||
+      let res = v.get('arg') === key ||
         v.get('short') === key ||
         v.get('long') === key;
       return res;
@@ -276,12 +301,22 @@ export default class Commando {
       // If not here, serach for the option in subcommands.
       this.get('commands').forEach(command => {
         debug.log('GETOPTION: SEARCH SUBCOMMAND');
-        var subOption = command.getOption(key);
+        let subOption = command.getOption(key);
         if (subOption !== undefined) {
           return subOption;
         }
       });
     }
+  }
+
+  requireOption (key) {
+    let value = this.getOption(key);
+    if (!value) {
+      console.log(chalk.red('Error: required option <%s> not found.'), key);
+      this.help();
+      process.exit();
+    }
+    return value;
   }
 
   /**
@@ -471,6 +506,7 @@ export default class Commando {
       description: '',
       name: null,
       options: Immutable.List(),
+      arguments: Immutable.List(),
       rootArgs: Immutable.Map(),
       version: null,
     });
