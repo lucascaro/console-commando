@@ -1,0 +1,16 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "declaration": true,
+        "module": "commonjs",
+        "target": "ES6",
+        "outDir": "lib"
+    },
+    "include": [
+        "src/**/*"
+    ]
+}

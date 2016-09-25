@@ -1,21 +1,21 @@
 'use strict';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 import debug     from './debug';
-import stringPad from 'node-string-pad';
 
 /**
  * Helper class for formatting help output.
  */
 export default class Formatter {
+  private _config: Immutable.Map<string, any>
   /**
    * Creates a new formatter with the given config.
    *
    * @param  {object} config A formatter configuration.
    * @return {Formatter}     The new Formatter.
    */
-  constructor (config) {
+  constructor (config?: any) {
     if (config instanceof Formatter) {
       return config;
     } else if (this instanceof Formatter) {
@@ -50,7 +50,7 @@ export default class Formatter {
    * @access private
    */
   pad ({
-    amount,
+    amount = 0,
     character = ' ',
     direction = 'LEFT',
     prefix = ' ',
@@ -66,8 +66,16 @@ export default class Formatter {
       if (suffix && text.length > 0) {
         text = text + suffix;
       }
-      return stringPad(text, amount, direction, character);
+      return this.stringPad(text, amount, direction, character);
     };
+  }
+
+  stringPad(text, amount, direction, character: string) {
+    const chunkLen = amount - text.length
+    const chunk = chunkLen > 0 ? character.repeat(chunkLen) : ''
+    const pre = direction === 'LEFT' ? chunk : ''
+    const pos = direction !== 'LEFT' ? chunk : ''
+    return `${pre}${text}${pos}`
   }
 
   /**
@@ -164,7 +172,7 @@ export default class Formatter {
    *
    * @access private
    */
-  static defaultConfig () {
+  static defaultConfig() {
     return Immutable.fromJS({
       'padArguments': 10,
       'padCommands': 40,

@@ -1,30 +1,15 @@
 'use strict';
 
-var babel = require('gulp-babel');
-var del = require('del');
 var esdoc = require('gulp-esdoc');
 var fs = require('fs');
 var gulp = require('gulp');
 var jscs = require('gulp-jscs');
-var jshint = require('gulp-jshint');
-var mocha = require('gulp-mocha');
 
 var allSources = [
   'gulpfile.js',
   'test/**/*.js',
   'src/**/*.js',
 ];
-
-gulp.task('clean', function () {
-  return del('lib/**/*');
-});
-
-gulp.task('lint', function () {
-  return gulp.src(allSources)
-  .pipe(jshint('.jshintrc'))
-  // .pipe(jshint.reporter('fail'))
-  .pipe(jshint.reporter('jshint-stylish'));
-});
 
 gulp.task('jscs', ['lint'], function () {
   return gulp.src(allSources)
@@ -33,24 +18,6 @@ gulp.task('jscs', ['lint'], function () {
   .pipe(jscs.reporter('console'));
 });
 
-gulp.task('test', ['babel'], function () {
-  return gulp.src('test/**/*.test.js', { read: false })
-  .pipe(mocha({ reporter: 'spec' }));
-});
-
-gulp.task('dev',['lint', 'jscs'], function () {
-  return gulp.watch(allSources, ['test']);
-});
-
-gulp.task('babel', ['clean', 'jscs'], function () {
-  return gulp.src('src/**.js')
-    .pipe(babel({
-      presets: ['es2015']
-    }))
-    .pipe(gulp.dest('lib'));
-});
-
-gulp.task('build', ['babel']);
 // Documentation generation
 
 gulp.task('docs', function () {

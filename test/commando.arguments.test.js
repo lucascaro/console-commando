@@ -1,10 +1,10 @@
 'use strict';
 
-var Commando = require('../lib/commando');
+const Commando = require('../lib/commando').default;
 // var Immutable = require('immutable');
 // var Argument = require('../lib/argument');
 
-var expect = require('expect.js');
+const expect = require('expect.js');
 // var minimist = require('minimist');
 // var sinon = require('sinon');
 

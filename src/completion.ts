@@ -78,7 +78,7 @@ function completeSubcommands(command, completions, prefix) {
  * @param  {?string} prefix       An optional prefix to filter subcommands.
  * @access private
  */
-function completeOptions(command, completions, prefix) {
+function completeOptions(command: any, completions: any[], prefix?: string) {
   let options = command.get('options');
   options.forEach((option) => {
     let short = '-' + option.get('short');
@@ -134,7 +134,7 @@ complete -F _${appName}_completions ${appName}
 `;
 }
 
-module.exports = {
+export default {
   bashCompletion,
   getCompletions,
 };
