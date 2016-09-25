@@ -1,7 +1,10 @@
 'use strict';
 
-import Option    from './option';
-import Immutable from 'immutable';
+// Classes
+import {default as Option, ParsedOptions} from './option';
+
+// Libraries
+import * as Immutable from 'immutable';
 
 /**
  * Defines positional arguments for a command.
@@ -19,11 +22,11 @@ export default class Argument extends Option {
    *
    * @access private
    */
-  parseOptstring (optstring) {
-    var options = optstring.split(/ +/);
-    var parsed = {};
-    for (var i = 0; i < options.length; i++) {
-      var option = options[i];
+  parseOptstring (optstring: string) {
+    const options: string[] = optstring.split(/ +/);
+    let parsed: ParsedOptions = {};
+    for (let i = 0; i < options.length; i++) {
+      let option = options[i];
       this.parseNamedArgument(parsed, option);
     }
     if (!parsed.arg || parsed.short || parsed.long) {

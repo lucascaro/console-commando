@@ -1,6 +1,6 @@
 {
-  "source": "src",
-  "destination": "esdoc",
+  "source": "lib",
+  "destination": "docs",
   "test": {
     "type": "mocha",
     "source": "test"

@@ -1,9 +1,14 @@
 'use strict';
 
-import Immutable from 'immutable';
+import * as Immutable from 'immutable';
 
 import debug from './debug';
 
+export interface ParsedOptions {
+  arg?: string,
+  short?: string,
+  long?: string
+}
 /**
  * Defines options with short and long names.
  *
@@ -12,6 +17,7 @@ import debug from './debug';
  * @see {@link Option#constructor}
  */
 export default class Option {
+  private _config: Immutable.Map<string, any>
   /**
    * Creates a new Option.
    *
@@ -70,10 +76,10 @@ export default class Option {
    * @access private
    */
   parseOptstring (optstring) {
-    var options = optstring.split(/ +/);
-    var parsed = {};
-    for (var i = 0; i < options.length; i++) {
-      var option = options[i];
+    let options = optstring.split(/ +/);
+    let parsed: ParsedOptions = {};
+    for (let i = 0; i < options.length; i++) {
+      let option = options[i];
       this.parseShortOption(parsed, option);
       this.parseLongOption(parsed, option);
       this.parseNamedArgument(parsed, option);
@@ -94,7 +100,7 @@ export default class Option {
    * @access private
    */
   parseShortOption (parsed, opt) {
-    var regex = /^-([a-zA-Z0-9])$/;
+    const regex = /^-([a-zA-Z0-9])$/;
     this.parseGenericOption(parsed, opt, regex, 'short');
   }
 

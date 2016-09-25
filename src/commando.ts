@@ -3,19 +3,18 @@
 /**
  * Commando class definition.
  */
-
 // Import Classes
-import Formatter  from './formatter';
-import Immutable  from 'immutable';
-import Option     from './option';
-import Argument   from './arguments';
+import Formatter from './formatter';
+import Option    from './option';
+import Argument  from './arguments';
 
 // Import Libraries
-import chalk      from 'chalk';
-import completion from './completion';
-import debug      from './debug';
-import minimist   from 'minimist';
-import util       from 'util';
+import * as Immutable from 'immutable';
+import * as chalk     from 'chalk';
+import completion     from './completion';
+import debug          from './debug';
+import * as minimist  from 'minimist';
+import * as util      from 'util';
 
 // Define Constants
 const RETURN_VALUE_SUCCESS = true;
@@ -25,6 +24,7 @@ const RETURN_VALUE_FAILURE = false;
  * Represents a command or subcommand.
  */
 export default class Commando {
+  _config: Immutable.Map<string, any>;
   /**
    * Create a Commando from a string, object or Commando.
    *
@@ -89,14 +89,14 @@ export default class Commando {
    * @param  {Commando} command  A sub command to add to the current instance.
    * @return {Commando}          A Commando with the given command.
    */
-  command (command) {
-    var command = new Commando(command);
-    if (!command.get('name')) {
+  command (command: Commando) {
+    const newCommand = new Commando(command);
+    if (!newCommand.get('name')) {
       throw new Error('Command needs a name');
     }
     var newConfig = this._config.setIn(
-      ['commands', command.get('name')],
-      command);
+      ['commands', newCommand.get('name')],
+      newCommand);
     return new Commando(newConfig);
   }
 
@@ -337,7 +337,7 @@ export default class Commando {
   }
 
   /**
-   * Runs the command based on previously set arguments.
+   * Runs the command based on set arguments.
    *
    * @param  {Command} [rootCommand] The root command, if different from this.
    * @return {boolean}               The return value from the run.
@@ -480,11 +480,11 @@ export default class Commando {
    * @access private
    * @return {Commando} A command with an action that prints help.
    */
-  helpCommand () {
+  helpCommand (...args) {
     var parentCommand = this;
     return new Commando({ name: 'help' })
     .action(() => {
-      debug.log('args', arguments);
+      debug.log('args', ...args);
       return parentCommand.help();
     });
   }
@@ -522,6 +522,12 @@ export default class Commando {
   static setDebugLevel (level) {
     debug.debugLevel = level;
   }
+
+  // Static class variables
+  static Command = Commando;
+  static Option = Option;
+  static RETURN_VALUE_SUCCESS = RETURN_VALUE_SUCCESS;
+  static RETURN_VALUE_FAILURE = RETURN_VALUE_FAILURE;
 }
 
 // Helper functions
@@ -545,10 +551,3 @@ function _handleHelpCommand(command, positionalArgs) {
   return subCommand.help();
 }
 
-// Static class variables
-Commando.Command = Commando;
-Commando.Option = Option;
-Commando.RETURN_VALUE_SUCCESS = RETURN_VALUE_SUCCESS;
-Commando.RETURN_VALUE_FAILURE = RETURN_VALUE_FAILURE;
-
-module.exports = Commando;
