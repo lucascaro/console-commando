@@ -1,5 +1,5 @@
 /node_modules/
-/esdoc/
+/docs/
 
 # Ignore sources on publish
 /src/

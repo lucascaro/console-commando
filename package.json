@@ -9,6 +9,7 @@
     "test": "npm run compile && mocha test",
     "compile": "npm run clean && tsc -p .",
     "watch": "tsc -w -p .",
+    "docs": "esdoc -c esdoc.json",
     "prepublish": "npm run compile"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
@@ -22,6 +23,7 @@
     "@types/immutable": "^3.8.4",
     "@types/minimist": "^1.1.29",
     "@types/node": "^6.0.41",
+    "esdoc": "^0.4.8",
     "expect.js": "^0.3.1",
     "mocha": "^3.0.2",
     "sinon": "^1.17.1",
