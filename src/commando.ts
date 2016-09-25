@@ -4,7 +4,7 @@
  * Commando class definition.
  */
 // Import Classes
-import Formatter from './formatter';
+import {formatter, Formatter} from './formatter';
 import Option    from './option';
 import Argument  from './arguments';
 
@@ -176,7 +176,7 @@ class Commando {
    * @access private
    */
   usage () {
-    let fmt      = this.get('formatter');
+    let fmt: Formatter = this.get('formatter');
     let padCmd   = fmt.padSubCommand();
     let padOpts  = fmt.padSubCommandOption();
     let options  = this.get('options').isEmpty() ? '' : '[options] ';
@@ -502,14 +502,13 @@ class Commando {
       args: Immutable.Map(),
       before: null,
       commands: Immutable.Map(),
-      formatter: new Formatter(),
       description: '',
       name: null,
       options: Immutable.List(),
       arguments: Immutable.List(),
       rootArgs: Immutable.Map(),
       version: null,
-    });
+    }).set('formatter', formatter);
   }
 
   /**
