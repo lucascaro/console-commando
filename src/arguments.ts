@@ -1,10 +1,8 @@
-'use strict';
-
 // Classes
-import {default as Option, ParsedOptions} from './option';
+import {default as Option, ParsedOptions} from './option'
 
 // Libraries
-import * as Immutable from 'immutable';
+import * as Immutable from 'immutable'
 
 /**
  * Defines positional arguments for a command.
@@ -23,17 +21,16 @@ export default class Argument extends Option {
    * @access private
    */
   parseOptstring (optstring: string) {
-    const options: string[] = optstring.split(/ +/);
-    let parsed: ParsedOptions = {};
-    for (let i = 0; i < options.length; i++) {
-      let option = options[i];
-      this.parseNamedArgument(parsed, option);
-    }
+    const options: string[] = optstring.split(/ +/)
+    let parsed: ParsedOptions = {}
+    options.forEach((option) =>{
+      this.parseNamedArgument(parsed, option)
+    })
     if (!parsed.arg || parsed.short || parsed.long) {
-      throw new Error('Positional arguments can only be names.');
+      throw new Error('Positional arguments can only be names.')
     }
 
-    return parsed;
+    return parsed
   }
 
   /**
@@ -48,6 +45,6 @@ export default class Argument extends Option {
       'arg': undefined,
       'default': undefined,
       'description': undefined,
-    });
+    })
   }
 }

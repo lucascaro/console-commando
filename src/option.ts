@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-import * as Immutable from 'immutable';
+import * as Immutable from 'immutable'
 
-import debug from './debug';
+import debug from './debug'
 
 export interface ParsedOptions {
   arg?: string,
@@ -41,14 +41,14 @@ export default class Option {
    */
   constructor (config, description, defaultValue) {
     if (config instanceof Option) {
-      return config;
+      return config
     }
     if (typeof config === 'string') {
-      config = this.parseOptstring(config);
-      config.description = description;
-      config.default = defaultValue;
+      config = this.parseOptstring(config)
+      config.description = description
+      config.default = defaultValue
     }
-    this._config = Option.defaultConfig().merge(Immutable.fromJS(config));
+    this._config = Option.defaultConfig().merge(Immutable.fromJS(config))
   }
 
   /**
@@ -58,14 +58,14 @@ export default class Option {
    * @return {*}          The value of the property.
    */
   get (key) {
-    return this._config.get(key);
+    return this._config.get(key)
   }
 
   /**
    * Prints out debugging information.
    */
   debug () {
-    debug.log('Option: %j', this._config.toObject());
+    debug.log('Option: %j', this._config.toObject())
   }
 
   /**
@@ -76,20 +76,19 @@ export default class Option {
    * @access private
    */
   parseOptstring (optstring) {
-    let options = optstring.split(/ +/);
-    let parsed: ParsedOptions = {};
-    for (let i = 0; i < options.length; i++) {
-      let option = options[i];
-      this.parseShortOption(parsed, option);
-      this.parseLongOption(parsed, option);
-      this.parseNamedArgument(parsed, option);
-    }
-    debug.log('PARSED', parsed);
+    let options = optstring.split(/ +/)
+    let parsed: ParsedOptions = {}
+    options.forEach(option => {
+      this.parseShortOption(parsed, option)
+      this.parseLongOption(parsed, option)
+      this.parseNamedArgument(parsed, option)
+    })
+    debug.log('PARSED', parsed)
     if (parsed.arg && !parsed.short && !parsed.long) {
-      throw new Error('Arguments need an option name');
+      throw new Error('Arguments need an option name')
     }
 
-    return parsed;
+    return parsed
   }
 
   /**
@@ -100,8 +99,8 @@ export default class Option {
    * @access private
    */
   parseShortOption (parsed, opt) {
-    const regex = /^-([a-zA-Z0-9])$/;
-    this.parseGenericOption(parsed, opt, regex, 'short');
+    const regex = /^-([a-zA-Z0-9])$/
+    this.parseGenericOption(parsed, opt, regex, 'short')
   }
 
   /**
@@ -112,8 +111,8 @@ export default class Option {
    * @access private
    */
   parseLongOption (parsed, opt) {
-    var regex = /^--([\w-]+)$/;
-    this.parseGenericOption(parsed, opt, regex, 'long');
+    let regex = /^--([\w-]+)$/
+    this.parseGenericOption(parsed, opt, regex, 'long')
   }
 
   /**
@@ -124,12 +123,12 @@ export default class Option {
    * @access private
    */
   parseNamedArgument (parsed, opt) {
-    var optionalArgRegex = /^\[([\w-]+)\]$/;
-    var requiredArgRegex = /^<([\w-]+)>$/;
+    let optionalArgRegex = /^\[([\w-]+)\]$/
+    let requiredArgRegex = /^<([\w-]+)>$/
     if (this.parseGenericOption(parsed, opt, optionalArgRegex, 'arg')) {
-      parsed.required = false;
+      parsed.required = false
     } else if (this.parseGenericOption(parsed, opt, requiredArgRegex, 'arg')) {
-      parsed.required = true;
+      parsed.required = true
     }
   }
 
@@ -142,14 +141,14 @@ export default class Option {
    * @access private
    */
   parseGenericOption (parsed, opt, regex, keyName) {
-    var matches = [];
+    let matches = []
     if ((matches = opt.match(regex))) {
       if (parsed[keyName]) {
-        throw new Error('There can be only one ' + keyName + ' option');
+        throw new Error('There can be only one ' + keyName + ' option')
       }
-      parsed[keyName] = matches[1];
+      parsed[keyName] = matches[1]
     }
-    return !!matches;
+    return !!matches
   }
   /**
    * Returns the argument value for this option, according to a list of args.
@@ -158,15 +157,15 @@ export default class Option {
    * @return {?mixed}              The value of the argument.
    */
   getArgValue (args) {
-    var short = this.get('short');
-    var long = this.get('long');
+    let short = this.get('short')
+    let long = this.get('long')
 
-    debug.log('GET ARG VAL: %s %s %j', short, long, args);
-    var argValue = args.get(short) || args.get(long);
+    debug.log('GET ARG VAL: %s %s %j', short, long, args)
+    let argValue = args.get(short) || args.get(long)
     if (argValue === undefined) {
-      argValue = this.get('default');
+      argValue = this.get('default')
     }
-    return argValue;
+    return argValue
   }
 
   /**
@@ -184,6 +183,6 @@ export default class Option {
       'required': false,
       'default': undefined,
       'description': undefined,
-    });
+    })
   }
 }

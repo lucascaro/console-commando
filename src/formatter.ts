@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
-import * as Immutable from 'immutable';
+import * as Immutable from 'immutable'
 
-import debug     from './debug';
+import debug     from './debug'
 
 
 export interface Formatter {
@@ -28,12 +28,12 @@ const _config = Immutable.fromJS({
   'padShortOptions': 6,
   'padSubCommands': 20,
   'padSubCommandOptions': 24,
-});
+})
 
   /**
    * Prints out debugging information.
    */
- const log = () => debug.log('Formatter: %j', _config.toObject());
+ const log = () => debug.log('Formatter: %j', _config.toObject())
 
 /**
  * Generates a padding function based on the given options.
@@ -51,16 +51,16 @@ const pad = ({
 }) => {
   return text => {
     if (typeof text !== 'string') {
-      text = '';
+      text = ''
     }
     if (prefix && text.length > 0) {
-      text = prefix + text;
+      text = prefix + text
     }
     if (suffix && text.length > 0) {
-      text = text + suffix;
+      text = text + suffix
     }
-    return stringPad(text, amount, direction, character);
-  };
+    return stringPad(text, amount, direction, character)
+  }
 }
 
 /**
@@ -132,18 +132,18 @@ const padOption = () => pad({
  *   function.
  */
 const padArgument = () => {
-  let size = _config.get('padArguments');
+  let size = _config.get('padArguments')
   return (text = '', required = false) => {
-    let prefix = required ? '<' : '[';
-    let suffix = required ? '>' : ']';
+    let prefix = required ? '<' : '['
+    let suffix = required ? '>' : ']'
     let padFn = pad({
       amount: size,
       direction: Direction.RIGHT,
       prefix,
       suffix,
-    });
-    return padFn(text);
-  };
+    })
+    return padFn(text)
+  }
 }
 
 /**

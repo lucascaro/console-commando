@@ -1,6 +1,6 @@
-'use strict';
+'use strict'
 
-import debug from './debug';
+import debug from './debug'
 
 /**
  * Get valid completion values for a command and a list of arguments.
@@ -10,9 +10,9 @@ import debug from './debug';
  * @return {string} a list of possible completions.
  */
 function getCompletions(command) {
-  let args = command.get('args').get('_');
-  debug.log('INITIAL ARGS', args);
-  return _getCompletions(command, args).join(' ');
+  let args = command.get('args').get('_')
+  debug.log('INITIAL ARGS', args)
+  return _getCompletions(command, args).join(' ')
 }
 /**
  * Utility function to return valid list of args.
@@ -24,30 +24,30 @@ function getCompletions(command) {
  * @access private
  */
 function _getCompletions(command, args) {
-  let completions = [];
+  let completions = []
 
   if (!args || args.size <= 1) {
-    return;
+    return
   }
 
-  args = args.shift();
-  debug.log('ARGS', args);
-  debug.log('COMMAND', command);
+  args = args.shift()
+  debug.log('ARGS', args)
+  debug.log('COMMAND', command)
 
-  let commandArg = args.get(1);
-  let subcommand = command.getCommand(commandArg);
-  debug.log('SUBC', commandArg, subcommand);
-  if (commandArg && commandArg[0] == '-') {
-    completeOptions(command, completions, commandArg);
+  let commandArg = args.get(1)
+  let subcommand = command.getCommand(commandArg)
+  debug.log('SUBC', commandArg, subcommand)
+  if (commandArg && commandArg[0] === '-') {
+    completeOptions(command, completions, commandArg)
   } else {
     if (subcommand) {
-      completions = completions.concat(_getCompletions(subcommand, args));
+      completions = completions.concat(_getCompletions(subcommand, args))
     } else {
-      completeSubcommands(command, completions, commandArg);
+      completeSubcommands(command, completions, commandArg)
     }
-    completeOptions(command, completions);
+    completeOptions(command, completions)
   }
-  return completions;
+  return completions
 }
 
 /**
@@ -60,13 +60,13 @@ function _getCompletions(command, args) {
  * @access private
  */
 function completeSubcommands(command, completions, prefix) {
-  let commands = command.get('commands');
+  let commands = command.get('commands')
   commands.forEach((command) => {
-    let name = command.get('name');
+    let name = command.get('name')
     if (!prefix || name.indexOf(prefix) >= 0) {
-      completions.push(name);
+      completions.push(name)
     }
-  });
+  })
 }
 
 /**
@@ -79,17 +79,17 @@ function completeSubcommands(command, completions, prefix) {
  * @access private
  */
 function completeOptions(command: any, completions: any[], prefix?: string) {
-  let options = command.get('options');
+  let options = command.get('options')
   options.forEach((option) => {
-    let short = '-' + option.get('short');
-    let long = '--' + option.get('long');
-    if (short != '-' && (!prefix || short.indexOf(prefix) >= 0)) {
-      completions.push(short);
+    let short = '-' + option.get('short')
+    let long = '--' + option.get('long')
+    if (short !== '-' && (!prefix || short.indexOf(prefix) >= 0)) {
+      completions.push(short)
     }
-    if (long != '--' && (!prefix || long.indexOf(prefix) >= 0)) {
-      completions.push(long);
+    if (long !== '--' && (!prefix || long.indexOf(prefix) >= 0)) {
+      completions.push(long)
     }
-  });
+  })
 }
 
 /**
@@ -99,8 +99,8 @@ function completeOptions(command: any, completions: any[], prefix?: string) {
  * @return {string}           A string with a bash script for auto completion
  */
 function bashCompletion(command) {
-  let appName = command.get('name');
-  let appPath = process.argv[0] + ' ' + process.argv[1];
+  let appName = command.get('name')
+  let appPath = process.argv[0] + ' ' + process.argv[1]
 
   return `
 ###-begin-${appName}-completions-###
@@ -123,7 +123,7 @@ _${appName}_completions()
     COMPREPLY=( $(compgen -W "\${type_list}" -- \${cur_word}) )
 
     # if no match was found, fall back to filename completion
-    if [ \${#COMPREPLY[@]} -eq 0 ]; then
+    if [ \${#COMPREPLY[@]} -eq 0 ] then
       COMPREPLY=( $(compgen -f -- "\${cur_word}" ) )
     fi
 
@@ -131,10 +131,10 @@ _${appName}_completions()
 }
 complete -F _${appName}_completions ${appName}
 ###-end-${appName}-completions-###
-`;
+`
 }
 
 export default {
   bashCompletion,
   getCompletions,
-};
+}
