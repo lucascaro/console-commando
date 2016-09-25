@@ -1,6 +1,6 @@
 'use strict';
 
-const Commando = require('../lib/commando').default;
+const Commando = require('../lib/commando');
 // var Immutable = require('immutable');
 // var Argument = require('../lib/argument');
 

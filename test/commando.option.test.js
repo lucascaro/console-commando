@@ -1,6 +1,6 @@
 'use strict';
 
-const Commando = require('../lib/commando').default;
+const Commando = require('../lib/commando');
 
 const expect = require('expect.js');
 const sinon = require('sinon');
