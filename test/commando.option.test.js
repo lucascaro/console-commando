@@ -1,4 +1,4 @@
-const Commando = require('../lib/commando');
+const Commando = require('../lib/commando').default;
 
 const expect = require('expect.js');
 const sinon = require('sinon');

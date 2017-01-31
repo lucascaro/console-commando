@@ -1,4 +1,4 @@
-const Commando = require('../lib/commando');
+const Commando = require('../lib/commando').default;
 const Immutable = require('immutable');
 
 const expect = require('expect.js');
