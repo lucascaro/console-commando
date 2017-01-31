@@ -23,7 +23,7 @@ const RETURN_VALUE_FAILURE = false
 /**
  * Represents a command or subcommand.
  */
-export default class Commando {
+class Commando {
   _config: Immutable.Map<string, any>
   /**
    * Create a Commando from a string, object or Commando.
@@ -549,3 +549,5 @@ function _handleHelpCommand(command, positionalArgs) {
   }
   return subCommand.help()
 }
+
+export = Commando

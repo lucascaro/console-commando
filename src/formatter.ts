@@ -4,6 +4,8 @@ import * as Immutable from 'immutable'
 
 import debug     from './debug'
 
+// Polyfills
+require('string.prototype.repeat');
 
 export interface Formatter {
   padCommand: () => (options: any) => string

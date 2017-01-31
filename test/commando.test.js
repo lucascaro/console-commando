@@ -1,5 +1,3 @@
-'use strict';
-
 const Commando = require('../lib/commando');
 const Immutable = require('immutable');
 

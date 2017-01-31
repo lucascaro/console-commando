@@ -4,11 +4,15 @@
         "noImplicitAny": false,
         "removeComments": true,
         "preserveConstEnums": true,
+        "allowSyntheticDefaultImports": true,
         "sourceMap": true,
+        "alwaysStrict": true,
         "declaration": true,
         "module": "commonjs",
-        "target": "ES6",
-        "outDir": "lib"
+        "moduleResolution": "Node",
+        "target": "ES5",
+        "outDir": "lib",
+        "lib": ["es5", "es2015.core", "scripthost"]
     },
     "include": [
         "src/**/*"
