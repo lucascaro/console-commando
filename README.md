@@ -36,7 +36,8 @@ You can create simple commands very easily. Just set the options and an action.
 The action will be called with any options.
 
 ```js
-var Commando = require('console-commando');
+// Using CommonJS modules
+import Commando from 'console-commando'
 
 // Create a new command, with name, version and description.
 var command = new Commando('command-name')
@@ -62,7 +63,8 @@ var command = new Commando('command-name')
 You can add subcommands to your command any time by using the `command` method:
 
 ```js
-var Commando = require('console-commando');
+// Using node's require
+var Commando = require('console-commando').default
 
 // Create a new command, with name, version and description.
 var command = new Commando('command-name')
