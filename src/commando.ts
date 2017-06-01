@@ -309,6 +309,22 @@ export default class Commando {
     }
   }
 
+  getArgument(key: string): string|null {
+    const index = this.get('arguments').findIndex(a => a.get('arg') === key)
+    const positional = this.get('args').get('_')
+    return positional.get(index)
+  }
+
+  requireArgument (key: string) {
+    let value = this.getArgument(key)
+    if (!value) {
+      console.log(chalk.red('Error: required argument <%s> not found.'), key)
+      this.help()
+      process.exit()
+    }
+    return value
+  }
+
   requireOption (key) {
     let value = this.getOption(key)
     if (!value) {
@@ -469,6 +485,9 @@ export default class Commando {
             process.exit()
           }
         }
+      }
+      else {
+        // Positional arguments
       }
     })
     return valid
