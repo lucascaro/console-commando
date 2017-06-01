@@ -123,7 +123,7 @@ _${appName}_completions()
     COMPREPLY=( $(compgen -W "\${type_list}" -- \${cur_word}) )
 
     # if no match was found, fall back to filename completion
-    if [ \${#COMPREPLY[@]} -eq 0 ] then
+    if [ \${#COMPREPLY[@]} -eq 0 ]; then
       COMPREPLY=( $(compgen -f -- "\${cur_word}" ) )
     fi
 
