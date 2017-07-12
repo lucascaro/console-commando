@@ -1,6 +1,7 @@
 'use strict'
 
 import * as Immutable from 'immutable'
+import * as chalk     from 'chalk'
 
 import debug     from './debug'
 
@@ -24,13 +25,15 @@ export enum Direction {'LEFT', 'RIGHT'}
 
 const _config = Immutable.fromJS({
   'padArguments': 10,
-  'padCommands': 40,
+  'padCommands': 30,
   'padDescriptions': 30,
   'padOptions': 16,
   'padShortOptions': 6,
   'padSubCommands': 20,
   'padSubCommandOptions': 24,
 })
+
+const printable = (x:string) => chalk.stripColor(x)
 
   /**
    * Prints out debugging information.
@@ -55,10 +58,10 @@ const pad = ({
     if (typeof text !== 'string') {
       text = ''
     }
-    if (prefix && text.length > 0) {
+    if (prefix && printable(text).length > 0) {
       text = prefix + text
     }
-    if (suffix && text.length > 0) {
+    if (suffix && printable(text).length > 0) {
       text = text + suffix
     }
     return stringPad(text, amount, direction, character)
@@ -69,7 +72,7 @@ const pad = ({
  * Pad a string to be of at leas the specified size.
  */
 const stringPad = (text: string, amount: number, direction: Direction, character: string) => {
-  const chunkLen = amount - text.length
+  const chunkLen = amount - printable(text).length
   const chunk = chunkLen > 0 ? character.repeat(chunkLen) : ''
   const pre = direction === Direction.LEFT ? chunk : ''
   const pos = direction !== Direction.LEFT ? chunk : ''

@@ -233,6 +233,16 @@ export default class Commando {
           padDesc(command.get('description')),
           subCommands
         )
+        const cmdArguments = command.get('arguments')
+        if (cmdArguments.size > 0) {
+          const argsArr = cmdArguments.map(a => a.get('arg')).toArray()
+          let paramList = ''
+          if (argsArr.length > 0) {
+            paramList = '<' + argsArr.join('> <') + '>'
+          }
+          console.log('  %s %s', padCmd(('')), padDesc(chalk.bold('parameters: ') + paramList))
+        }
+        console.log('')
       })
       console.log('\n run %s for more help.',
         chalk.yellow(
