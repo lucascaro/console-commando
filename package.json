@@ -36,7 +36,6 @@
     "chalk": "^1.1.1",
     "immutable": "^3.8.1",
     "minimist": "^1.2.0",
-    "string.prototype.repeat": "^0.2.0",
-    "strip-ansi": "^4.0.0"
+    "string.prototype.repeat": "^0.2.0"
   }
 }
