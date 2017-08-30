@@ -15,6 +15,7 @@
         "lib": ["es5", "es2015.core", "scripthost"]
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "node_modules/chalk/**/*"
     ]
 }
