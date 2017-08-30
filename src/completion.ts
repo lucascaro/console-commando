@@ -93,6 +93,23 @@ function completeOptions(command: any, completions: any[], prefix?: string) {
 }
 
 /**
+ * Utility function to get completions for arguments in a command.
+ *
+ * @param  {Commando} command     A commando.
+ * @param  {array} completions    An array of completions, new values will be
+ * pushed into this array.
+ * @param  {?string} prefix       An optional prefix to filter subcommands.
+ * @access private
+ */
+function completeArguments(command: any, completions: any[], prefix?: string) {
+  let args = command.get('arguments')
+  args.forEach((argument) => {
+    let name = '-' + argument.get('arg')
+    completions.push(name)
+  })
+}
+
+/**
  * Generate bash completion code.
  *
  * @param  {Commando} command A base command
