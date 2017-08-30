@@ -1,4 +1,5 @@
-const Commando = require('../lib/commando').default;
+import Commando from '../src/commando';
+
 const Immutable = require('immutable');
 
 const expect = require('expect.js');
@@ -82,8 +83,8 @@ describe('Commando', function () {
     commando = commando.version('1.0.0');
     commando = commando.command(
         new Commando.Command({ name: 'job' })
-        .option('-f', '--force', 'force it', false)
-        .option('-x', '--expand', 'force it', false)
+        .option('-f --force', 'force it', false)
+        .option('-x --expand', 'expand it', false)
         .command(
           new Commando.Command('list')
           .action(function (command) {
@@ -95,10 +96,12 @@ describe('Commando', function () {
 
     commando = commando.command(
           new Commando.Command({ name: 'schedule' })
-          .option('-j', '--jobName', 'force it', false)
-          .command({ name: 'list' })
+          .option('-j --jobName', 'force it', false)
+          .command(
+            new Commando.Command({ name: 'list' })
+          )
         )
-        .option('-a', '--another', 'add another', false);
+        .option('-a --another', 'add another', false);
     commando.debug();
     console.log(commando.get('commands'));
     console.log();
@@ -145,9 +148,8 @@ describe('Commando', function () {
     });
     it('passes args to subcommands', function () {
       var inputArgs = ['subc1', 'wat'];
-      var subArgs = ['wat'];
       var args = minimist(inputArgs);
-      var subArgs = minimist(subArgs);
+      var subArgs = minimist(['wat']);
       var thisCommand = commando.args(inputArgs);
       var thisSubCommand = thisCommand.getCommand('subc1');
       var expectedArgs = new Immutable.fromJS(args);

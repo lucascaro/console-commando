@@ -9,6 +9,7 @@ export interface ParsedOptions {
   short?: string,
   long?: string
 }
+
 /**
  * Defines options with short and long names.
  *
@@ -39,7 +40,7 @@ export default class Option {
    * @param  {?*} [defaultValue]      A default value for this option.
    * @return {Option}                 A new Option object.
    */
-  constructor (config, description, defaultValue) {
+  constructor (config?, description?: string, defaultValue?: any) {
     if (config instanceof Option) {
       return config
     }
@@ -75,7 +76,7 @@ export default class Option {
    *
    * @access private
    */
-  parseOptstring (optstring) {
+  parseOptstring (optstring): ParsedOptions {
     let options = optstring.split(/ +/)
     let parsed: ParsedOptions = {}
     options.forEach(option => {

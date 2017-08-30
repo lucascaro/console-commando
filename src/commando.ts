@@ -31,7 +31,7 @@ export default class Commando {
    * @param  {string|object|Commando} config A name, config object or Commando.
    * @return {Commando}               A Commando with the fiven config.
    */
-  constructor (config) {
+  constructor (config?: any) {
     if (config instanceof Commando) {
       return config
     }
@@ -111,30 +111,30 @@ export default class Commando {
    *
    * @see {@link Option#constructor}
    */
-  option (optstring, description, defaultValue) {
+  option (optstring: string, description?: string, defaultValue?: any) {
     let option = new Option(optstring, description, defaultValue)
     let options = this.get('options')
 
     return new Commando(this._config.set('options', options.push(option)))
   }
 
-    /**
-     * Returns a commando with a new option added to it.
-     *
-     * @param  {string} optstring     An opstring for the new Option.
-     * @param  {string} description   A description for the new Option.
-     * @param  {*}      defaultValue  A default value for the Option.
-     *
-     * @return {Commando}       A Commando with the given option.
-     *
-     * @see {@link Option#constructor}
-     */
-    argument (optstring, description, defaultValue) {
-      let arg = new Argument(optstring, description, defaultValue)
-      let args = this.get('arguments')
-      let newConfig = this._config.set('arguments', args.push(arg))
-      return new Commando(newConfig)
-    }
+  /**
+   * Returns a commando with a new option added to it.
+   *
+   * @param  {string} optstring     An opstring for the new Option.
+   * @param  {string} description   A description for the new Option.
+   * @param  {*}      defaultValue  A default value for the Option.
+   *
+   * @return {Commando}       A Commando with the given option.
+   *
+   * @see {@link Option#constructor}
+   */
+  argument (optstring: string, description?: string, defaultValue?: any) {
+    let arg = new Argument(optstring, description, defaultValue)
+    let args = this.get('arguments')
+    let newConfig = this._config.set('arguments', args.push(arg))
+    return new Commando(newConfig)
+  }
 
   /**
    * Returns a commando with a new action added to it.
@@ -416,7 +416,8 @@ export default class Commando {
    * @param  {Immutable.Map} [rootArgs] Arguments of the root command.
    * @return {Commando}                 The new Commando.
    */
-  args (args, rootArgs) {
+  args (args?, rootArgs?) {
+    console.log('ARGS',args,rootArgs);
     if (!args) {
       return this
     }
@@ -528,7 +529,7 @@ export default class Commando {
     return Immutable.fromJS({
       action: null,
       aliases: Immutable.List(),
-      args: Immutable.Map(),
+      args: Immutable.Map<string,(Immutable.List<string>)>(),
       before: null,
       commands: Immutable.Map(),
       description: '',

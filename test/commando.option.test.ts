@@ -1,4 +1,6 @@
-const Commando = require('../lib/commando').default;
+import 'mocha';
+
+import Commando from '../src/commando';
 
 const expect = require('expect.js');
 const sinon = require('sinon');
