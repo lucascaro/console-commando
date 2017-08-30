@@ -46,6 +46,7 @@ function _getCompletions(command, args) {
       completeSubcommands(command, completions, commandArg)
     }
     completeOptions(command, completions)
+    completeArguments(command, completions)
   }
   return completions
 }
@@ -104,7 +105,7 @@ function completeOptions(command: any, completions: any[], prefix?: string) {
 function completeArguments(command: any, completions: any[], prefix?: string) {
   let args = command.get('arguments')
   args.forEach((argument) => {
-    let name = '-' + argument.get('arg')
+    let name = argument.get('arg')
     completions.push(name)
   })
 }
