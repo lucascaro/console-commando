@@ -7,7 +7,8 @@
   "scripts": {
     "clean": "rm -rf lib/*",
     "lint": "tslint -c tslint.json src/**/*.ts",
-    "test": "npm run compile && mocha test",
+    "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register",
+    "test-watch": "mocha --compilers ts:ts-node/register,tsx:ts-node/register --watch",
     "compile": "npm run clean && tsc -p .",
     "watch": "tsc -w -p .",
     "docs": "esdoc -c esdoc.json",

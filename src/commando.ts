@@ -417,7 +417,6 @@ export default class Commando {
    * @return {Commando}                 The new Commando.
    */
   args (args?, rootArgs?) {
-    console.log('ARGS',args,rootArgs);
     if (!args) {
       return this
     }
