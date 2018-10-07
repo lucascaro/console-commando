@@ -12,7 +12,7 @@
     "compile": "npm run clean && tsc -p .",
     "watch": "tsc -w -p .",
     "docs": "esdoc -c esdoc.json",
-    "prepublish": "npm run compile"
+    "prepare": "npm run compile"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
   "license": "MIT",
@@ -21,15 +21,15 @@
     "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
-    "@types/chai": "^4.0.4",
+    "@types/chai": "^4.1.6",
     "@types/chalk": "^0.4.29",
     "@types/immutable": "^3.8.4",
     "@types/minimist": "^1.1.29",
-    "@types/mocha": "^2.2.42",
+    "@types/mocha": "^2.2.48",
     "@types/node": "^6.0.118",
-    "esdoc": "^0.4.8",
+    "esdoc": "^1.1.0",
     "expect.js": "^0.3.1",
-    "mocha": "^3.0.2",
+    "mocha": "^5.2.0",
     "sinon": "^1.17.1",
     "ts-node": "^3.3.0",
     "tslint": "^3.15.1",
@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "chalk": "^1.1.1",
-    "immutable": "^3.8.1",
+    "immutable": "^3.8.2",
     "minimist": "^1.2.0",
     "string.prototype.repeat": "^0.2.0",
     "ts-polyfill": "^3.0.1"
