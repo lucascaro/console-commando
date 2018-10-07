@@ -1,5 +1,2 @@
 /node_modules/
 /docs/
-
-# Ignore sources on publish
-/src/

@@ -26,19 +26,20 @@
     "@types/immutable": "^3.8.4",
     "@types/minimist": "^1.1.29",
     "@types/mocha": "^2.2.42",
-    "@types/node": "^6.0.41",
+    "@types/node": "^6.0.118",
     "esdoc": "^0.4.8",
     "expect.js": "^0.3.1",
     "mocha": "^3.0.2",
     "sinon": "^1.17.1",
     "ts-node": "^3.3.0",
     "tslint": "^3.15.1",
-    "typescript": "^2.0.3"
+    "typescript": "^3.1.1"
   },
   "dependencies": {
     "chalk": "^1.1.1",
     "immutable": "^3.8.1",
     "minimist": "^1.2.0",
-    "string.prototype.repeat": "^0.2.0"
+    "string.prototype.repeat": "^0.2.0",
+    "ts-polyfill": "^3.0.1"
   }
 }

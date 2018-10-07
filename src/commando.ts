@@ -16,6 +16,9 @@ import debug          from './debug'
 import * as minimist  from 'minimist'
 import * as util      from 'util'
 
+// Polyfills
+import 'ts-polyfill/lib/es2015-collection';
+
 // Define Constants
 const RETURN_VALUE_SUCCESS = true
 const RETURN_VALUE_FAILURE = false
@@ -370,14 +373,15 @@ export default class Commando {
    *
    * @see {@link Commando#args}
    */
-  run (rootCommand = this) {
-    let args = this.get('args')
-    let positionalArgs = args.get('_')
-    let before = this.get('before')
+  run (rootCommand = this, runtimeData?: Map<string, any>) {
+    const args = this.get('args')
+    const positionalArgs = args.get('_')
+    const before = this.get('before')
+    const _runtimeData = runtimeData || new Map<string, any>()
 
     if (before) {
       debug.log('RUN ACTION: %s', this.get('name'))
-      let res = before(this, this.get('rootArgs'), positionalArgs)
+      let res = before(this, this.get('rootArgs'), runtimeData)
     }
     debug.log('running %s with args:', this.get('name'), args)
     if (positionalArgs && positionalArgs.size > 0) {
@@ -385,7 +389,7 @@ export default class Commando {
       let command = this._config.getIn(['commands', commandArg])
       if (command !== undefined) {
         // let recursionArgs = args.set('_', positionalArgs.shift())
-        let res = command.run(rootCommand, positionalArgs)
+        let res = command.run(rootCommand, runtimeData)
         return res
       } else {
         if (this.handleDefaultCommands(commandArg, positionalArgs)) {
@@ -396,7 +400,7 @@ export default class Commando {
     let action = this.get('action')
     if (action) {
       debug.log('RUN ACTION: %s', this.get('name'))
-      let res = action(this, rootCommand, positionalArgs)
+      let res = action(this, rootCommand, runtimeData)
       if (res === undefined) {
         res = RETURN_VALUE_SUCCESS
       }
