@@ -4,11 +4,17 @@ node_js:
 - '6'
 - '8'
 - '10'
-deploy:
-  provider: npm
-  email: lucascaro@gmail.com
-  api_key:
-    secure: g1Osh9aXvTP1DaHsHM7j+WyMGl74176UUtMul6eTrtQqNBIAjG+INCnp+3Mn2tTa0MVUMNZBGocl7U7p5dumch+QekfOSSwjImthuLamKXsOzNuUKLQgMHSSuBF2XsKPqHHQXFcbospSB5d3ivG+Y71IEU6DhUaUEgcH8GrCFx4UNZaEVlaqAKeXr5oaNnZbADKwxIL5mF7XKOjHingMSQO9g4eFs7vgpHrQBdqZXPKr+royBi9gEEncseeZyvgZyBnrPe3f1HN46LJ2iluI8bD00SJVEjC24vfNTjOoEXH5YQxB7NmMwv5Eg726K1iTecdCfW8I63mx89IHg6bjfnT55jHuS/U+eEnbXFrh/pGDSoRhzV9Lhkm/L60Zte9gq9hH2UDmrilvrYV9uGNU78rhOvpI0/+367iFkCOFXmcb4BaX+YuPGXvIqHNcG5NZnXBQsHZqSferyn5Ax4qcRverh/fUlDQIWrT/L1Xcu+z/fQiPx/bJWjtFRa4/SV7iRYEPJba54eSRgsp4NZtItEWSZ7I3VOcocM1WIy7PEUQdmp7uIWsujLjs6gTJlyNE1JMS8SruYhDLZtjmcuI2i2Mn2V+tav8D0pP31mE00KP6kHD1U9xu3v7IKF1LpKAH/53Zk+dgNLxyZF8FS3nZYqgcP9u0lc6NFiLFlhcYKFk=
-  on:
-    tags: true
-    repo: lucascaro/console-commando
+script: echo "Running tests against $(node -v) ..."
+jobs:
+  include:
+    - stage: npm release
+      node_js: "10"
+      script: echo "Deploying to npm..."
+      deploy:
+        provider: npm
+        email: lucascaro@gmail.com
+        api_key:
+          secure: g1Osh9aXvTP1DaHsHM7j+WyMGl74176UUtMul6eTrtQqNBIAjG+INCnp+3Mn2tTa0MVUMNZBGocl7U7p5dumch+QekfOSSwjImthuLamKXsOzNuUKLQgMHSSuBF2XsKPqHHQXFcbospSB5d3ivG+Y71IEU6DhUaUEgcH8GrCFx4UNZaEVlaqAKeXr5oaNnZbADKwxIL5mF7XKOjHingMSQO9g4eFs7vgpHrQBdqZXPKr+royBi9gEEncseeZyvgZyBnrPe3f1HN46LJ2iluI8bD00SJVEjC24vfNTjOoEXH5YQxB7NmMwv5Eg726K1iTecdCfW8I63mx89IHg6bjfnT55jHuS/U+eEnbXFrh/pGDSoRhzV9Lhkm/L60Zte9gq9hH2UDmrilvrYV9uGNU78rhOvpI0/+367iFkCOFXmcb4BaX+YuPGXvIqHNcG5NZnXBQsHZqSferyn5Ax4qcRverh/fUlDQIWrT/L1Xcu+z/fQiPx/bJWjtFRa4/SV7iRYEPJba54eSRgsp4NZtItEWSZ7I3VOcocM1WIy7PEUQdmp7uIWsujLjs6gTJlyNE1JMS8SruYhDLZtjmcuI2i2Mn2V+tav8D0pP31mE00KP6kHD1U9xu3v7IKF1LpKAH/53Zk+dgNLxyZF8FS3nZYqgcP9u0lc6NFiLFlhcYKFk=
+        on:
+          tags: true
+          repo: lucascaro/console-commando
