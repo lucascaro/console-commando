@@ -12,6 +12,7 @@
     "compile": "npm run clean && tsc -p .",
     "watch": "tsc -w -p .",
     "docs": "esdoc -c esdoc.json",
+    "prepublish": "npm run compile",
     "prepare": "npm run compile"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
