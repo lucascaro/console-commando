@@ -381,7 +381,7 @@ export default class Commando {
 
     if (before) {
       debug.log('RUN ACTION: %s', this.get('name'))
-      let res = before(this, this.get('rootArgs'), runtimeData)
+      let res = before(this, this.get('rootArgs'), _runtimeData)
     }
     debug.log('running %s with args:', this.get('name'), args)
     if (positionalArgs && positionalArgs.size > 0) {
@@ -389,7 +389,7 @@ export default class Commando {
       let command = this._config.getIn(['commands', commandArg])
       if (command !== undefined) {
         // let recursionArgs = args.set('_', positionalArgs.shift())
-        let res = command.run(rootCommand, runtimeData)
+        let res = command.run(rootCommand, _runtimeData)
         return res
       } else {
         if (this.handleDefaultCommands(commandArg, positionalArgs)) {
@@ -400,7 +400,7 @@ export default class Commando {
     let action = this.get('action')
     if (action) {
       debug.log('RUN ACTION: %s', this.get('name'))
-      let res = action(this, rootCommand, runtimeData)
+      let res = action(this, rootCommand, _runtimeData)
       if (res === undefined) {
         res = RETURN_VALUE_SUCCESS
       }
