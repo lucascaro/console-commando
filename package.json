@@ -12,7 +12,6 @@
     "compile": "npm run clean && tsc -p .",
     "watch": "tsc -w -p .",
     "docs": "esdoc -c esdoc.json",
-    "prepublish": "npm run compile",
     "prepare": "npm run compile",
     "release": "npm run compile && npm run test && npm version patch && git push --follow-tags"
   },
