@@ -1,21 +1,16 @@
 import 'mocha';
-import Commando from '../src/commando';
-// const Commando = require('../lib/commando').default;
-// var Immutable = require('immutable');
-// var Argument = require('../lib/argument');
+import Commando from '../src/Commando';
 
 const expect = require('expect.js');
-// var minimist = require('minimist');
-// var sinon = require('sinon');
 
 /** @test {Commando} */
-describe('Commando', function () {
+describe('Commando', () => {
   /** @test {Commando#argument} */
-  describe('#argument()', function () {
-    it('can be created with no config', function () {
-      var commando = new Commando()
+  describe('#argument()', () => {
+    it('can be created with no config', () => {
+      const commando = new Commando()
         .argument('[testArg]');
-      var config = Commando.defaultConfig();
+      const config = Commando.defaultConfig();
       // expect(commando._config).to.eql(config);
     });
   });

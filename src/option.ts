@@ -1,13 +1,13 @@
-'use strict'
+'use strict';
 
-import * as Immutable from 'immutable'
+import * as Immutable from 'immutable';
 
-import debug from './debug'
+import debug from './debug';
 
 export interface ParsedOptions {
-  arg?: string,
-  short?: string,
-  long?: string
+  arg?: string;
+  short?: string;
+  long?: string;
 }
 
 /**
@@ -18,7 +18,7 @@ export interface ParsedOptions {
  * @see {@link Option#constructor}
  */
 export default class Option {
-  private _config: Immutable.Map<string, any>
+  private config: Immutable.Map<string, any>;
   /**
    * Creates a new Option.
    *
@@ -42,14 +42,17 @@ export default class Option {
    */
   constructor (config?, description?: string, defaultValue?: any) {
     if (config instanceof Option) {
-      return config
+      return config;
     }
+    let configObj = config;
     if (typeof config === 'string') {
-      config = this.parseOptstring(config)
-      config.description = description
-      config.default = defaultValue
+      configObj = {
+        ...this.parseOptstring(config),
+        description,
+        default: defaultValue,
+      };
     }
-    this._config = Option.defaultConfig().merge(Immutable.fromJS(config))
+    this.config = Option.defaultConfig().merge(Immutable.fromJS(configObj));
   }
 
   /**
@@ -59,14 +62,14 @@ export default class Option {
    * @return {*}          The value of the property.
    */
   get (key) {
-    return this._config.get(key)
+    return this.config.get(key);
   }
 
   /**
    * Prints out debugging information.
    */
   debug () {
-    debug.log('Option: %j', this._config.toObject())
+    debug.log('Option: %j', this.config.toObject());
   }
 
   /**
@@ -77,19 +80,19 @@ export default class Option {
    * @access private
    */
   parseOptstring (optstring): ParsedOptions {
-    let options = optstring.split(/ +/)
-    let parsed: ParsedOptions = {}
-    options.forEach(option => {
-      this.parseShortOption(parsed, option)
-      this.parseLongOption(parsed, option)
-      this.parseNamedArgument(parsed, option)
-    })
-    debug.log('PARSED', parsed)
+    const options = optstring.split(/ +/);
+    const parsed: ParsedOptions = {};
+    options.forEach((option) => {
+      this.parseShortOption(parsed, option);
+      this.parseLongOption(parsed, option);
+      this.parseNamedArgument(parsed, option);
+    });
+    debug.log('PARSED', parsed);
     if (parsed.arg && !parsed.short && !parsed.long) {
-      throw new Error('Arguments need an option name')
+      throw new Error('Arguments need an option name');
     }
 
-    return parsed
+    return parsed;
   }
 
   /**
@@ -100,8 +103,8 @@ export default class Option {
    * @access private
    */
   parseShortOption (parsed, opt) {
-    const regex = /^-([a-zA-Z0-9])$/
-    this.parseGenericOption(parsed, opt, regex, 'short')
+    const regex = /^-([a-zA-Z0-9])$/;
+    this.parseGenericOption(parsed, opt, regex, 'short');
   }
 
   /**
@@ -112,8 +115,8 @@ export default class Option {
    * @access private
    */
   parseLongOption (parsed, opt) {
-    let regex = /^--([\w-]+)$/
-    this.parseGenericOption(parsed, opt, regex, 'long')
+    const regex = /^--([\w-]+)$/;
+    this.parseGenericOption(parsed, opt, regex, 'long');
   }
 
   /**
@@ -124,12 +127,12 @@ export default class Option {
    * @access private
    */
   parseNamedArgument (parsed, opt) {
-    let optionalArgRegex = /^\[([\w-]+)\]$/
-    let requiredArgRegex = /^<([\w-]+)>$/
+    const optionalArgRegex = /^\[([\w-]+)\]$/;
+    const requiredArgRegex = /^<([\w-]+)>$/;
     if (this.parseGenericOption(parsed, opt, optionalArgRegex, 'arg')) {
-      parsed.required = false
+      parsed.required = false;
     } else if (this.parseGenericOption(parsed, opt, requiredArgRegex, 'arg')) {
-      parsed.required = true
+      parsed.required = true;
     }
   }
 
@@ -142,14 +145,14 @@ export default class Option {
    * @access private
    */
   parseGenericOption (parsed, opt, regex, keyName) {
-    let matches = []
+    let matches = [];
     if ((matches = opt.match(regex))) {
       if (parsed[keyName]) {
-        throw new Error('There can be only one ' + keyName + ' option')
+        throw new Error(`There can be only one ${keyName} option`);
       }
-      parsed[keyName] = matches[1]
+      parsed[keyName] = matches[1];
     }
-    return !!matches
+    return !!matches;
   }
   /**
    * Returns the argument value for this option, according to a list of args.
@@ -158,15 +161,15 @@ export default class Option {
    * @return {?mixed}              The value of the argument.
    */
   getArgValue (args) {
-    let short = this.get('short')
-    let long = this.get('long')
+    const short = this.get('short');
+    const long = this.get('long');
 
-    debug.log('GET ARG VAL: %s %s %j', short, long, args)
-    let argValue = args.get(short) || args.get(long)
+    debug.log('GET ARG VAL: %s %s %j', short, long, args);
+    let argValue = args.get(short) || args.get(long);
     if (argValue === undefined) {
-      argValue = this.get('default')
+      argValue = this.get('default');
     }
-    return argValue
+    return argValue;
   }
 
   /**
@@ -178,12 +181,12 @@ export default class Option {
    */
   static defaultConfig () {
     return Immutable.fromJS({
-      'short': undefined,
-      'long': undefined,
-      'arg': undefined,
-      'required': false,
-      'default': undefined,
-      'description': undefined,
-    })
+      short: undefined,
+      long: undefined,
+      arg: undefined,
+      required: false,
+      default: undefined,
+      description: undefined,
+    });
   }
 }

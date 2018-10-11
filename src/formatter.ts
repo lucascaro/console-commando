@@ -1,44 +1,44 @@
-'use strict'
+'use strict';
 
-import * as Immutable from 'immutable'
-import * as chalk     from 'chalk'
+import * as Immutable from 'immutable';
+import * as chalk     from 'chalk';
 
-import debug     from './debug'
+import debug     from './debug';
 
 // Polyfills
 require('string.prototype.repeat');
 
 export interface Formatter {
-  padCommand: () => (options: any) => string
-  padSubCommand: () => (options: any) => string
-  padOption: () => (options: any) => string
-  padArgument: () => (options: any) => string
-  padShortOption: () => (options: any) => string
-  padDescription: () => (options: any) => string
-  padSubCommandOption: () => (options: any) => string
-  pad: (options: any) => (text: string) => string
-  stringPad: (text: string, amount: number, direction: Direction, character: string) => string
-  log: () => void
+  padCommand: () => (options: any) => string;
+  padSubCommand: () => (options: any) => string;
+  padOption: () => (options: any) => string;
+  padArgument: () => (options: any) => string;
+  padShortOption: () => (options: any) => string;
+  padDescription: () => (options: any) => string;
+  padSubCommandOption: () => (options: any) => string;
+  pad: (options: any) => (text: string) => string;
+  stringPad: (text: string, amount: number, direction: Direction, character: string) => string;
+  log: () => void;
 }
 
 export enum Direction {'LEFT', 'RIGHT'}
 
-const _config = Immutable.fromJS({
-  'padArguments': 10,
-  'padCommands': 30,
-  'padDescriptions': 30,
-  'padOptions': 16,
-  'padShortOptions': 6,
-  'padSubCommands': 20,
-  'padSubCommandOptions': 24,
-})
+const config = Immutable.fromJS({
+  padArguments: 10,
+  padCommands: 30,
+  padDescriptions: 30,
+  padOptions: 16,
+  padShortOptions: 6,
+  padSubCommands: 20,
+  padSubCommandOptions: 24,
+});
 
-const printable = (x:string) => chalk.stripColor(x)
+const printable = (x:string) => chalk.stripColor(x);
 
   /**
    * Prints out debugging information.
    */
- const log = () => debug.log('Formatter: %j', _config.toObject())
+const log = () => debug.log('Formatter: %j', config.toObject());
 
 /**
  * Generates a padding function based on the given options.
@@ -52,32 +52,33 @@ const pad = ({
   character = ' ',
   direction = Direction.LEFT,
   prefix = ' ',
-  suffix = ''
+  suffix = '',
 }) => {
-  return text => {
+  return (input: any) => {
+    let text = input;
     if (typeof text !== 'string') {
-      text = ''
+      text = '';
     }
     if (prefix && printable(text).length > 0) {
-      text = prefix + text
+      text = prefix + text;
     }
     if (suffix && printable(text).length > 0) {
-      text = text + suffix
+      text = text + suffix;
     }
-    return stringPad(text, amount, direction, character)
-  }
-}
+    return stringPad(text, amount, direction, character);
+  };
+};
 
 /**
  * Pad a string to be of at leas the specified size.
  */
 const stringPad = (text: string, amount: number, direction: Direction, character: string) => {
-  const chunkLen = amount - printable(text).length
-  const chunk = chunkLen > 0 ? character.repeat(chunkLen) : ''
-  const pre = direction === Direction.LEFT ? chunk : ''
-  const pos = direction !== Direction.LEFT ? chunk : ''
-  return `${pre}${text}${pos}`
-}
+  const chunkLen = amount - printable(text).length;
+  const chunk = chunkLen > 0 ? character.repeat(chunkLen) : '';
+  const pre = direction === Direction.LEFT ? chunk : '';
+  const pos = direction !== Direction.LEFT ? chunk : '';
+  return `${pre}${text}${pos}`;
+};
 
 /**
  * Returns a padding function for commands.
@@ -85,9 +86,9 @@ const stringPad = (text: string, amount: number, direction: Direction, character
  * @return {function(text: string): string} The generated function.
  */
 const padCommand = () => pad({
-  amount: _config.get('padCommands'),
-  direction: Direction.RIGHT
-})
+  amount: config.get('padCommands'),
+  direction: Direction.RIGHT,
+});
 
 /**
  * Returns a padding function for sub commands.
@@ -95,9 +96,9 @@ const padCommand = () => pad({
  * @return {function(text: string): string} The generated function.
  */
 const padSubCommand = () => pad({
-  amount: _config.get('padSubCommands'),
-  direction: Direction.RIGHT
-})
+  amount: config.get('padSubCommands'),
+  direction: Direction.RIGHT,
+});
 
 /**
  * Returns a padding function for command options.
@@ -105,9 +106,9 @@ const padSubCommand = () => pad({
  * @return {function(text: string): string} The generated function.
  */
 const padSubCommandOption = () => pad({
-  amount: _config.get('padSubCommandOptions'),
+  amount: config.get('padSubCommandOptions'),
   direction: Direction.RIGHT,
-})
+});
 
 /**
  * Returns a padding function for short options
@@ -115,9 +116,9 @@ const padSubCommandOption = () => pad({
  * @return {function(text: string): string} The generated function.
  */
 const padShortOption = () => pad({
-  amount: _config.get('padShortOptions'),
-  prefix: '-'
-})
+  amount: config.get('padShortOptions'),
+  prefix: '-',
+});
 
 /**
  * Returns a padding function for long options.
@@ -125,10 +126,10 @@ const padShortOption = () => pad({
  * @return {function(text: string): string} The generated function.
  */
 const padOption = () => pad({
-  amount: _config.get('padOptions'),
+  amount: config.get('padOptions'),
   direction: Direction.RIGHT,
   prefix: '--',
-})
+});
 
 /**
  * Returns a padding function for arguments.
@@ -137,19 +138,19 @@ const padOption = () => pad({
  *   function.
  */
 const padArgument = () => {
-  let size = _config.get('padArguments')
+  const size = config.get('padArguments');
   return (text = '', required = false) => {
-    let prefix = required ? '<' : '['
-    let suffix = required ? '>' : ']'
-    let padFn = pad({
-      amount: size,
-      direction: Direction.RIGHT,
+    const prefix = required ? '<' : '[';
+    const suffix = required ? '>' : ']';
+    const padFn = pad({
       prefix,
       suffix,
-    })
-    return padFn(text)
-  }
-}
+      amount: size,
+      direction: Direction.RIGHT,
+    });
+    return padFn(text);
+  };
+};
 
 /**
  * Returns a padding function for descriptions.
@@ -157,9 +158,9 @@ const padArgument = () => {
  * @return {function(text: string): string} The generated function.
  */
 const padDescription = () => pad({
-  amount: _config.get('padDescriptions'),
+  amount: config.get('padDescriptions'),
   direction: Direction.RIGHT,
-})
+});
 
 /**
  * Helper class for formatting help output.
@@ -175,6 +176,6 @@ export const formatter: Formatter = {
   padOption,
   padArgument,
   padDescription,
-}
+};
 
-export default formatter
+export default formatter;

@@ -1,39 +1,38 @@
 import 'mocha';
 
-import Commando from '../src/commando';
-
-const expect = require('expect.js');
-const sinon = require('sinon');
+import Commando from '../src/Commando';
+import * as expect from 'expect.js';
+import * as sinon from 'sinon';
 
 /** @test {Option} */
-describe('Option', function () {
+describe('Option', () => {
   /** @test {Option#parseOptString} */
-  describe('#parseOptString()', function () {
-    var option = new Commando.Option();
-    it('Parses short options', function () {
+  describe('#parseOptString()', () => {
+    const option = new Commando.Option();
+    it('Parses short options', () => {
       const e = {
         short: 'x',
       };
       expect(option.parseOptstring('-x')).to.eql(e);
     });
 
-    it('Parses long options', function () {
-      var e = {
+    it('Parses long options', () => {
+      const e = {
         long: 'extreme',
       };
       expect(option.parseOptstring('--extreme')).to.eql(e);
     });
 
-    it('Parses short and long options', function () {
-      var e = {
+    it('Parses short and long options', () => {
+      const e = {
         short: 't',
         long: 'was-tested',
       };
       expect(option.parseOptstring('-t --was-tested')).to.eql(e);
     });
 
-    it('Parses short optional arguments', function () {
-      var e = {
+    it('Parses short optional arguments', () => {
+      const e = {
         short: '2',
         arg: 'was-tested',
         required: false,
@@ -41,8 +40,8 @@ describe('Option', function () {
       expect(option.parseOptstring('-2 [was-tested]')).to.eql(e);
     });
 
-    it('Parses short required arguments', function () {
-      var e = {
+    it('Parses short required arguments', () => {
+      const e = {
         short: 't',
         arg: 'tested',
         required: true,
@@ -50,8 +49,8 @@ describe('Option', function () {
       expect(option.parseOptstring('-t <tested>')).to.eql(e);
     });
 
-    it('Parses long optional arguments', function () {
-      var e = {
+    it('Parses long optional arguments', () => {
+      const e = {
         long: 'tested',
         arg: 'was-tested',
         required: false,
@@ -59,8 +58,8 @@ describe('Option', function () {
       expect(option.parseOptstring('--tested [was-tested]')).to.eql(e);
     });
 
-    it('Parses long required arguments', function () {
-      var e = {
+    it('Parses long required arguments', () => {
+      const e = {
         long: 'tested',
         arg: 'was-tested',
         required: true,
@@ -68,8 +67,8 @@ describe('Option', function () {
       expect(option.parseOptstring('--tested <was-tested>')).to.eql(e);
     });
 
-    it('Parses short and long with optional arguments', function () {
-      var e = {
+    it('Parses short and long with optional arguments', () => {
+      const e = {
         short: '0',
         long: 'my_string',
         arg: 'was_tested',
@@ -81,8 +80,8 @@ describe('Option', function () {
       expect(option.parseOptstring('[was_tested] -0 --my_string')).to.eql(e);
     });
 
-    it('Parses short and long with required arguments', function () {
-      var e = {
+    it('Parses short and long with required arguments', () => {
+      const e = {
         short: 'a',
         long: 'is-a',
         arg: 'option',
@@ -91,9 +90,9 @@ describe('Option', function () {
       expect(option.parseOptstring('-a --is-a <option>')).to.eql(e);
     });
 
-    it('fails on duplicated values', function () {
+    it('fails on duplicated values', () => {
       // bind function to the object to allow calling within expect.
-      var e = expect(option.parseOptstring.bind(option));
+      const e = expect(option.parseOptstring.bind(option));
 
       e.withArgs('-s -s').to.throwException();
       e.withArgs('--ss --ss').to.throwException();
@@ -108,9 +107,9 @@ describe('Option', function () {
   });
 
   /** @test {Option#constructor} */
-  describe('#constructor()', function () {
-    it('creates short flags', function () {
-      var o = new Commando.Option('-o', 'an option', false);
+  describe('#constructor()', () => {
+    it('creates short flags', () => {
+      const o = new Commando.Option('-o', 'an option', false);
 
       expect(o).to.be.ok();
       expect(o.get('short')).to.be('o');
@@ -120,8 +119,8 @@ describe('Option', function () {
       expect(o.get('required')).to.be(false);
     });
 
-    it('creates long flags', function () {
-      var o = new Commando.Option('--opt', 'an option', true);
+    it('creates long flags', () => {
+      const o = new Commando.Option('--opt', 'an option', true);
 
       expect(o).to.be.ok();
       expect(o.get('short')).to.be(undefined);
@@ -131,8 +130,8 @@ describe('Option', function () {
       expect(o.get('required')).to.be(false);
     });
 
-    it('creates options with optional values', function () {
-      var o = new Commando.Option('-o --option [opt]', 'an option', 'default');
+    it('creates options with optional values', () => {
+      const o = new Commando.Option('-o --option [opt]', 'an option', 'default');
 
       expect(o).to.be.ok();
       expect(o.get('short')).to.be('o');
@@ -142,8 +141,8 @@ describe('Option', function () {
       expect(o.get('required')).to.be(false);
     });
 
-    it('creates options with required values', function () {
-      var o = new Commando.Option('-o --option <opt>');
+    it('creates options with required values', () => {
+      const o = new Commando.Option('-o --option <opt>');
       expect(o).to.be.ok();
       expect(o.get('short')).to.be('o');
       expect(o.get('long')).to.be('option');
@@ -155,128 +154,129 @@ describe('Option', function () {
 });
 
 /** @test {Option} */
-describe('Argument Parsing', function () {
-  var commandSpyAction = sinon.spy();
+describe('Argument Parsing', () => {
+  const commandSpyAction = sinon.spy();
   function expectCallToSetValue(commando, args, value, argNames) {
-    var spyAction = commando.get('action');
+    const spyAction = commando.get('action');
     spyAction.reset();
-    var thisCommand = commando.args(args);
-    var rootCommand = thisCommand;
+    const thisCommand = commando.args(args);
+    const rootCommand = thisCommand;
+    let finalArgNames = argNames;
     if (argNames === undefined) {
-      argNames = ['f', 'force'];
+      finalArgNames = ['f', 'force'];
     }
     if (typeof argNames === 'string') {
-      argNames = [argNames];
+      finalArgNames = [argNames];
     }
     thisCommand.run();
     expect(spyAction.calledOnce).to.be(true);
-    var call = spyAction.getCall(0);
-    var invokedCommand = call.args[0];
-    var invokedRootCommand = call.args[0];
+    const call = spyAction.getCall(0);
+    const invokedCommand = call.args[0];
+    const invokedRootCommand = call.args[0];
     expect(invokedCommand).to.be(thisCommand);
     expect(invokedRootCommand).to.be(rootCommand);
-    argNames.forEach(function (argName) {
+    finalArgNames.forEach((argName) => {
       expect(invokedCommand.getOption(argName)).to.be(value);
     });
   }
 
   function expectCommandoCallsWithArgs(optString, argKeys) {
-    var commando = new Commando('testRootCommand')
+    const commando = new Commando('testRootCommand')
     .version('1.0.0')
     .option(optString, 'force it', false)
     .action(commandSpyAction);
 
-    it('sees defaults', function () {
+    it('sees defaults', () => {
       expectCallToSetValue(commando, [], false, argKeys);
     });
 
-    it('sees long flags', function () {
+    it('sees long flags', () => {
       expectCallToSetValue(commando, ['--force'], true, argKeys);
       expectCallToSetValue(commando, ['--forces'], false, argKeys);
       expectCallToSetValue(commando, ['--force'], undefined, ['w', 'wrong']);
     });
 
-    it('sees long args', function () {
+    it('sees long args', () => {
       expectCallToSetValue(commando, ['--force', 'myArg'], 'myArg', argKeys);
     });
   }
 
-  describe('Short args', function () {
-    var commando = new Commando('rootCmd')
+  describe('Short args', () => {
+    const commando = new Commando('rootCmd')
     .version('1.0.0')
     .option('-f', 'force it', false)
     .action(commandSpyAction);
 
-    it('sees defaults', function () {
+    it('sees defaults', () => {
       expectCallToSetValue(commando, [], false, 'f');
     });
 
-    it('sees short flags', function () {
+    it('sees short flags', () => {
       expectCallToSetValue(commando, ['-f'], true, 'f');
       expectCallToSetValue(commando, ['-x'], false, 'f');
       expectCallToSetValue(commando, ['-f'], undefined, 'anotherArg');
     });
 
-    it('sees short args', function () {
+    it('sees short args', () => {
       expectCallToSetValue(commando, ['--f', 'myArg'], 'myArg', 'f');
     });
   });
 
-  describe('Long args', function () {
-    var argKeys = ['force'];
+  describe('Long args', () => {
+    const argKeys = ['force'];
     expectCommandoCallsWithArgs('--force', argKeys);
   });
 
-  describe('Combined args', function () {
-    var argKeys = ['f', 'force'];
+  describe('Combined args', () => {
+    const argKeys = ['f', 'force'];
     expectCommandoCallsWithArgs('-f --force', argKeys);
 
   });
 
-  describe('Named args', function () {
-    var argKeys = ['f', 'force', 'forceValue'];
+  describe('Named args', () => {
+    const argKeys = ['f', 'force', 'forceValue'];
     expectCommandoCallsWithArgs('-f --force [forceValue]', argKeys);
   });
 
-  describe('Subcommand args', function () {
-    var subSpyAction = sinon.spy();
-    var subCommand = new Commando.Command('subCommand')
+  describe('Subcommand args', () => {
+    const subSpyAction = sinon.spy();
+    const subCommand = new Commando.Command('subCommand')
       .option('-s --sub [subOption]', 'sub option', 'sDefault')
       .action(subSpyAction);
 
-    var commando = new Commando('rootCmd')
+    const commando = new Commando('rootCmd')
       .version('1.0.0')
       .option('-f --force', 'force it', false)
       .action(commandSpyAction)
       .command(subCommand);
 
-    var fArgKeys = ['f', 'force'];
-    var sArgKeys = ['s', 'sub', 'subOption'];
-    it('sees defaults', function () {
+    const fArgKeys = ['f', 'force'];
+    const sArgKeys = ['s', 'sub', 'subOption'];
+    it('sees defaults', () => {
       expectCallToSetValue(commando, [], false, fArgKeys);
       expectCallToSetValue(commando, [], undefined, sArgKeys);
       expectCallToSetValue(subCommand, [], 'sDefault', sArgKeys);
       expectCallToSetValue(subCommand, [], undefined, fArgKeys);
     });
 
-    it('sees short flags', function () {
+    it('sees short flags', () => {
       expectCallToSetValue(commando, ['-f'], true, 'f');
       expectCallToSetValue(subCommand, ['-s'], true, 's');
     });
 
-    it('sees short args', function () {
+    it('sees short args', () => {
       expectCallToSetValue(commando, ['--f', 'myArg'], 'myArg', 'f');
       expectCallToSetValue(subCommand, ['--s', 'mySubArg'], 'mySubArg', 's');
     });
   });
 
-  describe('Required arguments', function () {
-    var commando = new Commando('rootCmd')
+  describe('Required arguments', () => {
+    const commando = new Commando('rootCmd')
       .version('1.0.0')
       .option('-r --required <requiredArg>', 'a required argument', false)
       .action(commandSpyAction);
 
-    it('validates required arguments', function () {
+    it('validates required arguments', () => {
       // expect(commando.args(['-r']).run()).to.not.be.ok();
       // expect(commando.args(['--required']).run()).to.not.be.ok();
       expect(commando.args(['-r a']).run()).to.be.ok();
@@ -284,27 +284,27 @@ describe('Argument Parsing', function () {
     });
   });
 
-  describe('Action arguments', function () {
-    var spyAction = sinon.spy();
-    var spySubAction = sinon.spy();
-    var subCommand = new Commando('subCommand').action(spySubAction);
-    var rootCommand = new Commando('rootCommand')
+  describe('Action arguments', () => {
+    const spyAction = sinon.spy();
+    const spySubAction = sinon.spy();
+    const subCommand = new Commando('subCommand').action(spySubAction);
+    const rootCommand = new Commando('rootCommand')
       .version('1.0.0')
       .action(spyAction)
       .command(subCommand);
 
-    it('passes the root command to the root action', function () {
+    it('passes the root command to the root action', () => {
       rootCommand.run();
       expect(spyAction.calledOnce).to.be(true);
-      var args = spyAction.getCall(0).args;
+      const args = spyAction.getCall(0).args;
       expect(args[0]).to.be(rootCommand);
     });
-    it('passes the sub command to the sub action', function () {
-      var rootWithArgs = rootCommand.args(['subCommand']);
-      var subWithArgs = rootWithArgs.getCommand('subCommand');
+    it('passes the sub command to the sub action', () => {
+      const rootWithArgs = rootCommand.args(['subCommand']);
+      const subWithArgs = rootWithArgs.getCommand('subCommand');
       rootWithArgs.run();
       expect(spySubAction.calledOnce).to.be(true);
-      var args = spySubAction.getCall(0).args;
+      const args = spySubAction.getCall(0).args;
       expect(args[0]).to.be(subWithArgs);
       expect(args[1]).to.be(rootWithArgs);
     });
