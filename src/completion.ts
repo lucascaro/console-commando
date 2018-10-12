@@ -20,8 +20,8 @@ function getCompletions(command: Commando): string {
 /**
  * Utility function to return valid list of args.
  *
- * @param {Commando} command      A commando command.
- * @param {?Immutable.List} args  A list of arguments. (for internal use)
+ * @param command      A commando command.
+ * @param args  A list of arguments. (for internal use)
  *
  * @return {string} a list of possible completions.
  * @access private
@@ -57,13 +57,12 @@ function getArgCompletions(command: Commando, args?: immutable.List<string>): st
 /**
  * Utility function to get completions for subcommands.
  *
- * @param  {Commando} command     A commando.
- * @param  {array} completions    An array of completions, new values will be
- * pushed into this array.
- * @param  {?string} prefix       An optional prefix to filter subcommands.
+ * @param  command     A commando.
+ * @param  completions    An array of completions, new values will be pushed into this array.
+ * @param  prefix       An optional prefix to filter subcommands.
  * @access private
  */
-function completeSubcommands(command, completions, prefix) {
+function completeSubcommands(command: Commando, completions: string[], prefix?: string) {
   const commands = command.get('commands');
   commands.forEach((command) => {
     const name = command.get('name');
@@ -76,13 +75,13 @@ function completeSubcommands(command, completions, prefix) {
 /**
  * Utility function to get completions for options in a command.
  *
- * @param  {Commando} command     A commando.
- * @param  {array} completions    An array of completions, new values will be
+ * @param  command     A commando.
+ * @param  completions An array of completions, new values will be
  * pushed into this array.
- * @param  {?string} prefix       An optional prefix to filter subcommands.
+ * @param  prefix      An optional prefix to filter subcommands.
  * @access private
  */
-function completeOptions(command: any, completions: any[], prefix?: string) {
+function completeOptions(command: Commando, completions: string[], prefix?: string) {
   const options = command.get('options');
   options.forEach((option) => {
     const short = `-${option.get('short')}`;
@@ -99,13 +98,12 @@ function completeOptions(command: any, completions: any[], prefix?: string) {
 /**
  * Utility function to get completions for arguments in a command.
  *
- * @param  {Commando} command     A commando.
- * @param  {array} completions    An array of completions, new values will be
+ * @param  command     A commando.
+ * @param  completions    An array of completions, new values will be
  * pushed into this array.
- * @param  {?string} prefix       An optional prefix to filter subcommands.
  * @access private
  */
-function completeArguments(command: any, completions: any[], prefix?: string) {
+function completeArguments(command: Commando, completions: string[]) {
   const args = command.get('arguments');
   args.forEach((argument) => {
     const name = argument.get('arg');
@@ -116,10 +114,10 @@ function completeArguments(command: any, completions: any[], prefix?: string) {
 /**
  * Generate bash completion code.
  *
- * @param  {Commando} command A base command
- * @return {string}           A string with a bash script for auto completion
+ * @param  command A base command
+ * @return         A string with a bash script for auto completion
  */
-function bashCompletion(command) {
+function bashCompletion(command: Commando): string {
   const appName = command.get('name');
   const appPath = `${process.argv[0]} ${process.argv[1]}`;
 

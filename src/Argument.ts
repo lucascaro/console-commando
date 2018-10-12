@@ -16,7 +16,7 @@ export default class Argument extends Option {
    *
    * Overrides parent method to accept arguments instead of options.
    *
-   * @param  {string} optstring An optstring with named arguments.
+   * @param  optstring An optstring with named arguments.
    *
    * @access private
    */
@@ -36,11 +36,11 @@ export default class Argument extends Option {
   /**
    * Argument default configuration.
    *
-   * @return {Immutable.Map} the default (empty) configuration for commando.
+   * @return the default (empty) configuration for commando.
    *
    * @access private
    */
-  static defaultConfig () {
+  static defaultConfig (): Immutable.Map<string, any> {
     return Immutable.fromJS({
       arg: undefined,
       default: undefined,
