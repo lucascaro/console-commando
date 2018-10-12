@@ -152,7 +152,7 @@ describe('Commando', () => {
       const args = minimist(inputArgs);
       const subArgs = minimist(['wat']);
       const thisCommand = commando.args(inputArgs);
-      const thisSubCommand = thisCommand.getCommand('subc1');
+      const thisSubCommand = thisCommand.getCommand('subc1') as Commando;
       const expectedArgs = new Immutable.fromJS(args);
       const expectedSubArgs = new Immutable.fromJS(subArgs);
 
