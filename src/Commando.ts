@@ -550,7 +550,7 @@ export default class Commando {
    *
    * @return {Immutable.Map} the default (empty) configuration for commando.
    */
-  private static defaultConfig(): Immutable.Map<string, any> {
+  static defaultConfig(): Immutable.Map<string, any> {
     return Immutable.fromJS({
       action: null,
       aliases: Immutable.List(),
