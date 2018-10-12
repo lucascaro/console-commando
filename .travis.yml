@@ -1,14 +1,12 @@
 language: node_js
-script: echo "Running tests against $(node -v) ..."
+node_js:
+- '4'
+- '6'
+- '8'
+- '10'
+script: echo "Running tests against $(node -v) ..." ; npm test
 jobs:
   include:
-    - stage: test
-      node_js:
-      - '4'
-      - '6'
-      - '8'
-      - '10'
-      script: npm test
     - stage: npm release
       node_js: "10"
       script: echo "Deploying to npm..."
