@@ -18,7 +18,7 @@ export interface ParsedOptions {
  * @see {@link Option#constructor}
  */
 export default class Option {
-  private config: Immutable.Map<string, any>;
+  private config!: Immutable.Map<string, any>;
   /**
    * Creates a new Option.
    *

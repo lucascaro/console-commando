@@ -28,7 +28,7 @@ const RETURN_VALUE_FAILURE = false;
  * Represents a command or subcommand.
  */
 export default class Commando {
-  config: Immutable.Map<string, any>;
+  config!: Immutable.Map<string, any>;
   /**
    * Create a Commando from a string, object or Commando.
    *

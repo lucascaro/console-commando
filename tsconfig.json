@@ -6,7 +6,7 @@
         "preserveConstEnums": true,
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
-        "alwaysStrict": true,
+        "strict": true,
         "declaration": true,
         "module": "commonjs",
         "moduleResolution": "Node",

@@ -1,15 +1,18 @@
 'use strict';
 
 import debug from './debug';
+import Commando from './Commando';
+
+import immutable from 'immutable';
 
 /**
  * Get valid completion values for a command and a list of arguments.
  *
- * @param {Commando} command      A commando command.
+ * @param command      A commando command.
  *
  * @return {string} a list of possible completions.
  */
-function getCompletions(command) {
+function getCompletions(command: Commando): string {
   const args = command.get('args').get('_');
   debug.log('INITIAL ARGS', args);
   return getArgCompletions(command, args).join(' ');
@@ -23,11 +26,11 @@ function getCompletions(command) {
  * @return {string} a list of possible completions.
  * @access private
  */
-function getArgCompletions(command, args) {
-  let completions = [];
+function getArgCompletions(command: Commando, args?: immutable.List<string>): string[] {
+  let completions: string[] = [];
 
   if (!args || args.size <= 1) {
-    return;
+    return [];
   }
 
   const commandArguments = args.shift();
