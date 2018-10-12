@@ -21,9 +21,17 @@ import 'ts-polyfill/lib/es2015-collection';
 import { parse } from 'path';
 
 // Define Constants
-const RETURN_VALUE_SUCCESS = true;
-const RETURN_VALUE_FAILURE = false;
 
+export enum ReturnValue {
+  FAILURE = 0,
+  SUCCESS = 1,
+}
+
+export type OptionHash = {
+  [key:string]: any,
+};
+
+export type Arguments = Immutable.Map<string, Immutable.List<string>>;
 /**
  * Represents a command or subcommand.
  */
@@ -52,50 +60,50 @@ export default class Commando {
   /**
    * Returns a new Commando with the same config and a given version number.
    *
-   * @param  {string} version A version number.
-   * @return {Commando}       A Commando with the given version number.
+   * @param  version A version number.
+   * @return         A Commando with the given version number.
    */
-  version(version) {
+  version(version: string): Commando {
     return new Commando(this.config.set('version', version));
   }
 
   /**
    * Returns a new Commando with the same config and a given name.
    *
-   * @param  {string} name  A name string.
-   * @return {Commando}     A Commando with the given name apllied to it.
+   * @param  name  A name string.
+   * @return       A Commando with the given name apllied to it.
    */
-  name(name) {
+  name(name: string): Commando {
     return new Commando(this.config.set('name', name));
   }
 
   /**
    * Returns a new Commando with the same config and a given description.
    *
-   * @param  {string} description  A description string.
-   * @return {Commando}     A Commando with the given description apllied to it.
+   * @param  description  A description string.
+   * @return              A Commando with the given description apllied to it.
    */
-  description(description) {
+  description(description: string): Commando {
     return new Commando(this.config.set('description', description));
   }
 
   /**
    * Gets a property of the Commando instance.
    *
-   * @param  {string} key The name of the property to get.
-   * @return {*}          The value of the property.
+   * @param  key The name of the property to get.
+   * @return     The value of the property.
    */
-  get(key) {
+  get(key: string): any {
     return this.config.get(key);
   }
 
   /**
    * Returns a commando with a new subcommand added to it.
    *
-   * @param  {Commando} command  A sub command to add to the current instance.
-   * @return {Commando}          A Commando with the given command.
+   * @param  command  A sub command to add to the current instance.
+   * @return          A Commando with the given command.
    */
-  command(command: Commando) {
+  command(command: Commando): Commando {
     const newCommand = new Commando(command);
     if (!newCommand.get('name')) {
       throw new Error('Command needs a name');
@@ -110,15 +118,15 @@ export default class Commando {
   /**
    * Returns a commando with a new option added to it.
    *
-   * @param  {string} optstring     An opstring for the new Option.
-   * @param  {string} description   A description for the new Option.
-   * @param  {*}      defaultValue  A default value for the Option.
+   * @param  optstring     An opstring for the new Option.
+   * @param  description   A description for the new Option.
+   * @param  defaultValue  A default value for the Option.
    *
-   * @return {Commando}       A Commando with the given option.
+   * @return               A Commando with the given option.
    *
    * @see {@link Option#constructor}
    */
-  option(optstring: string, description?: string, defaultValue?: any) {
+  option(optstring: string, description?: string, defaultValue?: any): Commando {
     const option = new Option(optstring, description, defaultValue);
     const options = this.get('options');
 
@@ -128,15 +136,15 @@ export default class Commando {
   /**
    * Returns a commando with a new option added to it.
    *
-   * @param  {string} optstring     An opstring for the new Option.
-   * @param  {string} description   A description for the new Option.
-   * @param  {*}      defaultValue  A default value for the Option.
+   * @param  optstring     An opstring for the new Option.
+   * @param  description   A description for the new Option.
+   * @param  defaultValue  A default value for the Option.
    *
-   * @return {Commando}       A Commando with the given option.
+   * @return               A Commando with the given option.
    *
    * @see {@link Option#constructor}
    */
-  argument(optstring: string, description?: string, defaultValue?: any) {
+  argument(optstring: string, description?: string, defaultValue?: any): Commando {
     const arg = new Argument(optstring, description, defaultValue);
     const args = this.get('arguments');
     const newConfig = this.config.set('arguments', args.push(arg));
@@ -146,20 +154,20 @@ export default class Commando {
   /**
    * Returns a commando with a new action added to it.
    *
-   * @param  {function} action  An action callback for this command.
-   * @return {Commando}         A Commando with the given action.
+   * @param  action  An action callback for this command.
+   * @return         A Commando with the given action.
    */
-  action(action) {
+  action(action: Function): Commando {
     return new Commando(this.config.set('action', action));
   }
 
   /**
    * Returns a commando with a before callback set to 'before'.
    *
-   * @param  {Commando} before  A sub command to add to the current instance.
-   * @return {Commando}         A Commando with the given command.
+   * @param  before  A sub command to add to the current instance.
+   * @return         A Commando with the given command.
    */
-  before(before) {
+  before(before: Function): Commando {
     return new Commando(this.config.set('before', before));
   }
 
@@ -179,10 +187,8 @@ export default class Commando {
 
   /**
    * Prints usage information.
-   *
-   * @access private
    */
-  usage() {
+  private usage() {
     const fmt: Formatter = this.get('formatter');
     const padCmd = fmt.padSubCommand();
     const padOpts = fmt.padSubCommandOption();
@@ -275,49 +281,48 @@ export default class Commando {
   /**
    * Utility function for handling default help and completion commands.
    *
-   * @param  {string} commandArg             The command argument.
-   * @param  {Immutable.List} positionalArgs The list of remaining positional
-   * arguments.
-   * @return {boolean}                       True if a default command was found
-   *
-   * @access private
+   * @param commandArg     The command argument.
+   * @param positionalArgs The list of remaining positional arguments.
+   * @return               True if a default command was found
    */
-  handleDefaultCommands(commandArg, positionalArgs) {
+  private handleDefaultCommands(
+    commandArg: string,
+    positionalArgs: Immutable.List<any>,
+  ): ReturnValue {
     if (commandArg === 'help') {
       handleHelpCommand(this, positionalArgs);
-      return true;
+      return ReturnValue.SUCCESS;
     }
 
     if (commandArg === 'completion') {
       console.log(completion.bashCompletion(this));
-      return true;
+      return ReturnValue.SUCCESS;
     }
 
     if (commandArg === 'get-commando-completions') {
       console.log(completion.getCompletions(this));
-      return true;
+      return ReturnValue.SUCCESS;
     }
-    return false;
+    return ReturnValue.FAILURE;
   }
 
   /**
    * Gets a sub command by name.
    *
-   * @param  {string} name          The name of the desired sub command.
-   * @return {Commando|undefined}   The requested command or undefined if
-   *  not found.
+   * @param name The name of the desired sub command.
+   * @return     The requested command or undefined if not found.
    */
-  getCommand(name) {
+  getCommand(name: string): Commando | undefined {
     return this.config.getIn(['commands', name]);
   }
 
   /**
    * Returns the value for an applied option.
    *
-   * @param  {string} key the option key (short, long, or key)
-   * @return {string}     the value for the specified option.
+   * @param key the option key (short, long, or key)
+   * @return     the value for the specified option.
    */
-  getOption(key) {
+  getOption(key: string): any {
     const args = this.get('args');
     const option = this.get('options').find((v) => {
       const res =
@@ -366,9 +371,9 @@ export default class Commando {
   /**
    * Returns an object with option names as keys and option values as values.
    *
-   * @return {object}     the option hash.
+   * @return the option hash.
    */
-  getOptionsHash() {
+  getOptionsHash(): OptionHash {
     const args = this.get('args');
     const optHash = {};
     this.get('options').forEach((v) => {
@@ -383,12 +388,12 @@ export default class Commando {
   /**
    * Runs the command based on set arguments.
    *
-   * @param  {Command} [rootCommand] The root command, if different from this.
-   * @return {boolean}               The return value from the run.
+   * @param  [rootCommand] The root command, if different from this.
+   * @return               The return value from the run.
    *
    * @see {@link Commando#args}
    */
-  run(rootCommand = this, cmdContext?: Map<string, any>) {
+  run(rootCommand: Commando = this, cmdContext?: Map<string, any>): ReturnValue {
     const args = this.get('args');
     const positionalArgs = args.get('_');
     const before = this.get('before');
@@ -403,13 +408,14 @@ export default class Commando {
       const commandArg = positionalArgs.get(0);
       const command = this.config.getIn(['commands', commandArg]);
       if (command !== undefined) {
-        // let recursionArgs = args.set('_', positionalArgs.shift())
+          // let recursionArgs = args.set('_', positionalArgs.shift())
         const res = command.run(rootCommand, context);
         return res;
       }
 
-      if (this.handleDefaultCommands(commandArg, positionalArgs)) {
-        return;
+      const res = this.handleDefaultCommands(commandArg, positionalArgs);
+      if (res) {
+        return res;
       }
     }
     const action = this.get('action');
@@ -417,42 +423,46 @@ export default class Commando {
       debug.log('RUN ACTION: %s', this.get('name'));
       let res = action(this, rootCommand, context);
       if (res === undefined) {
-        res = RETURN_VALUE_SUCCESS;
+        res = ReturnValue.SUCCESS;
       }
       return res;
     }
 
     console.error('No action defined for the given command');
     this.help();
-    return RETURN_VALUE_FAILURE;
+    return ReturnValue.FAILURE;
   }
 
   /**
    * Returns a Command with arguments applied to it.
    *
-   * @param  {array} args               Arguments array. Usually they will be
-   * process.argv.slice([2]).
-   * @param  {Immutable.Map} [rootArgs] Arguments of the root command.
-   * @return {Commando}                 The new Commando.
+   * @param  args       Arguments array. Usually they will be process.argv.slice([2]).
+   * @param  [rootArgs] Arguments of the root command.
+   * @return            The new Commando.
    */
-  args(args?, rootArgs?) {
+  args(
+    args?: string[] | Arguments ,
+    rootArgs?: Arguments,
+  ): Commando {
     if (!args) {
       return this;
     }
-    let parsedArguments = args;
-    if (!(args instanceof Immutable.Map)) {
+    let parsedArguments: Arguments;
+    if (Array.isArray(args)) {
       parsedArguments = Immutable.fromJS(minimist(args));
+    } else {
+      parsedArguments = args;
     }
 
     const rootArguments = rootArgs || parsedArguments;
 
     if (this.validateArgs(parsedArguments)) {
       return new Commando(
-        this.config
-          .set('args', parsedArguments)
-          .set('rootArgs', rootArguments)
-          .set('commands', this.subcommandsWitArgs(parsedArguments, rootArguments)),
-      );
+          this.config
+            .set('args', parsedArguments)
+            .set('rootArgs', rootArguments)
+            .set('commands', this.subcommandsWitArgs(parsedArguments, rootArguments)),
+        );
     }
     debug.log('invalid args');
     this.help();
@@ -462,22 +472,24 @@ export default class Commando {
   /**
    * Returns all subcommands with 'args' applied to them.
    *
-   * @access private
-   * @param  {array|Immutable.Map} args     Arguments
-   * @param  {array|Immutable.Map} rootArgs Root level arguments.
-   * @return {Immutable.List}               Commands with arguments applied
+   * @param  args     Arguments
+   * @param  rootArgs Root level arguments.
+   * @return          Commands with arguments applied
    *
    * @see {@link Commando#args}
    */
-  subcommandsWitArgs(args, rootArgs) {
+  private subcommandsWitArgs(
+    args: Arguments,
+    rootArgs: Arguments,
+  ): Immutable.Map<string, Commando> {
     const positionalArgs = args.get('_');
     let subcommands = this.get('commands');
-    // debug.log('subcommandsWitArgs', args)
+      // debug.log('subcommandsWitArgs', args)
     if (positionalArgs && positionalArgs.size > 0) {
       const commandArg = positionalArgs.get(0);
-      // debug.log('subcommandsWitArgs arg', commandArg)
+        // debug.log('subcommandsWitArgs arg', commandArg)
       subcommands = subcommands.map((command, name) => {
-        // debug.log('subcommandsWitArgs cmd', name)
+          // debug.log('subcommandsWitArgs cmd', name)
         if (name === commandArg) {
           const recursionArgs = args.set('_', positionalArgs.shift());
           return command.args(recursionArgs, rootArgs);
@@ -514,7 +526,7 @@ export default class Commando {
           }
         }
       } else {
-        // Positional arguments
+          // Positional arguments
       }
     });
     return valid;
@@ -536,10 +548,9 @@ export default class Commando {
   /**
    * Commando default configuration.
    *
-   * @access private
    * @return {Immutable.Map} the default (empty) configuration for commando.
    */
-  static defaultConfig() {
+  private static defaultConfig(): Immutable.Map<string, any> {
     return Immutable.fromJS({
       action: null,
       aliases: Immutable.List(),
@@ -558,11 +569,11 @@ export default class Commando {
   /**
    * Sets the debug level for which messages will be printed.
    *
-   * @param {int} level the debug level
+   * @param level the debug level
    *
    * @see {@link option.js}
    */
-  static setDebugLevel(level) {
+  static setDebugLevel(level: number) {
     debug.debugLevel = level;
   }
 
@@ -570,8 +581,8 @@ export default class Commando {
   // tslint:disable-next-line:variable-name
   static Command = Commando;
   static Option = Option;
-  static RETURN_VALUE_SUCCESS = RETURN_VALUE_SUCCESS;
-  static RETURN_VALUE_FAILURE = RETURN_VALUE_FAILURE;
+  static RETURN_VALUE_SUCCESS = ReturnValue.SUCCESS;
+  static RETURN_VALUE_FAILURE = ReturnValue.FAILURE;
 }
 
 // Helper functions
