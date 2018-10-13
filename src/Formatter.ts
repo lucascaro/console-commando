@@ -3,7 +3,9 @@
 import * as Immutable from 'immutable';
 import chalk from 'chalk';
 import debug from './debug';
-import stripAnsi from 'strip-ansi';
+
+//
+const stripAnsi = require('strip-ansi');
 
 // Polyfills
 require('string.prototype.repeat');

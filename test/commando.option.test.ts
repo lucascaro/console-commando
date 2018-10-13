@@ -1,10 +1,9 @@
 import 'mocha';
 
 import Commando from '../src/Commando';
-import expectJs from 'expect.js';
-import sinon from 'sinon';
 
-const expect = expectJs;
+const expect = require('expect.js');
+import sinon = require('sinon');
 
 /** @test {Option} */
 describe('Option', () => {
@@ -164,8 +163,8 @@ describe('Argument Parsing', () => {
     value?: any,
     argNames?: string | string[],
   ) {
-    const spyAction = commando.get('action');
-    spyAction.reset();
+    const spyAction = commando.get('action') as sinon.SinonSpy;
+    spyAction.resetHistory();
     const thisCommand = commando.args(args);
     const rootCommand = thisCommand;
     let finalArgNames: string[];

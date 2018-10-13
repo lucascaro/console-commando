@@ -5,7 +5,7 @@ const Immutable = require('immutable');
 
 const expect = require('expect.js');
 const minimist = require('minimist');
-import sinon from 'sinon';
+const sinon = require('sinon');
 
 /** @test {Commando} */
 describe('Commando', () => {
