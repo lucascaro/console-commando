@@ -125,8 +125,8 @@ describe('Commando', () => {
 
   /** @test {Commando#args} */
   describe('#args()', () => {
-    const baseAction = sinon.spy();
-    const subAction = sinon.spy();
+    const baseAction = () => null;
+    const subAction = () => null;
     const subCommand = new Commando.Command({ name: 'subc1' })
     .action(subAction);
     const commando = new Commando({ name: 'base command' })
@@ -179,12 +179,12 @@ describe('Commando', () => {
       function testAction(command: Commando) {
         expect(command.getOptionsHash()).toEqual({});
       }
-      const spyTestAction = sinon.spy(testAction);
+      const spyTestAction = jest.fn(testAction);
       new Commando({ name: 'base command' })
         .version('1.0.0')
         .action(spyTestAction)
         .run();
-      expect(spyTestAction.calledOnce).toBe(true);
+      expect(spyTestAction).toHaveBeenCalledTimes(1);
     });
     it('returns default options', () => {
       const defaultValue = 'defaultValue123';
@@ -195,13 +195,13 @@ describe('Commando', () => {
           optionA: defaultValue,
         });
       }
-      const spyTestAction = sinon.spy(testAction);
+      const spyTestAction = jest.fn(testAction);
       new Commando({ name: 'base command' })
         .version('1.0.0')
         .option('-a --opt-a [optionA]', 'option a', defaultValue)
         .action(spyTestAction)
         .run();
-      expect(spyTestAction.calledOnce).toBe(true);
+      expect(spyTestAction).toHaveBeenCalledTimes(1);
     });
     it('returns default and overriden options', () => {
       const defaultValue = 'defaultValue123';
@@ -216,7 +216,7 @@ describe('Commando', () => {
           optionB: passedValue,
         });
       }
-      const spyTestAction = sinon.spy(testAction);
+      const spyTestAction = jest.fn(testAction);
       new Commando({ name: 'base command' })
         .version('1.0.0')
         .option('-a --opt-a [optionA]', 'option a', defaultValue)
@@ -224,7 +224,7 @@ describe('Commando', () => {
         .action(spyTestAction)
         .args(['-b', passedValue])
         .run();
-      expect(spyTestAction.calledOnce).toBe(true);
+      expect(spyTestAction).toHaveBeenCalledTimes(1);
     });
   });
 });
@@ -235,22 +235,22 @@ describe('Action', () => {
     const commando = new Commando('testRootCommand')
       .version('1.0.0');
     it('calls the action without calling args', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       commando.action(spyAction).run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
     it('calls the action with null args', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       commando.action(spyAction).args().run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
     it('calls the action with empty args', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       commando.action(spyAction).args([]).run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
     it('calls the action with one argument', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       const inputArgs = ['arg1'];
       const args = minimist(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
@@ -265,10 +265,10 @@ describe('Action', () => {
         expect(rootArgs.get('_').toArray()).toEqual(inputArgs);
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
     it('calls the action with one short option', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       const inputArgs = ['-f'];
       const args = minimist(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
@@ -283,10 +283,10 @@ describe('Action', () => {
         expect(rootArgs.get('_').toArray()).toEqual([]);
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
     it('calls the action with one long option', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       const inputArgs = ['--test-pass'];
       const args = minimist(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
@@ -303,10 +303,10 @@ describe('Action', () => {
         expect(cmdArgs.get('test-pass')).toBeTruthy();
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
     it('calls the action with many options', () => {
-      const spyAction = sinon.spy();
+      const spyAction = jest.fn();
       const inputArgs = [
         'cmd',
         'subc',
@@ -335,12 +335,13 @@ describe('Action', () => {
         expect(cmdArgs.get('arg1')).toBe(undefined);
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).toBe(true);
+      expect(spyAction).toHaveBeenCalledTimes(1);
     });
   });
+
   describe('Subcommand', () => {
-    const defaultAction = sinon.spy();
-    const subcAction = sinon.spy();
+    const defaultAction = jest.fn();
+    const subcAction = jest.fn();
     const subCommand = new Commando.Command({ name: 'subc1' })
     .action(subcAction);
 
@@ -350,32 +351,33 @@ describe('Action', () => {
       .command(subCommand);
 
     it('calls command action if no subcommand given', () => {
-      defaultAction.resetHistory();
+      defaultAction.mockClear();
       commando.run();
-      expect(defaultAction.calledOnce).toBe(true);
+      expect(defaultAction).toHaveBeenCalledTimes(1);
     });
 
     it('calls command action if unknown subcommand given', () => {
-      defaultAction.resetHistory();
+      defaultAction.mockClear();
       const thisCommand = commando.args(['wat']);
       thisCommand.run();
-      expect(defaultAction.calledOnce).toBe(true);
-      expect(defaultAction.calledWith(thisCommand)).toBe(true);
+      expect(defaultAction).toHaveBeenCalledTimes(1);
+      expect(defaultAction.mock.calls[0][0]).toBe(thisCommand);
     });
 
     it('calls sub command action if subcommand given', () => {
-      defaultAction.resetHistory();
-      subcAction.resetHistory();
+      defaultAction.mockClear();
+      subcAction.mockClear();
       const thisCommand = commando.args(['subc1']);
       const thisSubCommand = thisCommand.get('commands').get('subc1');
       thisCommand.run();
 
-      expect(defaultAction.called).toBe(false);
-      expect(subcAction.calledOnce).toBe(true);
+      expect(defaultAction).not.toBeCalled();
+      expect(subcAction).toHaveBeenCalledTimes(1);
       expect(thisSubCommand.get('name')).toBe('subc1');
-      expect(subcAction.args).not.toHaveLength(0);
-      expect(subcAction.args[0][0]).toBe(thisSubCommand);
-      expect(subcAction.calledWith(thisCommand)).toBe(false);
+      expect(subcAction.mock.calls[0]).not.toHaveLength(0);
+      expect(subcAction.mock.calls[0][0]).toBe(thisSubCommand);
+      // FIXME: I don't think this tests what I think this tests.
+      expect(subcAction).not.toBeCalledWith(thisCommand);
     });
   });
 });
