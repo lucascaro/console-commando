@@ -1,9 +1,9 @@
 'use strict';
 
 import * as Immutable from 'immutable';
-import * as chalk     from 'chalk';
-
-import debug     from './debug';
+import chalk from 'chalk';
+import debug from './debug';
+import stripAnsi from 'strip-ansi';
 
 // Polyfills
 require('string.prototype.repeat');
@@ -33,7 +33,7 @@ const config = Immutable.fromJS({
   padSubCommandOptions: 24,
 });
 
-const printable = (x:string) => chalk.stripColor(x);
+const printable = (x:string) => stripAnsi(x);
 
   /**
    * Prints out debugging information.

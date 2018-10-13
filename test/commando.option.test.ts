@@ -1,8 +1,10 @@
 import 'mocha';
 
 import Commando from '../src/Commando';
-import * as expect from 'expect.js';
-import * as sinon from 'sinon';
+import expectJs from 'expect.js';
+import sinon from 'sinon';
+
+const expect = expectJs;
 
 /** @test {Option} */
 describe('Option', () => {
@@ -156,17 +158,23 @@ describe('Option', () => {
 /** @test {Option} */
 describe('Argument Parsing', () => {
   const commandSpyAction = sinon.spy();
-  function expectCallToSetValue(commando, args, value, argNames) {
+  function expectCallToSetValue(
+    commando: Commando,
+    args: string[],
+    value?: any,
+    argNames?: string | string[],
+  ) {
     const spyAction = commando.get('action');
     spyAction.reset();
     const thisCommand = commando.args(args);
     const rootCommand = thisCommand;
-    let finalArgNames = argNames;
+    let finalArgNames: string[];
     if (argNames === undefined) {
       finalArgNames = ['f', 'force'];
-    }
-    if (typeof argNames === 'string') {
+    } else if (typeof argNames === 'string') {
       finalArgNames = [argNames];
+    } else {
+      finalArgNames = argNames;
     }
     thisCommand.run();
     expect(spyAction.calledOnce).to.be(true);
@@ -180,7 +188,7 @@ describe('Argument Parsing', () => {
     });
   }
 
-  function expectCommandoCallsWithArgs(optString, argKeys) {
+  function expectCommandoCallsWithArgs(optString: string, argKeys: any) {
     const commando = new Commando('testRootCommand')
     .version('1.0.0')
     .option(optString, 'force it', false)

@@ -5,7 +5,7 @@ const Immutable = require('immutable');
 
 const expect = require('expect.js');
 const minimist = require('minimist');
-const sinon = require('sinon');
+import sinon from 'sinon';
 
 /** @test {Commando} */
 describe('Commando', () => {
@@ -88,7 +88,7 @@ describe('Commando', () => {
         .option('-x --expand', 'expand it', false)
         .command(
           new Commando.Command('list')
-          .action((command) => {
+          .action((command: Commando) => {
             expect(command.get('name')).to.be('list');
           }),
         ),
@@ -181,7 +181,7 @@ describe('Commando', () => {
 
   describe('#getOptionsHash', () => {
     it('returns empty object for no options', () => {
-      function testAction(command) {
+      function testAction(command: Commando) {
         expect(command.getOptionsHash()).to.eql({});
       }
       const spyTestAction = sinon.spy(testAction);
@@ -193,7 +193,7 @@ describe('Commando', () => {
     });
     it('returns default options', () => {
       const defaultValue = 'defaultValue123';
-      function testAction(command) {
+      function testAction(command: Commando) {
         expect(command.getOptionsHash()).to.eql({
           a: defaultValue,
           'opt-a': defaultValue,
@@ -211,7 +211,7 @@ describe('Commando', () => {
     it('returns default and overriden options', () => {
       const defaultValue = 'defaultValue123';
       const passedValue = 'passedValue123';
-      function testAction(command) {
+      function testAction(command: Commando) {
         expect(command.getOptionsHash()).to.eql({
           a: defaultValue,
           'opt-a': defaultValue,
@@ -260,7 +260,7 @@ describe('Action', () => {
       const args = minimist(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
       const thisCommand = commando
-      .action((command) => {
+      .action((command: Commando) => {
         spyAction();
         const args = command.get('args');
         const rootArgs = command.get('rootArgs');
@@ -278,7 +278,7 @@ describe('Action', () => {
       const args = minimist(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
       const thisCommand = commando
-      .action((command) => {
+      .action((command: Commando) => {
         const args = command.get('args');
         const rootArgs = command.get('rootArgs');
         spyAction();
@@ -296,7 +296,7 @@ describe('Action', () => {
       const args = minimist(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
       const thisCommand = commando
-      .action((command) => {
+      .action((command: Commando) => {
         const cmdArgs = command.get('args');
         const rootArgs = command.get('rootArgs');
         spyAction();
@@ -324,7 +324,7 @@ describe('Action', () => {
       const expectedArgs = new Immutable.fromJS(args);
       const expectPositional = ['cmd', 'subc', 'arg1'];
       const thisCommand = commando
-      .action((command) => {
+      .action((command: Commando) => {
         const cmdArgs = command.get('args');
         const rootArgs = command.get('rootArgs');
         spyAction();
@@ -355,13 +355,13 @@ describe('Action', () => {
       .command(subCommand);
 
     it('calls command action if no subcommand given', () => {
-      defaultAction.reset();
+      defaultAction.resetHistory();
       commando.run();
       expect(defaultAction.calledOnce).to.be(true);
     });
 
     it('calls command action if unknown subcommand given', () => {
-      defaultAction.reset();
+      defaultAction.resetHistory();
       const thisCommand = commando.args(['wat']);
       thisCommand.run();
       expect(defaultAction.calledOnce).to.be(true);
@@ -369,8 +369,8 @@ describe('Action', () => {
     });
 
     it('calls sub command action if subcommand given', () => {
-      defaultAction.reset();
-      subcAction.reset();
+      defaultAction.resetHistory();
+      subcAction.resetHistory();
       const thisCommand = commando.args(['subc1']);
       const thisSubCommand = thisCommand.get('commands').get('subc1');
       thisCommand.run();

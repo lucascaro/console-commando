@@ -10,6 +10,6 @@ var commando = new Commando()
   .name(path.basename(__filename))
   .version('1.0.0-simple-example')
   .description('This is a simple command with no arguments. This command ' +
-  ' does notring.');
+  ' does nothing.');
 
 commando.args(process.argv.slice(2)).run();

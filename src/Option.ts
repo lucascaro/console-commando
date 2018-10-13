@@ -8,6 +8,7 @@ export interface ParsedOptions {
   arg?: string;
   short?: string;
   long?: string;
+  required?: boolean;
 }
 
 /**
@@ -35,12 +36,12 @@ export default class Option {
    * * and `[argumentName]` represents an optional argument.
    * * use `<argumentName>` for required arguments.
    *
-   * @param  {string|object} config   An optString or configuration object.
-   * @param  {string} [description]   A description, shown in help.
-   * @param  {?*} [defaultValue]      A default value for this option.
-   * @return {Option}                 A new Option object.
+   * @param  config          An optString or configuration object.
+   * @param  [description]   A description, shown in help.
+   * @param  [defaultValue]  A default value for this option.
+   * @constructor
    */
-  constructor (config?, description?: string, defaultValue?: any) {
+  constructor (config?: string | object, description?: string, defaultValue?: any) {
     if (config instanceof Option) {
       return config;
     }
@@ -58,10 +59,10 @@ export default class Option {
   /**
    * Gets a property of the Option instance.
    *
-   * @param  {string} key The name of the property to get.
-   * @return {*}          The value of the property.
+   * @param  key The name of the property to get.
+   * @return     The value of the property.
    */
-  get (key) {
+  get (key: string): string {
     return this.config.get(key);
   }
 
@@ -75,11 +76,11 @@ export default class Option {
   /**
    * Utility function to parse option strings.
    *
-   * @param  {string} optstring an option string
+   * @param  optstring an option string
    *
    * @access private
    */
-  parseOptstring (optstring): ParsedOptions {
+  parseOptstring (optstring: string): ParsedOptions {
     const options = optstring.split(/ +/);
     const parsed: ParsedOptions = {};
     options.forEach((option) => {
@@ -98,11 +99,11 @@ export default class Option {
   /**
    * Helper function for parsing short options from an optstring.
    *
-   * @param  {object} parsed  the object containing parsed options.
-   * @param  {string} opt     the optstring that should be parsed.
+   * @param  parsed  the object containing parsed options.
+   * @param  opt     the optstring that should be parsed.
    * @access private
    */
-  parseShortOption (parsed, opt) {
+  parseShortOption (parsed: ParsedOptions, opt: string) {
     const regex = /^-([a-zA-Z0-9])$/;
     this.parseGenericOption(parsed, opt, regex, 'short');
   }
@@ -110,11 +111,11 @@ export default class Option {
   /**
    * Helper function for parsing long options from an optstring.
    *
-   * @param  {object} parsed  the object containing parsed options.
-   * @param  {string} opt     the optstring that should be parsed.
+   * @param  parsed  the object containing parsed options.
+   * @param  opt     the optstring that should be parsed.
    * @access private
    */
-  parseLongOption (parsed, opt) {
+  parseLongOption (parsed: ParsedOptions, opt: string) {
     const regex = /^--([\w-]+)$/;
     this.parseGenericOption(parsed, opt, regex, 'long');
   }
@@ -122,11 +123,11 @@ export default class Option {
   /**
    * Helper function for parsing long options from an optstring.
    *
-   * @param  {object} parsed  the object containing parsed options.
-   * @param  {string} opt     the optstring that should be parsed.
+   * @param  parsed  the object containing parsed options.
+   * @param  opt     the optstring that should be parsed.
    * @access private
    */
-  parseNamedArgument (parsed, opt) {
+  parseNamedArgument (parsed: ParsedOptions, opt: string) {
     const optionalArgRegex = /^\[([\w-]+)\]$/;
     const requiredArgRegex = /^<([\w-]+)>$/;
     if (this.parseGenericOption(parsed, opt, optionalArgRegex, 'arg')) {
@@ -139,18 +140,25 @@ export default class Option {
   /**
    * Helper function for parsing generic options from an optstring.
    *
-   * @param  {object} parsed  the object containing parsed options.
-   * @param  {string} opt     the optstring that should be parsed.
-   * @return {boolean}        true if there were any matches, false otherwise.
+   * @param  parsed  The object containing parsed options.
+   * @param  opt     The optstring that should be parsed.
+   * @return         true if there were any matches, false otherwise.
    * @access private
    */
-  parseGenericOption (parsed, opt, regex, keyName) {
-    let matches = [];
-    if ((matches = opt.match(regex))) {
-      if (parsed[keyName]) {
+  parseGenericOption (
+    parsed: ParsedOptions,
+    opt: string,
+    regex: RegExp,
+    keyName: keyof ParsedOptions,
+  ): boolean {
+    const matches = opt.match(regex);
+    if (matches) {
+      if (Object.prototype.hasOwnProperty.call(parsed, keyName)) {
         throw new Error(`There can be only one ${keyName} option`);
       }
-      parsed[keyName] = matches[1];
+      if (keyName !== 'required') {
+        parsed[keyName] = matches[1];
+      }
     }
     return !!matches;
   }
@@ -160,7 +168,7 @@ export default class Option {
    * @param  {Immutable.List} args List of arguments.
    * @return {?mixed}              The value of the argument.
    */
-  getArgValue (args) {
+  getArgValue (args: Immutable.Map<string, string>) {
     const short = this.get('short');
     const long = this.get('long');
 

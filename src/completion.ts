@@ -1,9 +1,10 @@
 'use strict';
 
 import debug from './debug';
-import Commando from './Commando';
+import Commando, { OptionHash } from './Commando';
 
 import immutable from 'immutable';
+import { stringify } from 'querystring';
 
 /**
  * Get valid completion values for a command and a list of arguments.
@@ -46,11 +47,12 @@ function getArgCompletions(command: Commando, args?: immutable.List<string>): st
     if (subcommand) {
       completions = completions.concat(getArgCompletions(subcommand, commandArguments));
     } else {
-      completeSubcommands(command, completions, commandArg);
+      completions = [...completions, ...completeSubcommands(command, commandArg)];
     }
     completeOptions(command, completions);
     completeArguments(command, completions);
   }
+  debug.log('COMPLETIONS', completions);
   return completions;
 }
 
@@ -62,14 +64,20 @@ function getArgCompletions(command: Commando, args?: immutable.List<string>): st
  * @param  prefix       An optional prefix to filter subcommands.
  * @access private
  */
-function completeSubcommands(command: Commando, completions: string[], prefix?: string) {
-  const commands = command.get('commands');
-  commands.forEach((command) => {
-    const name = command.get('name');
-    if (!prefix || name.indexOf(prefix) >= 0) {
-      completions.push(name);
-    }
-  });
+function completeSubcommands(command: Commando, prefix: string = ''): string[] {
+  debug.log('COMPLETE_SUBCOMMAND', { command, prefix });
+  const nameMap = command.get('commands') as immutable.Map<string, Commando>;
+  const names: string[] = nameMap
+    .map((c?: Commando) => c ? c.get('name') : '')
+    .toArray()
+    .filter(s => s !== '');
+
+  debug.log('PREFIX', { prefix, names });
+  if (prefix === '') {
+    return names;
+  }
+
+  return names.filter(name => name.startsWith(prefix));
 }
 
 /**
@@ -81,15 +89,15 @@ function completeSubcommands(command: Commando, completions: string[], prefix?: 
  * @param  prefix      An optional prefix to filter subcommands.
  * @access private
  */
-function completeOptions(command: Commando, completions: string[], prefix?: string) {
+function completeOptions(command: Commando, completions: string[], prefix: string = '') {
   const options = command.get('options');
-  options.forEach((option) => {
+  options.forEach((option: immutable.Map<string, string>) => {
     const short = `-${option.get('short')}`;
     const long = `--${option.get('long')}`;
-    if (short !== '-' && (!prefix || short.indexOf(prefix) >= 0)) {
+    if (short !== '-' && short.startsWith(prefix)) {
       completions.push(short);
     }
-    if (long !== '--' && (!prefix || long.indexOf(prefix) >= 0)) {
+    if (long !== '--' && long.startsWith(prefix)) {
       completions.push(long);
     }
   });
@@ -104,11 +112,8 @@ function completeOptions(command: Commando, completions: string[], prefix?: stri
  * @access private
  */
 function completeArguments(command: Commando, completions: string[]) {
-  const args = command.get('arguments');
-  args.forEach((argument) => {
-    const name = argument.get('arg');
-    completions.push(name);
-  });
+  return command.get('arguments')
+    .map((a: immutable.Map<string, string>) => a.get('arg'));
 }
 
 /**
