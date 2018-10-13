@@ -1,8 +1,6 @@
 
 import Commando from '../Commando';
 
-import sinon = require('sinon');
-
 /** @test {Option} */
 describe('Option', () => {
   /** @test {Option#parseOptString} */
@@ -154,15 +152,15 @@ describe('Option', () => {
 
 /** @test {Option} */
 describe('Argument Parsing', () => {
-  const commandSpyAction = sinon.spy();
+  const commandSpyAction = jest.fn();
   function expectCallToSetValue(
     commando: Commando,
     args: string[],
     value?: any,
     argNames?: string | string[],
   ) {
-    const spyAction = commando.get('action') as sinon.SinonSpy;
-    spyAction.resetHistory();
+    const spyAction = commando.get('action') as jest.Mock;
+    spyAction.mockClear();
     const thisCommand = commando.args(args);
     const rootCommand = thisCommand;
     let finalArgNames: string[];
@@ -174,10 +172,10 @@ describe('Argument Parsing', () => {
       finalArgNames = argNames;
     }
     thisCommand.run();
-    expect(spyAction.calledOnce).toBe(true);
-    const call = spyAction.getCall(0);
-    const invokedCommand = call.args[0];
-    const invokedRootCommand = call.args[0];
+    expect(spyAction).toBeCalledTimes(1);
+    const call = spyAction.mock.calls[0];
+    const invokedCommand = call[0];
+    const invokedRootCommand = call[0];
     expect(invokedCommand).toBe(thisCommand);
     expect(invokedRootCommand).toBe(rootCommand);
     finalArgNames.forEach((argName) => {
@@ -244,7 +242,7 @@ describe('Argument Parsing', () => {
   });
 
   describe('Subcommand args', () => {
-    const subSpyAction = sinon.spy();
+    const subSpyAction = jest.fn();
     const subCommand = new Commando.Command('subCommand')
       .option('-s --sub [subOption]', 'sub option', 'sDefault')
       .action(subSpyAction);
@@ -290,8 +288,8 @@ describe('Argument Parsing', () => {
   });
 
   describe('Action arguments', () => {
-    const spyAction = sinon.spy();
-    const spySubAction = sinon.spy();
+    const spyAction = jest.fn();
+    const spySubAction = jest.fn();
     const subCommand = new Commando('subCommand').action(spySubAction);
     const rootCommand = new Commando('rootCommand')
       .version('1.0.0')
@@ -300,16 +298,16 @@ describe('Argument Parsing', () => {
 
     it('passes the root command to the root action', () => {
       rootCommand.run();
-      expect(spyAction.calledOnce).toBe(true);
-      const args = spyAction.getCall(0).args;
+      expect(spyAction).toBeCalledTimes(1);
+      const args = spyAction.mock.calls[0];
       expect(args[0]).toBe(rootCommand);
     });
     it('passes the sub command to the sub action', () => {
       const rootWithArgs = rootCommand.args(['subCommand']);
       const subWithArgs = rootWithArgs.getCommand('subCommand');
       rootWithArgs.run();
-      expect(spySubAction.calledOnce).toBe(true);
-      const args = spySubAction.getCall(0).args;
+      expect(spySubAction).toBeCalledTimes(1);
+      const args = spySubAction.mock.calls[0];
       expect(args[0]).toBe(subWithArgs);
       expect(args[1]).toBe(rootWithArgs);
     });
