@@ -1,9 +1,8 @@
-import Commando from '../src/Commando';
+import Commando from '../Commando';
 
 // tslint:disable-next-line:variable-name
 const Immutable = require('immutable');
 
-const expect = require('expect.js');
 const minimist = require('minimist');
 const sinon = require('sinon');
 
@@ -13,23 +12,23 @@ describe('Commando', () => {
   describe('#constructor()', () => {
     it('can be created with no config', () => {
       const commando = new Commando();
-      expect(commando.config).to.eql(Commando.defaultConfig());
+      expect(commando.config).toEqual(Commando.defaultConfig());
     });
 
     it('can be created with name', () => {
       const commando = new Commando('myname');
-      expect(commando.config).not.to.eql(Commando.defaultConfig());
-      expect(commando.get('name')).to.be('myname');
+      expect(commando.config).not.toEqual(Commando.defaultConfig());
+      expect(commando.get('name')).toBe('myname');
     });
 
     it('can be created with name config', () => {
       const commando = new Commando({ name: 'voldemort' });
-      expect(commando.get('name')).to.eql('voldemort');
+      expect(commando.get('name')).toEqual('voldemort');
     });
 
     it('can be created with version config', () => {
       const commando = new Commando({ version: '1.1.1' });
-      expect(commando.get('version')).to.eql('1.1.1');
+      expect(commando.get('version')).toEqual('1.1.1');
     });
 
     it('has immutable version', () => {
@@ -37,12 +36,12 @@ describe('Commando', () => {
 
       // Test default version
       const initialVersion = Commando.defaultConfig().get('version');
-      expect(commando.get('version')).to.be(initialVersion);
+      expect(commando.get('version')).toBe(initialVersion);
       const commando2 = commando.version('1.0.1-test');
 
-      expect(commando2.get('version')).to.be('1.0.1-test');
-      expect(commando.get('version')).to.be(initialVersion);
-      expect(Object.isFrozen(commando)).to.be(true);
+      expect(commando2.get('version')).toBe('1.0.1-test');
+      expect(commando.get('version')).toBe(initialVersion);
+      expect(Object.isFrozen(commando)).toBe(true);
     });
   });
   /** @test {Commando#command} */
@@ -51,8 +50,7 @@ describe('Commando', () => {
       const commando = new Commando('testRootCommand');
       const command = new Commando.Command();
 
-      expect(commando.command.bind(commando)).withArgs(command)
-        .to.throwException();
+      expect(() => commando.command(command)).toThrow();
     });
 
     it('can add a command', () => {
@@ -60,7 +58,7 @@ describe('Commando', () => {
       const command = new Commando.Command({ name: 'cmd1' });
 
       const testCmd = commando.command(command).getCommand('cmd1');
-      expect(testCmd).to.eql(command);
+      expect(testCmd).toEqual(command);
 
     });
   });
@@ -73,7 +71,7 @@ describe('Commando', () => {
         .version('1.0.0')
         .command(subCommand);
 
-      expect(commando.getCommand('subc1')).to.be(subCommand);
+      expect(commando.getCommand('subc1')).toBe(subCommand);
     });
   });
 
@@ -89,7 +87,7 @@ describe('Commando', () => {
         .command(
           new Commando.Command('list')
           .action((command: Commando) => {
-            expect(command.get('name')).to.be('list');
+            expect(command.get('name')).toBe('list');
           }),
         ),
       )
@@ -104,23 +102,20 @@ describe('Commando', () => {
         )
         .option('-a --another', 'add another', false);
     commando.debug();
-    console.log(commando.get('commands'));
-    console.log();
-    console.log();
 
     it('should fail if invoked without command', () => {
       const res = commando.args([]).run();
-      expect(res).to.not.be.ok();
+      expect(res).toBeFalsy();
     });
 
     it('should fail if invoked without subcommand', () => {
       const res = commando.args(['job']).run();
-      expect(res).to.not.be.ok();
+      expect(res).toBeFalsy();
     });
 
     it('should run if invoked with subcommand', () => {
       const res = commando.args(['job', 'list']).run();
-      expect(res).to.be.ok();
+      expect(res).toBeTruthy();
     });
 
     commando.args(['schedule', 'list', '-f']).run();
@@ -145,7 +140,7 @@ describe('Commando', () => {
       const thisCommand = commando.args(inputArgs);
       const expectedArgs = new Immutable.fromJS(args);
 
-      expect(thisCommand.get('args').equals(expectedArgs)).to.be(true);
+      expect(thisCommand.get('args').equals(expectedArgs)).toBe(true);
     });
     it('passes args to subcommands', () => {
       const inputArgs = ['subc1', 'wat'];
@@ -156,15 +151,15 @@ describe('Commando', () => {
       const expectedArgs = new Immutable.fromJS(args);
       const expectedSubArgs = new Immutable.fromJS(subArgs);
 
-      expect(thisCommand.get('args').equals(expectedArgs)).to.be(true);
-      expect(thisSubCommand.get('args').equals(expectedSubArgs)).to.be(true);
+      expect(thisCommand.get('args').equals(expectedArgs)).toBe(true);
+      expect(thisSubCommand.get('args').equals(expectedSubArgs)).toBe(true);
     });
 
     it('ignores undefined options', () => {
       const inputArgs = ['--wat'];
       const thisCommand = commando.args(inputArgs);
 
-      expect(thisCommand.getOption('wat')).to.be(undefined);
+      expect(thisCommand.getOption('wat')).toBe(undefined);
     });
 
     it('sees options', () => {
@@ -175,26 +170,26 @@ describe('Commando', () => {
 
       console.log('GETOPT', thisCommand.getOption('wat'));
       // TODO
-      // expect(thisCommand.getOption('wat')).to.be(true);
+      // expect(thisCommand.getOption('wat')).toBe(true);
     });
   });
 
   describe('#getOptionsHash', () => {
     it('returns empty object for no options', () => {
       function testAction(command: Commando) {
-        expect(command.getOptionsHash()).to.eql({});
+        expect(command.getOptionsHash()).toEqual({});
       }
       const spyTestAction = sinon.spy(testAction);
       new Commando({ name: 'base command' })
         .version('1.0.0')
         .action(spyTestAction)
         .run();
-      expect(spyTestAction.calledOnce).to.be(true);
+      expect(spyTestAction.calledOnce).toBe(true);
     });
     it('returns default options', () => {
       const defaultValue = 'defaultValue123';
       function testAction(command: Commando) {
-        expect(command.getOptionsHash()).to.eql({
+        expect(command.getOptionsHash()).toEqual({
           a: defaultValue,
           'opt-a': defaultValue,
           optionA: defaultValue,
@@ -206,13 +201,13 @@ describe('Commando', () => {
         .option('-a --opt-a [optionA]', 'option a', defaultValue)
         .action(spyTestAction)
         .run();
-      expect(spyTestAction.calledOnce).to.be(true);
+      expect(spyTestAction.calledOnce).toBe(true);
     });
     it('returns default and overriden options', () => {
       const defaultValue = 'defaultValue123';
       const passedValue = 'passedValue123';
       function testAction(command: Commando) {
-        expect(command.getOptionsHash()).to.eql({
+        expect(command.getOptionsHash()).toEqual({
           a: defaultValue,
           'opt-a': defaultValue,
           optionA: defaultValue,
@@ -229,7 +224,7 @@ describe('Commando', () => {
         .action(spyTestAction)
         .args(['-b', passedValue])
         .run();
-      expect(spyTestAction.calledOnce).to.be(true);
+      expect(spyTestAction.calledOnce).toBe(true);
     });
   });
 });
@@ -242,17 +237,17 @@ describe('Action', () => {
     it('calls the action without calling args', () => {
       const spyAction = sinon.spy();
       commando.action(spyAction).run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
     it('calls the action with null args', () => {
       const spyAction = sinon.spy();
       commando.action(spyAction).args().run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
     it('calls the action with empty args', () => {
       const spyAction = sinon.spy();
       commando.action(spyAction).args([]).run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
     it('calls the action with one argument', () => {
       const spyAction = sinon.spy();
@@ -264,13 +259,13 @@ describe('Action', () => {
         spyAction();
         const args = command.get('args');
         const rootArgs = command.get('rootArgs');
-        expect(command).to.be(thisCommand);
-        expect(expectedArgs.equals(args)).to.be.ok();
-        expect(args.get('_').toArray()).to.eql(inputArgs);
-        expect(rootArgs.get('_').toArray()).to.eql(inputArgs);
+        expect(command).toBe(thisCommand);
+        expect(expectedArgs.equals(args)).toBeTruthy();
+        expect(args.get('_').toArray()).toEqual(inputArgs);
+        expect(rootArgs.get('_').toArray()).toEqual(inputArgs);
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
     it('calls the action with one short option', () => {
       const spyAction = sinon.spy();
@@ -282,13 +277,13 @@ describe('Action', () => {
         const args = command.get('args');
         const rootArgs = command.get('rootArgs');
         spyAction();
-        expect(command).to.be(thisCommand);
-        expect(expectedArgs.equals(args)).to.be(true);
-        expect(args.get('_').toArray()).to.eql([]);
-        expect(rootArgs.get('_').toArray()).to.eql([]);
+        expect(command).toBe(thisCommand);
+        expect(expectedArgs.equals(args)).toBe(true);
+        expect(args.get('_').toArray()).toEqual([]);
+        expect(rootArgs.get('_').toArray()).toEqual([]);
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
     it('calls the action with one long option', () => {
       const spyAction = sinon.spy();
@@ -300,15 +295,15 @@ describe('Action', () => {
         const cmdArgs = command.get('args');
         const rootArgs = command.get('rootArgs');
         spyAction();
-        expect(command).to.be(thisCommand);
-        expect(cmdArgs).to.be(rootArgs);
-        expect(expectedArgs.equals(cmdArgs)).to.be(true);
-        expect(cmdArgs.get('_').toArray()).to.eql([]);
-        expect(rootArgs.get('_').toArray()).to.eql([]);
-        expect(cmdArgs.get('test-pass')).to.be.ok();
+        expect(command).toBe(thisCommand);
+        expect(cmdArgs).toBe(rootArgs);
+        expect(expectedArgs.equals(cmdArgs)).toBe(true);
+        expect(cmdArgs.get('_').toArray()).toEqual([]);
+        expect(rootArgs.get('_').toArray()).toEqual([]);
+        expect(cmdArgs.get('test-pass')).toBeTruthy();
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
     it('calls the action with many options', () => {
       const spyAction = sinon.spy();
@@ -328,19 +323,19 @@ describe('Action', () => {
         const cmdArgs = command.get('args');
         const rootArgs = command.get('rootArgs');
         spyAction();
-        expect(command).to.be(thisCommand);
-        expect(cmdArgs).to.be(rootArgs);
-        expect(expectedArgs.equals(cmdArgs)).to.be(true);
-        expect(cmdArgs.get('_').toArray()).to.eql(expectPositional);
-        expect(rootArgs.get('_').toArray()).to.eql(expectPositional);
-        expect(cmdArgs.get('test-pass')).to.be.ok();
-        expect(cmdArgs.get('f')).to.be.ok();
-        expect(cmdArgs.get('cmd')).to.be(undefined);
-        expect(cmdArgs.get('subc')).to.be(undefined);
-        expect(cmdArgs.get('arg1')).to.be(undefined);
+        expect(command).toBe(thisCommand);
+        expect(cmdArgs).toBe(rootArgs);
+        expect(expectedArgs.equals(cmdArgs)).toBe(true);
+        expect(cmdArgs.get('_').toArray()).toEqual(expectPositional);
+        expect(rootArgs.get('_').toArray()).toEqual(expectPositional);
+        expect(cmdArgs.get('test-pass')).toBeTruthy();
+        expect(cmdArgs.get('f')).toBeTruthy();
+        expect(cmdArgs.get('cmd')).toBe(undefined);
+        expect(cmdArgs.get('subc')).toBe(undefined);
+        expect(cmdArgs.get('arg1')).toBe(undefined);
       }).args(inputArgs);
       thisCommand.run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
     });
   });
   describe('Subcommand', () => {
@@ -357,15 +352,15 @@ describe('Action', () => {
     it('calls command action if no subcommand given', () => {
       defaultAction.resetHistory();
       commando.run();
-      expect(defaultAction.calledOnce).to.be(true);
+      expect(defaultAction.calledOnce).toBe(true);
     });
 
     it('calls command action if unknown subcommand given', () => {
       defaultAction.resetHistory();
       const thisCommand = commando.args(['wat']);
       thisCommand.run();
-      expect(defaultAction.calledOnce).to.be(true);
-      expect(defaultAction.calledWith(thisCommand)).to.be(true);
+      expect(defaultAction.calledOnce).toBe(true);
+      expect(defaultAction.calledWith(thisCommand)).toBe(true);
     });
 
     it('calls sub command action if subcommand given', () => {
@@ -375,12 +370,12 @@ describe('Action', () => {
       const thisSubCommand = thisCommand.get('commands').get('subc1');
       thisCommand.run();
 
-      expect(defaultAction.called).to.be(false);
-      expect(subcAction.calledOnce).to.be(true);
-      expect(thisSubCommand.get('name')).to.be('subc1');
-      expect(subcAction.args).to.not.be.empty();
-      expect(subcAction.args[0][0]).to.be(thisSubCommand);
-      expect(subcAction.calledWith(thisCommand)).to.be(false);
+      expect(defaultAction.called).toBe(false);
+      expect(subcAction.calledOnce).toBe(true);
+      expect(thisSubCommand.get('name')).toBe('subc1');
+      expect(subcAction.args).not.toHaveLength(0);
+      expect(subcAction.args[0][0]).toBe(thisSubCommand);
+      expect(subcAction.calledWith(thisCommand)).toBe(false);
     });
   });
 });

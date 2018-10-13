@@ -14,7 +14,6 @@
         "lib": ["es5", "es2015.core", "scripthost", "es2015.collection"]
     },
     "include": [
-        "test/**/*",
         "src/**/*"
     ]
 }

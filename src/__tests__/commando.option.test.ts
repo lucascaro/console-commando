@@ -1,8 +1,6 @@
-import 'mocha';
 
-import Commando from '../src/Commando';
+import Commando from '../Commando';
 
-const expect = require('expect.js');
 import sinon = require('sinon');
 
 /** @test {Option} */
@@ -14,14 +12,14 @@ describe('Option', () => {
       const e = {
         short: 'x',
       };
-      expect(option.parseOptstring('-x')).to.eql(e);
+      expect(option.parseOptstring('-x')).toEqual(e);
     });
 
     it('Parses long options', () => {
       const e = {
         long: 'extreme',
       };
-      expect(option.parseOptstring('--extreme')).to.eql(e);
+      expect(option.parseOptstring('--extreme')).toEqual(e);
     });
 
     it('Parses short and long options', () => {
@@ -29,7 +27,7 @@ describe('Option', () => {
         short: 't',
         long: 'was-tested',
       };
-      expect(option.parseOptstring('-t --was-tested')).to.eql(e);
+      expect(option.parseOptstring('-t --was-tested')).toEqual(e);
     });
 
     it('Parses short optional arguments', () => {
@@ -38,7 +36,7 @@ describe('Option', () => {
         arg: 'was-tested',
         required: false,
       };
-      expect(option.parseOptstring('-2 [was-tested]')).to.eql(e);
+      expect(option.parseOptstring('-2 [was-tested]')).toEqual(e);
     });
 
     it('Parses short required arguments', () => {
@@ -47,7 +45,7 @@ describe('Option', () => {
         arg: 'tested',
         required: true,
       };
-      expect(option.parseOptstring('-t <tested>')).to.eql(e);
+      expect(option.parseOptstring('-t <tested>')).toEqual(e);
     });
 
     it('Parses long optional arguments', () => {
@@ -56,7 +54,7 @@ describe('Option', () => {
         arg: 'was-tested',
         required: false,
       };
-      expect(option.parseOptstring('--tested [was-tested]')).to.eql(e);
+      expect(option.parseOptstring('--tested [was-tested]')).toEqual(e);
     });
 
     it('Parses long required arguments', () => {
@@ -65,7 +63,7 @@ describe('Option', () => {
         arg: 'was-tested',
         required: true,
       };
-      expect(option.parseOptstring('--tested <was-tested>')).to.eql(e);
+      expect(option.parseOptstring('--tested <was-tested>')).toEqual(e);
     });
 
     it('Parses short and long with optional arguments', () => {
@@ -75,10 +73,10 @@ describe('Option', () => {
         arg: 'was_tested',
         required: false,
       };
-      expect(option.parseOptstring('-0 --my_string [was_tested]')).to.eql(e);
-      expect(option.parseOptstring('--my_string -0 [was_tested]')).to.eql(e);
-      expect(option.parseOptstring('--my_string [was_tested] -0')).to.eql(e);
-      expect(option.parseOptstring('[was_tested] -0 --my_string')).to.eql(e);
+      expect(option.parseOptstring('-0 --my_string [was_tested]')).toEqual(e);
+      expect(option.parseOptstring('--my_string -0 [was_tested]')).toEqual(e);
+      expect(option.parseOptstring('--my_string [was_tested] -0')).toEqual(e);
+      expect(option.parseOptstring('[was_tested] -0 --my_string')).toEqual(e);
     });
 
     it('Parses short and long with required arguments', () => {
@@ -88,22 +86,22 @@ describe('Option', () => {
         arg: 'option',
         required: true,
       };
-      expect(option.parseOptstring('-a --is-a <option>')).to.eql(e);
+      expect(option.parseOptstring('-a --is-a <option>')).toEqual(e);
     });
 
     it('fails on duplicated values', () => {
       // bind function to the object to allow calling within expect.
-      const e = expect(option.parseOptstring.bind(option));
+      const when = (arg: string) => expect(() => option.parseOptstring(arg));
 
-      e.withArgs('-s -s').to.throwException();
-      e.withArgs('--ss --ss').to.throwException();
-      e.withArgs('-s --ss -s').to.throwException();
-      e.withArgs('-s --ss').to.not.throwException();
-      e.withArgs('-s --ss [abc] [abc]').to.throwException();
-      e.withArgs('-s --ss [abc] <abc>').to.throwException();
-      e.withArgs('[abc] <abc>').to.throwException();
-      e.withArgs('[abc]').to.throwException();
-      e.withArgs('<abc>').to.throwException();
+      when('-s -s').toThrow();
+      when('--ss --ss').toThrow();
+      when('-s --ss -s').toThrow();
+      when('-s --ss').not.toThrow();
+      when('-s --ss [abc] [abc]').toThrow();
+      when('-s --ss [abc] <abc>').toThrow();
+      when('[abc] <abc>').toThrow();
+      when('[abc]').toThrow();
+      when('<abc>').toThrow();
     });
   });
 
@@ -112,44 +110,44 @@ describe('Option', () => {
     it('creates short flags', () => {
       const o = new Commando.Option('-o', 'an option', false);
 
-      expect(o).to.be.ok();
-      expect(o.get('short')).to.be('o');
-      expect(o.get('long')).to.be(undefined);
-      expect(o.get('arg')).to.be(undefined);
-      expect(o.get('default')).to.be(false);
-      expect(o.get('required')).to.be(false);
+      expect(o).toBeTruthy();
+      expect(o.get('short')).toBe('o');
+      expect(o.get('long')).toBe(undefined);
+      expect(o.get('arg')).toBe(undefined);
+      expect(o.get('default')).toBe(false);
+      expect(o.get('required')).toBe(false);
     });
 
     it('creates long flags', () => {
       const o = new Commando.Option('--opt', 'an option', true);
 
-      expect(o).to.be.ok();
-      expect(o.get('short')).to.be(undefined);
-      expect(o.get('long')).to.be('opt');
-      expect(o.get('arg')).to.be(undefined);
-      expect(o.get('default')).to.be(true);
-      expect(o.get('required')).to.be(false);
+      expect(o).toBeTruthy();
+      expect(o.get('short')).toBe(undefined);
+      expect(o.get('long')).toBe('opt');
+      expect(o.get('arg')).toBe(undefined);
+      expect(o.get('default')).toBe(true);
+      expect(o.get('required')).toBe(false);
     });
 
     it('creates options with optional values', () => {
       const o = new Commando.Option('-o --option [opt]', 'an option', 'default');
 
-      expect(o).to.be.ok();
-      expect(o.get('short')).to.be('o');
-      expect(o.get('long')).to.be('option');
-      expect(o.get('arg')).to.be('opt');
-      expect(o.get('default')).to.be('default');
-      expect(o.get('required')).to.be(false);
+      expect(o).toBeTruthy();
+      expect(o.get('short')).toBe('o');
+      expect(o.get('long')).toBe('option');
+      expect(o.get('arg')).toBe('opt');
+      expect(o.get('default')).toBe('default');
+      expect(o.get('required')).toBe(false);
     });
 
     it('creates options with required values', () => {
       const o = new Commando.Option('-o --option <opt>');
-      expect(o).to.be.ok();
-      expect(o.get('short')).to.be('o');
-      expect(o.get('long')).to.be('option');
-      expect(o.get('arg')).to.be('opt');
-      expect(o.get('default')).to.be(undefined);
-      expect(o.get('required')).to.be(true);
+      expect(o).toBeTruthy();
+      expect(o.get('short')).toBe('o');
+      expect(o.get('long')).toBe('option');
+      expect(o.get('arg')).toBe('opt');
+      expect(o.get('default')).toBe(undefined);
+      expect(o.get('required')).toBe(true);
     });
   });
 });
@@ -176,14 +174,14 @@ describe('Argument Parsing', () => {
       finalArgNames = argNames;
     }
     thisCommand.run();
-    expect(spyAction.calledOnce).to.be(true);
+    expect(spyAction.calledOnce).toBe(true);
     const call = spyAction.getCall(0);
     const invokedCommand = call.args[0];
     const invokedRootCommand = call.args[0];
-    expect(invokedCommand).to.be(thisCommand);
-    expect(invokedRootCommand).to.be(rootCommand);
+    expect(invokedCommand).toBe(thisCommand);
+    expect(invokedRootCommand).toBe(rootCommand);
     finalArgNames.forEach((argName) => {
-      expect(invokedCommand.getOption(argName)).to.be(value);
+      expect(invokedCommand.getOption(argName)).toBe(value);
     });
   }
 
@@ -286,8 +284,8 @@ describe('Argument Parsing', () => {
     it('validates required arguments', () => {
       // expect(commando.args(['-r']).run()).to.not.be.ok();
       // expect(commando.args(['--required']).run()).to.not.be.ok();
-      expect(commando.args(['-r a']).run()).to.be.ok();
-      expect(commando.args(['-required b']).run()).to.be.ok();
+      expect(commando.args(['-r a']).run()).toBeTruthy();
+      expect(commando.args(['-required b']).run()).toBeTruthy();
     });
   });
 
@@ -302,18 +300,18 @@ describe('Argument Parsing', () => {
 
     it('passes the root command to the root action', () => {
       rootCommand.run();
-      expect(spyAction.calledOnce).to.be(true);
+      expect(spyAction.calledOnce).toBe(true);
       const args = spyAction.getCall(0).args;
-      expect(args[0]).to.be(rootCommand);
+      expect(args[0]).toBe(rootCommand);
     });
     it('passes the sub command to the sub action', () => {
       const rootWithArgs = rootCommand.args(['subCommand']);
       const subWithArgs = rootWithArgs.getCommand('subCommand');
       rootWithArgs.run();
-      expect(spySubAction.calledOnce).to.be(true);
+      expect(spySubAction.calledOnce).toBe(true);
       const args = spySubAction.getCall(0).args;
-      expect(args[0]).to.be(subWithArgs);
-      expect(args[1]).to.be(rootWithArgs);
+      expect(args[0]).toBe(subWithArgs);
+      expect(args[1]).toBe(rootWithArgs);
     });
   });
 });

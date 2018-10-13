@@ -1,7 +1,6 @@
-import 'mocha';
-import Commando from '../src/Commando';
+import Commando from '../Commando';
 
-const expect = require('expect.js');
+// const expect = require('expect.js');
 
 /** @test {Commando} */
 describe('Commando', () => {
