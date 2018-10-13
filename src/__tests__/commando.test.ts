@@ -4,7 +4,6 @@ import Commando from '../Commando';
 const Immutable = require('immutable');
 
 const minimist = require('minimist');
-const sinon = require('sinon');
 
 /** @test {Commando} */
 describe('Commando', () => {
