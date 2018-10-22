@@ -1,12 +1,12 @@
 'use strict';
 
-var Commando = require('../lib/commando');
-var path = require('path');
+const Commando = require('../lib/commando').default;
+const path = require('path');
 
 /**
  * Action example
  */
-var commando = new Commando()
+const commando = new Commando('example1')
   .name(path.basename(__filename))
   .version('1.0.0-action-example')
   .description('This is a simple command with no arguments. This command ' +

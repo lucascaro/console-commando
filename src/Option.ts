@@ -10,7 +10,30 @@ export interface ParsedOptions {
   long?: string;
   required?: boolean;
 }
+export interface OptionConfig {
+  readonly arg: string;
+  readonly short: string;
+  readonly long: string;
+  readonly required: boolean;
+  readonly default?: any;
+  readonly description?: string;
+}
 
+/**
+ * Option default configuration.
+ *
+ * @return {Immutable.Map} the default (empty) configuration for commando.
+ *
+ * @access private
+ */
+const defaultConfig: OptionConfig = {
+  arg: '',
+  short: '',
+  long: '',
+  required: false,
+  default: undefined,
+  description: undefined,
+};
 /**
  * Defines options with short and long names.
  *
@@ -19,7 +42,7 @@ export interface ParsedOptions {
  * @see {@link Option#constructor}
  */
 export default class Option {
-  private config!: Immutable.Map<string, any>;
+  private config!: OptionConfig;
   /**
    * Creates a new Option.
    *
@@ -41,19 +64,30 @@ export default class Option {
    * @param  [defaultValue]  A default value for this option.
    * @constructor
    */
+  constructor()
+  constructor(config: string)
+  constructor(config: string, description: string)
+  constructor(config: string, description: string | undefined, defaultValue: any)
+  constructor(config: Partial<OptionConfig>)
+  constructor(config: OptionConfig)
   constructor (config?: string | object, description?: string, defaultValue?: any) {
     if (config instanceof Option) {
       return config;
     }
-    let configObj = config;
+    if (!config) {
+      throw new Error('config cannot be empty');
+    }
+    let configObj: Partial<OptionConfig>;
     if (typeof config === 'string') {
       configObj = {
         ...this.parseOptstring(config),
         description,
         default: defaultValue,
       };
+    } else {
+      configObj = config;
     }
-    this.config = Option.defaultConfig().merge(Immutable.fromJS(configObj));
+    this.config = { ...defaultConfig, ...configObj };
   }
 
   /**
@@ -62,15 +96,15 @@ export default class Option {
    * @param  key The name of the property to get.
    * @return     The value of the property.
    */
-  get (key: string): string {
-    return this.config.get(key);
+  get<T extends keyof OptionConfig> (key: T): OptionConfig[T] {
+    return this.config[key];
   }
 
   /**
    * Prints out debugging information.
    */
   debug () {
-    debug.log('Option: %j', this.config.toObject());
+    debug.log('Option: %j', this.config);
   }
 
   /**
@@ -167,8 +201,9 @@ export default class Option {
    *
    * @param  {Immutable.List} args List of arguments.
    * @return {?mixed}              The value of the argument.
+   * // TODO: validate parameter and return types
    */
-  getArgValue (args: Immutable.Map<string, string>) {
+  getArgValue(args: Immutable.Map<string, any>): string | undefined {
     const short = this.get('short');
     const long = this.get('long');
 
@@ -178,23 +213,5 @@ export default class Option {
       argValue = this.get('default');
     }
     return argValue;
-  }
-
-  /**
-   * Option default configuration.
-   *
-   * @return {Immutable.Map} the default (empty) configuration for commando.
-   *
-   * @access private
-   */
-  static defaultConfig () {
-    return Immutable.fromJS({
-      short: undefined,
-      long: undefined,
-      arg: undefined,
-      required: false,
-      default: undefined,
-      description: undefined,
-    });
   }
 }

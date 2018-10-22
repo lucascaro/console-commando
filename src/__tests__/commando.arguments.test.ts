@@ -7,9 +7,8 @@ describe('Commando', () => {
   /** @test {Commando#argument} */
   describe('#argument()', () => {
     it('can be created with no config', () => {
-      const commando = new Commando()
+      const commando = new Commando('name')
         .argument('[testArg]');
-      const config = Commando.defaultConfig();
       // expect(commando._config).to.eql(config);
     });
   });

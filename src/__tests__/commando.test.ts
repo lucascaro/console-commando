@@ -9,14 +9,8 @@ const minimist = require('minimist');
 describe('Commando', () => {
   /** @test {Commando#constructor} */
   describe('#constructor()', () => {
-    it('can be created with no config', () => {
-      const commando = new Commando();
-      expect(commando.config).toEqual(Commando.defaultConfig());
-    });
-
     it('can be created with name', () => {
       const commando = new Commando('myname');
-      expect(commando.config).not.toEqual(Commando.defaultConfig());
       expect(commando.get('name')).toBe('myname');
     });
 
@@ -26,7 +20,7 @@ describe('Commando', () => {
     });
 
     it('can be created with version config', () => {
-      const commando = new Commando({ version: '1.1.1' });
+      const commando = new Commando({ name: 'test', version: '1.1.1' });
       expect(commando.get('version')).toEqual('1.1.1');
     });
 
@@ -34,22 +28,18 @@ describe('Commando', () => {
       const commando = new Commando('testRootCommand');
 
       // Test default version
-      const initialVersion = Commando.defaultConfig().get('version');
-      expect(commando.get('version')).toBe(initialVersion);
       const commando2 = commando.version('1.0.1-test');
 
       expect(commando2.get('version')).toBe('1.0.1-test');
-      expect(commando.get('version')).toBe(initialVersion);
+      expect(commando.get('version')).toBe(commando.get('version'));
       expect(Object.isFrozen(commando)).toBe(true);
     });
   });
   /** @test {Commando#command} */
   describe('#command()', () => {
     it('rejects unnamed commands', () => {
-      const commando = new Commando('testRootCommand');
-      const command = new Commando.Command();
-
-      expect(() => commando.command(command)).toThrow();
+      expect(() => new  Commando('')).toThrow();
+      expect(() => new  Commando({ version: '1.0' })).toThrow();
     });
 
     it('can add a command', () => {
@@ -104,12 +94,12 @@ describe('Commando', () => {
 
     it('should fail if invoked without command', () => {
       const res = commando.args([]).run();
-      expect(res).toBeFalsy();
+      expect(res).resolves.toBeFalsy();
     });
 
     it('should fail if invoked without subcommand', () => {
       const res = commando.args(['job']).run();
-      expect(res).toBeFalsy();
+      expect(res).rejects.toBeFalsy();
     });
 
     it('should run if invoked with subcommand', () => {
@@ -124,8 +114,8 @@ describe('Commando', () => {
 
   /** @test {Commando#args} */
   describe('#args()', () => {
-    const baseAction = () => null;
-    const subAction = () => null;
+    const baseAction = () => undefined;
+    const subAction = () => undefined;
     const subCommand = new Commando.Command({ name: 'subc1' })
     .action(subAction);
     const commando = new Commando({ name: 'base command' })
@@ -257,11 +247,12 @@ describe('Action', () => {
       .action((command: Commando) => {
         spyAction();
         const args = command.get('args');
+        expect(args).toBeDefined();
         const rootArgs = command.get('rootArgs');
         expect(command).toBe(thisCommand);
         expect(expectedArgs.equals(args)).toBeTruthy();
-        expect(args.get('_').toArray()).toEqual(inputArgs);
-        expect(rootArgs.get('_').toArray()).toEqual(inputArgs);
+        expect(args!.get('_')!.toArray()).toEqual(inputArgs);
+        expect(rootArgs!.get('_')!.toArray()).toEqual(inputArgs);
       }).args(inputArgs);
       thisCommand.run();
       expect(spyAction).toHaveBeenCalledTimes(1);
@@ -278,8 +269,8 @@ describe('Action', () => {
         spyAction();
         expect(command).toBe(thisCommand);
         expect(expectedArgs.equals(args)).toBe(true);
-        expect(args.get('_').toArray()).toEqual([]);
-        expect(rootArgs.get('_').toArray()).toEqual([]);
+        expect(args!.get('_')!.toArray()).toEqual([]);
+        expect(rootArgs!.get('_')!.toArray()).toEqual([]);
       }).args(inputArgs);
       thisCommand.run();
       expect(spyAction).toHaveBeenCalledTimes(1);
@@ -297,8 +288,8 @@ describe('Action', () => {
         expect(command).toBe(thisCommand);
         expect(cmdArgs).toBe(rootArgs);
         expect(expectedArgs.equals(cmdArgs)).toBe(true);
-        expect(cmdArgs.get('_').toArray()).toEqual([]);
-        expect(rootArgs.get('_').toArray()).toEqual([]);
+        expect(cmdArgs!.get('_')!.toArray()).toEqual([]);
+        expect(rootArgs!.get('_')!.toArray()).toEqual([]);
         expect(cmdArgs.get('test-pass')).toBeTruthy();
       }).args(inputArgs);
       thisCommand.run();
@@ -325,8 +316,8 @@ describe('Action', () => {
         expect(command).toBe(thisCommand);
         expect(cmdArgs).toBe(rootArgs);
         expect(expectedArgs.equals(cmdArgs)).toBe(true);
-        expect(cmdArgs.get('_').toArray()).toEqual(expectPositional);
-        expect(rootArgs.get('_').toArray()).toEqual(expectPositional);
+        expect(cmdArgs!.get('_')!.toArray()).toEqual(expectPositional);
+        expect(rootArgs!.get('_')!.toArray()).toEqual(expectPositional);
         expect(cmdArgs.get('test-pass')).toBeTruthy();
         expect(cmdArgs.get('f')).toBeTruthy();
         expect(cmdArgs.get('cmd')).toBe(undefined);
@@ -372,7 +363,8 @@ describe('Action', () => {
 
       expect(defaultAction).not.toBeCalled();
       expect(subcAction).toHaveBeenCalledTimes(1);
-      expect(thisSubCommand.get('name')).toBe('subc1');
+      expect(thisSubCommand).toBeDefined();
+      expect(thisSubCommand!.get('name')).toBe('subc1');
       expect(subcAction.mock.calls[0]).not.toHaveLength(0);
       expect(subcAction.mock.calls[0][0]).toBe(thisSubCommand);
       // FIXME: I don't think this tests what I think this tests.

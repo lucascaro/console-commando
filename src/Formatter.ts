@@ -14,7 +14,7 @@ export interface Formatter {
   padCommand: () => (options: any) => string;
   padSubCommand: () => (options: any) => string;
   padOption: () => (options: any) => string;
-  padArgument: () => (options: any) => string;
+  padArgument: () => (text: string, required:boolean) => string;
   padShortOption: () => (options: any) => string;
   padDescription: () => (options: any) => string;
   padSubCommandOption: () => (options: any) => string;

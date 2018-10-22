@@ -5,7 +5,7 @@ import Commando from '../Commando';
 describe('Option', () => {
   /** @test {Option#parseOptString} */
   describe('#parseOptString()', () => {
-    const option = new Commando.Option();
+    const option = new Commando.Option('-t');
     it('Parses short options', () => {
       const e = {
         short: 'x',
@@ -110,8 +110,8 @@ describe('Option', () => {
 
       expect(o).toBeTruthy();
       expect(o.get('short')).toBe('o');
-      expect(o.get('long')).toBe(undefined);
-      expect(o.get('arg')).toBe(undefined);
+      expect(o.get('long')).toBe('');
+      expect(o.get('arg')).toBe('');
       expect(o.get('default')).toBe(false);
       expect(o.get('required')).toBe(false);
     });
@@ -120,9 +120,9 @@ describe('Option', () => {
       const o = new Commando.Option('--opt', 'an option', true);
 
       expect(o).toBeTruthy();
-      expect(o.get('short')).toBe(undefined);
+      expect(o.get('short')).toBe('');
       expect(o.get('long')).toBe('opt');
-      expect(o.get('arg')).toBe(undefined);
+      expect(o.get('arg')).toBe('');
       expect(o.get('default')).toBe(true);
       expect(o.get('required')).toBe(false);
     });

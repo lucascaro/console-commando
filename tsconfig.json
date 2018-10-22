@@ -9,9 +9,9 @@
         "declaration": true,
         "module": "commonjs",
         "moduleResolution": "Node",
-        "target": "ES5",
+        "target": "ES6",
         "outDir": "lib",
-        "lib": ["es5", "es2015.core", "scripthost", "es2015.collection"]
+        "lib": ["es6", "scripthost"]
     },
     "include": [
         "src/**/*"

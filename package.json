@@ -22,10 +22,9 @@
     "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
-    "@types/immutable": "^3.8.4",
     "@types/jest": "^23.3.5",
     "@types/minimist": "^1.1.29",
-    "@types/node": "^10.11.7",
+    "@types/node": "^10.12.0",
     "@types/strip-ansi": "^3.0.0",
     "esdoc": "^1.1.0",
     "jest": "^23.6.0",
@@ -37,7 +36,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "immutable": "^3.8.2",
+    "immutable": "^4.0.0-rc.10",
     "minimist": "^1.2.0",
     "string.prototype.repeat": "^0.2.0",
     "strip-ansi": "^5.0.0",

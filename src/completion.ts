@@ -39,7 +39,7 @@ function getArgCompletions(command: Commando, args?: immutable.List<string>): st
   debug.log('COMMAND', command);
 
   const commandArg = commandArguments.get(1);
-  const subcommand = command.getCommand(commandArg);
+  const subcommand = commandArg ? command.getCommand(commandArg) : undefined;
   debug.log('SUBC', commandArg, subcommand);
   if (commandArg && commandArg[0] === '-') {
     completeOptions(command, completions, commandArg);
@@ -67,9 +67,11 @@ function getArgCompletions(command: Commando, args?: immutable.List<string>): st
 function completeSubcommands(command: Commando, prefix: string = ''): string[] {
   debug.log('COMPLETE_SUBCOMMAND', { command, prefix });
   const nameMap = command.get('commands') as immutable.Map<string, Commando>;
+  // TODO: probably the same as enumerating keys.
   const names: string[] = nameMap
-    .map((c?: Commando) => c ? c.get('name') : '')
+    .map(c => c.get('name'))
     .toArray()
+    .map(([k, name]) => name)
     .filter(s => s !== '');
 
   debug.log('PREFIX', { prefix, names });
@@ -91,7 +93,7 @@ function completeSubcommands(command: Commando, prefix: string = ''): string[] {
  */
 function completeOptions(command: Commando, completions: string[], prefix: string = '') {
   const options = command.get('options');
-  options.forEach((option: immutable.Map<string, string>) => {
+  options.forEach((option) => {
     const short = `-${option.get('short')}`;
     const long = `--${option.get('long')}`;
     if (short !== '-' && short.startsWith(prefix)) {
@@ -113,7 +115,7 @@ function completeOptions(command: Commando, completions: string[], prefix: strin
  */
 function completeArguments(command: Commando, completions: string[]) {
   return command.get('arguments')
-    .map((a: immutable.Map<string, string>) => a.get('arg'));
+    .map(a => a.get('arg'));
 }
 
 /**
