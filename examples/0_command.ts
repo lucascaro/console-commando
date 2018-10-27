@@ -88,16 +88,24 @@ const subTest = Command.create('sub-test')
 .withPositionalString({ name: 'pos1', description: 'a positional string', default: 'test' })
 .withPositionalNumber({ name: 'pos2', description: 'a positional number', default: 10 })
 .withPreProcessor((_, state) => {
+  console.log('pre1');
   return state.set('runtime', 'state');
 })
 .withSubCommand(
   Command.create('sub')
+  .withPreProcessor((_, state) => {
+    return state.set('runtime2', 'state2');
+  })
   .withHandler((cmd, state) => {
     console.log('SUBCOMMAND!');
     console.log(JSON.stringify(state));
   })
   .withSubCommand(
     Command.create('sub2')
+    .withPreProcessor((_, state) => {
+      console.log('pre3');
+      return state.set('runtime3', 'state3');
+    })
     .withHandler((cmd, state) => {
       console.log('SUB SUBCOMMAND!');
       console.log(JSON.stringify(state));
