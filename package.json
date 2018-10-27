@@ -6,7 +6,7 @@
   "types": "./lib/Commando.d.ts",
   "scripts": {
     "clean": "rm -rf lib/*",
-    "lint": "tslint -c tslint.json src/**/*.ts",
+    "lint": "tslint -c tslint.json -p ./tsconfig.json src/**/*.ts",
     "test": "jest",
     "test-watch": "mocha --require ts-node/register --watch-extensions ts,tsx 'test/**/*.{ts,tsx}'",
     "compile": "npm run clean && tsc -p .",
@@ -22,7 +22,7 @@
     "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
-    "@types/jest": "^23.3.5",
+    "@types/jest": "^23.3.8",
     "@types/minimist": "^1.1.29",
     "@types/node": "^10.12.0",
     "@types/strip-ansi": "^3.0.0",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "chalk": "^2.4.1",
-    "immutable": "^4.0.0-rc.10",
+    "immutable": "^4.0.0-rc.11",
     "minimist": "^1.2.0",
     "string.prototype.repeat": "^0.2.0",
     "strip-ansi": "^5.0.0",
