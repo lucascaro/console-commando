@@ -1,7 +1,13 @@
-import Command from "../Command";
+import Command, { ReturnValue } from "../Command";
 
-Command.create('testCmd')
-.run();
+describe('Command', () => {
+  test('can create a command with a name', () => {
+    expect(() => Command.create('testCmd')).not.toThrowError();
+    expect(
+      Command.create('testCmd').run()
+    ).resolves.toBe(ReturnValue.SUCCESS);
+  })
+})
 
 Command.create('testCmd')
 .withVersion('1')
