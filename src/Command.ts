@@ -134,7 +134,7 @@ export function withState(initialState: CommandState): Command {
 
   function withStringOption(definition: Option<string>): Command {
     if (definition.default !== undefined
-      && definition.multiple !== Array.isArray(definition.default)
+      && !!definition.multiple !== Array.isArray(definition.default)
     ) {
       throw new TypeError('Default value should be an array if multiple is set.');
     }
@@ -266,11 +266,6 @@ export function withState(initialState: CommandState): Command {
     const parsedArgs = cmd.state.parsedRuntimeArgs || immutable.Map();
     const positionalArgs = parsedArgs.get('_', []) as string[];
     const arg0 = positionalArgs[0] as string | undefined;
-    // Show help text if requested, or if no handler is defined.
-    if (arg0 === 'help' || parsedArgs.has('help')) {
-      cmd.showHelp();
-      return Promise.resolve(ReturnValue.SUCCESS);
-    }
 
     let runtimeState: RuntimeState = state || immutable.Map();
     if (cmd.state.preProcessor) {
@@ -286,6 +281,12 @@ export function withState(initialState: CommandState): Command {
       return subCommand
       .withRuntimeArgs(cmd.state.runtimeArgs.toArray(), parsedArgs.set('_', subArgs.slice(1)))
       .run(runtimeState);
+    }
+
+      // Show help text if requested, or if no handler is defined.
+    if (arg0 === 'help' || parsedArgs.get('help', false)) {
+      cmd.showHelp();
+      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     if (!cmd.state.handler) {
