@@ -123,6 +123,15 @@ export function withState(initialState: CommandState): Command {
     return addOption(cmd.state, { ...definition, typeName: '' }, 'flags');
   }
 
+  function withHelp() :Command {
+    return cmd.withFlag({
+      name: 'help',
+      long: 'help',
+      short: 'h',
+      description: 'Show this help.',
+    });
+  }
+
   function withStringOption(definition: Option<string>): Command {
     if (definition.default !== undefined
       && definition.multiple !== Array.isArray(definition.default)
@@ -155,16 +164,17 @@ export function withState(initialState: CommandState): Command {
   function withRuntimeArgs(args?: string[], parsed?: ParsedRuntimeArgs): Command {
     const commandArgs = args || process.argv.slice(2);
     const runtimeArgs = cmd.state.runtimeArgs.push(...commandArgs);
+    const cmdWithHelp = withHelp();
     if (commandArgs) {
       try {
         const parsedRuntimeArgs = argvParser.parse(
           commandArgs,
-          cmd.state.flags,
-          combinedOptions(cmd.state),
-          combinedArguments(cmd.state),
+          cmdWithHelp.state.flags,
+          combinedOptions(cmdWithHelp.state),
+          combinedArguments(cmdWithHelp.state),
           parsed,
         );
-        return withState({ ...cmd.state, runtimeArgs, parsedRuntimeArgs });
+        return withState({ ...cmdWithHelp.state, runtimeArgs, parsedRuntimeArgs });
       } catch (e) {
         console.error(colors.red(`\nError: ${e.message}\n`));
         showHelp();
@@ -172,9 +182,9 @@ export function withState(initialState: CommandState): Command {
       }
     }
     if (parsed) {
-      return withState({ ...cmd.state, runtimeArgs, parsedRuntimeArgs: parsed });
+      return withState({ ...cmdWithHelp.state, runtimeArgs, parsedRuntimeArgs: parsed });
     }
-    return withState({ ...cmd.state, runtimeArgs });
+    return withState({ ...cmdWithHelp.state, runtimeArgs });
   }
 
   function getFlag(name: string): boolean {
