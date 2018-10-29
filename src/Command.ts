@@ -1,5 +1,5 @@
-import immutable from 'immutable';
-import { Runtime } from 'inspector';
+import * as immutable from 'immutable';
+import argvParser from './helpers/argvParser';
 import colors from './helpers/colors';
 
 export enum ReturnValue {
@@ -14,7 +14,7 @@ export interface Option<T> {
   description?: string;
   multiple?: boolean;
   required?: boolean;
-  default?: T;
+  default?: T | T[];
 }
 
 export interface TypeNamedOption<T> extends Option<T>{
@@ -25,7 +25,8 @@ export interface Argument<T> {
   name: string;
   description?: string;
   required?: boolean;
-  default?: T;
+  multiple?: boolean;
+  default?: T | T [];
 }
 
 export interface TypeNamedArgument<T> extends Argument<T> {
@@ -34,25 +35,33 @@ export interface TypeNamedArgument<T> extends Argument<T> {
 
 export type RuntimeState = immutable.Map<string, any>;
 export type Handler = (command: Command, runtimeState: RuntimeState) => Promise<ReturnValue> | void;
-export type PreProcessor = (command: Command, runtimeState: RuntimeState) => RuntimeState;
+export type PreProcessor = (command: Command, runtimeState: RuntimeState) => RuntimeState | void;
 
 export type StoredOption<T> = immutable.Map<string, Readonly<TypeNamedOption<T>>>;
-export type AllStoredOptions = StoredOption<boolean|string|number|string[]>;
+export type AllStoredOptions = StoredOption<boolean|string|number>;
 
 export type StoredArgument<T> = immutable.Map<string, Readonly<TypeNamedArgument<T>>>;
-export type AllStoredArguments = StoredArgument<string|number|string[]>;
+export type AllStoredArguments = StoredArgument<string|number>;
+export type ParsedRuntimeArgs = immutable.Map<string, boolean|string|number|string[]>;
+
+export type SubCommands = immutable.Map<string, Command>;
 
 export interface Command {
   withVersion: (version: string) => Command;
   withDescription: (description: string) => Command;
   withFlag: (definition: Option<boolean>) => Command;
-  withStringArg: (definition: Option<string>) => Command;
-  withNumberArg: (definition: Option<number>) => Command;
-  withStringArrayArg: (definition: Option<string[]>) => Command;
+  withStringOption: (definition: Option<string>) => Command;
+  withNumberOption: (definition: Option<number>) => Command;
   withPositionalString: (definition: Argument<string>) => Command;
   withPositionalNumber: (definition: Argument<number>) => Command;
+  getFlag: (name: string) => boolean;
+  getStringOption: (name: string) => string;
+  getNumberOption: (name: string) => number;
+  getStringArrayOption: (name: string) => string[];
+  getPositionalString: (name: string) => string;
+  getPositionalNumber: (name: string) => number;
   withSubCommand: (subCommand: Command) => Command;
-  withRuntimeArgs: (args?: string[]) => Command;
+  withRuntimeArgs: (args?: string[], parsed?: ParsedRuntimeArgs) => Command;
   withHandler: (fn: Handler) => Command;
   withPreProcessor: (fn: PreProcessor) => Command;
   showHelp: () => void;
@@ -68,39 +77,30 @@ interface CommandState {
   handler?: Handler;
   preProcessor?: PreProcessor;
   flags: StoredOption<boolean>;
-  stringArgs: StoredOption<string>;
-  numberArgs: StoredOption<number>;
-  stringArrayArgs: StoredOption<string[]>;
+  stringOptions: StoredOption<string>;
+  numberOptions: StoredOption<number>;
   positionalStringArgs: StoredArgument<string>;
   positionalNumberArgs: StoredArgument<number>;
-  subCommands: immutable.Map<string, Command>;
+  subCommands: SubCommands;
   runtimeArgs: immutable.List<string>;
+  parsedRuntimeArgs: ParsedRuntimeArgs;
 }
 
-export function create(name: string): Command {
-  return withState({
-    name,
-    flags: immutable.Map(),
-    stringArgs: immutable.Map(),
-    numberArgs: immutable.Map(),
-    stringArrayArgs: immutable.Map(),
-    positionalStringArgs: immutable.Map(),
-    positionalNumberArgs: immutable.Map(),
-    subCommands: immutable.Map(),
-    runtimeArgs: immutable.List(),
-  });
-}
-
-function withState(initialState: CommandState): Command {
+export function withState(initialState: CommandState): Command {
   const cmd: Command = {
     withVersion,
     withDescription,
     withFlag,
-    withStringArg,
-    withNumberArg,
-    withStringArrayArg,
+    withStringOption,
+    withNumberOption,
     withPositionalString,
     withPositionalNumber,
+    getFlag,
+    getStringOption,
+    getNumberOption,
+    getStringArrayOption,
+    getPositionalString,
+    getPositionalNumber,
     withSubCommand,
     withRuntimeArgs,
     withHandler,
@@ -120,35 +120,28 @@ function withState(initialState: CommandState): Command {
   }
 
   function withFlag(definition: Option<boolean>): Command {
-    return replacing(cmd.state, { ...definition, typeName: '' }, 'flags');
+    return addOption(cmd.state, { ...definition, typeName: '' }, 'flags');
   }
 
-  function withStringArg(definition: Option<string>): Command {
-    return replacing(cmd.state, { ...definition, typeName: 'string' }, 'stringArgs');
+  function withStringOption(definition: Option<string>): Command {
+    if (definition.default !== undefined
+      && definition.multiple !== Array.isArray(definition.default)
+    ) {
+      throw new TypeError('Default value should be an array if multiple is set.');
+    }
+    return addOption(cmd.state, { ...definition, typeName: 'string' }, 'stringOptions');
   }
 
-  function withNumberArg(definition: Option<number>): Command {
-    return replacing(cmd.state, { ...definition, typeName: 'number' }, 'numberArgs');
-  }
-
-  function withStringArrayArg(definition: Option<string[]>): Command {
-    return replacing(
-      cmd.state,
-      {
-        ...definition,
-        typeName: 'string',
-        multiple: true,
-      },
-      'stringArrayArgs',
-    );
+  function withNumberOption(definition: Option<number>): Command {
+    return addOption(cmd.state, { ...definition, typeName: 'number' }, 'numberOptions');
   }
 
   function withPositionalString(definition: Argument<string>): Command {
-    return replacing(cmd.state, { ...definition, typeName: 'string' }, 'positionalStringArgs');
+    return addOption(cmd.state, { ...definition, typeName: 'string' }, 'positionalStringArgs');
   }
 
   function withPositionalNumber(definition: Argument<number>): Command {
-    return replacing(cmd.state, { ...definition, typeName: 'number' }, 'positionalNumberArgs');
+    return addOption(cmd.state, { ...definition, typeName: 'number' }, 'positionalNumberArgs');
   }
 
   function withSubCommand(subCommand: Command): Command {
@@ -159,11 +152,69 @@ function withState(initialState: CommandState): Command {
     return withState({ ...cmd.state, subCommands });
   }
 
-  function withRuntimeArgs(args?: string[]): Command {
+  function withRuntimeArgs(args?: string[], parsed?: ParsedRuntimeArgs): Command {
     const commandArgs = args || process.argv.slice(2);
     const runtimeArgs = cmd.state.runtimeArgs.push(...commandArgs);
-    // TODO: parse the arguments!
+    if (commandArgs) {
+      try {
+        const parsedRuntimeArgs = argvParser.parse(
+          commandArgs,
+          cmd.state.flags,
+          combinedOptions(cmd.state),
+          combinedArguments(cmd.state),
+          parsed,
+        );
+        return withState({ ...cmd.state, runtimeArgs, parsedRuntimeArgs });
+      } catch (e) {
+        console.error(colors.red(`\nError: ${e.message}\n`));
+        showHelp();
+        process.exit(ReturnValue.FAILURE);
+      }
+    }
+    if (parsed) {
+      return withState({ ...cmd.state, runtimeArgs, parsedRuntimeArgs: parsed });
+    }
     return withState({ ...cmd.state, runtimeArgs });
+  }
+
+  function getFlag(name: string): boolean {
+    return !!cmd.state.parsedRuntimeArgs.get(name);
+  }
+
+  function getStringOption(name: string): string {
+    if (!cmd.state.stringOptions.has(name)) {
+      throw new TypeError(`${name} is not a string argument`);
+    }
+    return cmd.state.parsedRuntimeArgs.get(name) as string;
+  }
+
+  function getNumberOption(name: string): number {
+    if (!cmd.state.numberOptions.has(name)) {
+      throw new TypeError(`${name} is not a numeric argument`);
+    }
+    return cmd.state.parsedRuntimeArgs.get(name) as number;
+  }
+
+  function getStringArrayOption(name: string): string[] {
+    const args = cmd.state.stringOptions;
+    if (!args.has(name) || !args.get(name)!.multiple) {
+      throw new TypeError(`${name} is not a multi argument`);
+    }
+    return cmd.state.parsedRuntimeArgs.get(name) as string[];
+  }
+
+  function getPositionalString(name: string): string {
+    if (!cmd.state.positionalStringArgs.has(name)) {
+      throw new TypeError(`${name} is not a string positional argument`);
+    }
+    return cmd.state.parsedRuntimeArgs.get(name) as string;
+  }
+
+  function getPositionalNumber(name: string): number {
+    if (!cmd.state.positionalNumberArgs.has(name)) {
+      throw new TypeError(`${name} is not a string positional argument`);
+    }
+    return cmd.state.parsedRuntimeArgs.get(name) as number;
   }
 
   function withHandler(fn: Handler): Command {
@@ -180,10 +231,10 @@ function withState(initialState: CommandState): Command {
     if (s.description) {
       console.log(s.description);
     }
-    const options = combinedOptions(cmd);
+    const options = combinedOptions(cmd.state);
     const optsHelp = !options.isEmpty() ? '[...options]' : '';
 
-    const args = combinedArguments(cmd);
+    const args = combinedArguments(cmd.state);
     const argsHelp = formatArgHelp(args);
 
     console.log(colors.yellow('\nUsage:'));
@@ -193,47 +244,70 @@ function withState(initialState: CommandState): Command {
       console.log(colors.yellow('\nOptions:'));
       printOptions(options);
     }
+
+    if (!s.subCommands.isEmpty()) {
+      console.log(colors.yellow('\nSub Commands:'));
+      printSubCommands(s.subCommands);
+    }
     console.log('');
   }
 
   function run(state?: RuntimeState): Promise<ReturnValue> {
+    const parsedArgs = cmd.state.parsedRuntimeArgs || immutable.Map();
+    const positionalArgs = parsedArgs.get('_', []) as string[];
+    const arg0 = positionalArgs[0] as string | undefined;
+    // Show help text if requested, or if no handler is defined.
+    if (arg0 === 'help' || parsedArgs.has('help')) {
+      cmd.showHelp();
+      return Promise.resolve(ReturnValue.SUCCESS);
+    }
+
     let runtimeState: RuntimeState = state || immutable.Map();
     if (cmd.state.preProcessor) {
-      runtimeState = cmd.state.preProcessor(cmd, runtimeState);
+      // Allow preprocessors that do not return a new runtime state.
+      runtimeState = cmd.state.preProcessor(cmd, runtimeState) || runtimeState;
     }
-    // Subcommand
-    const arg0 = cmd.state.runtimeArgs.first() as string | undefined;
-    // If a subCommand exists with name as the first argument, recurse.
+
+    // If a subCommand exists with name as the first argument, recurse into it.
     if (arg0 && cmd.state.subCommands.has(arg0)) {
       const subCommand = cmd.state.subCommands.get(arg0)!;
+      const subArgs = parsedArgs.get('_', []) as string[];
+      console.log('FPA', formatParsedArgs(parsedArgs));
       return subCommand
-      .withRuntimeArgs(cmd.state.runtimeArgs.slice(1).toArray())
+      .withRuntimeArgs(cmd.state.runtimeArgs.toArray(), parsedArgs.set('_', subArgs.slice(1)))
       .run(runtimeState);
     }
-    // Handler for the current command
+
     if (!cmd.state.handler) {
+      console.warn(colors.yellow(`No handler defined for command ${cmd.state.name}`));
       cmd.showHelp();
       return Promise.resolve(ReturnValue.FAILURE);
     }
+    // Handle the current command.
     return cmd.state.handler(cmd, runtimeState) || Promise.resolve(ReturnValue.SUCCESS);
   }
 
   return Object.freeze(cmd);
 }
 
-function checkUniqueDefinition<T>(definition: Option<T>, list: immutable.Map<string, Option<T>>) {
-  if (list.has(definition.name)) {
-    throw new TypeError(`arg already exists: ${definition.short} ${definition.long}`);
+function checkUniqueDefinition<T>(definition: Option<T>, list: AllStoredOptions) {
+  if (list.has(definition.name)
+    || list.some(o => !!(o.short && o.short === definition.short))
+    || list.some(o => !!(o.long && o.long === definition.long))
+  ) {
+    throw new TypeError(
+      `arg already exists: ${definition.name} -${definition.short} --${definition.long}`,
+    );
   }
 }
 
-function replacing<T>(
+function addOption<T>(
   state: CommandState,
   definition: TypeNamedOption<T>,
   key: keyof CommandState,
 ): Command {
   const map = state[key] as StoredOption<T>;
-  checkUniqueDefinition(definition, map);
+  checkUniqueDefinition(definition, combinedOptions(state));
   const val = map.set(definition.name, Object.freeze(definition));
   return withState({ ...state, [key]: val });
 }
@@ -265,9 +339,17 @@ function printOptions(options: AllStoredOptions) {
   const optHelp = options.map((o) => {
     const short = o.short ? `-${o.short}` : '';
     const long = o.long ? `--${o.long + longParam(o)}` :'';
-    return [`${short},${long}`, o.description || ''];
+    const name = [short, long].filter(n => n !== '').join(',');
+    return [name, o.description || ''];
   });
   printColumns(optHelp);
+}
+
+function printSubCommands(commands: SubCommands) {
+  const columns = commands.map((c) => {
+    return [c.state.name, c.state.description || ''];
+  });
+  printColumns(columns);
 }
 
 function formatArgHelp(args: AllStoredArguments): string {
@@ -276,22 +358,28 @@ function formatArgHelp(args: AllStoredArguments): string {
   .join(' ');
 }
 
-function combinedOptions(cmd: Command): AllStoredOptions {
-  const res = cmd.state.flags.merge(
-    cmd.state.stringArgs as AllStoredOptions,
-    cmd.state.numberArgs,
-    cmd.state.stringArrayArgs,
+function combinedOptions(state: CommandState): AllStoredOptions {
+  const res = state.flags.merge(
+    state.stringOptions as AllStoredOptions,
+    state.numberOptions,
   ).sort((a, b) => a.name.localeCompare(b.name));
   return res;
 }
 
-function combinedArguments(cmd: Command): AllStoredArguments {
-  const res = cmd.state.positionalNumberArgs.merge(
-    cmd.state.positionalStringArgs,
+function combinedArguments(state: CommandState): AllStoredArguments {
+  const res = state.positionalNumberArgs.merge(
+    state.positionalStringArgs,
   ).sort((a, b) => a.name.localeCompare(b.name));
   return res;
 }
 
-export default {
-  create,
-};
+function formatParsedArgs(parsed: ParsedRuntimeArgs): string[] {
+  const argv = parsed.toArray().map(([key, val]) => {
+    const name = key.length === 1 ? `-${key}` : `--${key}`;
+    if (Array.isArray(val)) {
+      return ([] as string[]).concat(...val.map(v => [name, String(v)]));
+    }
+    return [name, String(val)];
+  });
+  return ([] as string[]).concat(...argv);
+}

@@ -16,12 +16,6 @@ import debug from './debug';
 import * as minimist from 'minimist';
 import * as util from 'util';
 
-// Polyfills
-import 'ts-polyfill/lib/es2015-collection';
-import { parse } from 'path';
-import { stringify } from 'querystring';
-import { promises } from 'fs';
-
 // Define Constants
 
 export enum ReturnValue {

@@ -2,13 +2,11 @@
     "compileOnSave": true,
     "compilerOptions": {
         "removeComments": true,
-        "preserveConstEnums": true,
-        "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "strict": true,
         "declaration": true,
         "module": "commonjs",
-        "moduleResolution": "Node",
+        "moduleResolution": "node",
         "target": "ES2018",
         "outDir": "lib",
         "lib": ["es2018", "scripthost"]

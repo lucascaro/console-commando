@@ -1,18 +1,18 @@
-import Command from '../src/Command';
+import { command, option, multiOption } from '../src/index';
 
-Command.create('name-only')
+command('name-only')
 .run();
 
-Command.create('name-and-version')
+command('name-and-version')
 .withVersion('1.0.0')
 .run();
 
-Command.create('with-description')
+command('with-description')
 .withVersion('v1.0.1')
 .withDescription('A description, which could be long.')
 .run();
 
-Command.create('with-flags')
+command('with-flags')
 .withVersion('1.0.2')
 // tslint:disable-next-line:max-line-length
 .withDescription('A description, which could be long or even very long. Note how flags can never have the same short or long names.')
@@ -21,23 +21,24 @@ Command.create('with-flags')
 .withFlag({ name: 'horce', short: 'h', long: 'horce', description: 'a flag', default: true })
 .run();
 
-const withHandler = Command.create('with-handler')
+const withHandler = command('with-handler')
 .withVersion('1.0.4')
 .withDescription('A description, which could be long.')
 .withFlag({ name: 'force', short: 'f', long: 'force', description: 'a flag', default: false })
-.withNumberArg({ name: 'number', short: 'n', long: 'number', description: 'a number', default: 66 })
-.withStringArg({
+.withNumberOption(option('number', 'n', 'a number', 66))
+.withStringOption({
   name: 'string',
   short: 's',
   long: 'string',
   description: 'a string',
   default: 'test',
 })
-.withStringArrayArg({
+.withStringOption({
   name: 'array',
   short: 'a',
   long: 'array',
   description: 'a string array',
+  multiple: true,
   default: ['test'],
 })
 .withPositionalString({ name: 'pos1', description: 'a positional string', default: 'test' })
@@ -47,13 +48,13 @@ withHandler.run();
 withHandler.withHandler(cmd => console.log('HANDLER!'))
 .run();
 
-const fullTest = Command.create('full-test')
+const fullTest = command('full-test')
 .withVersion('1.0.5')
 .withDescription('A description, which could be long.')
 .withFlag({ name: 'force', short: 'f', long: 'force', description: 'a flag' })
-.withNumberArg({ name: 'number', short: 'n', long: 'number', description: 'a number' })
-.withStringArg({ name: 'string', short: 's', long: 'string', description: 'a string' })
-.withStringArrayArg({ name: 'array', short: 'a', long: 'array', description: 'a string array' })
+.withNumberOption(option('number', 'n', 'a number'))
+.withStringOption({ name: 'string', short: 's', long: 'string', description: 'a string' })
+.withStringOption(multiOption('array', 'a', 'a string array'))
 .withPositionalString({ name: 'pos1', description: 'a positional string' })
 .withPositionalNumber({ name: 'pos2', description: 'a positional number' })
 .withPreProcessor((_, state) => {
@@ -66,23 +67,25 @@ fullTest.withHandler((cmd, state) => {
 })
 .run();
 
-const subTest = Command.create('sub-test')
+const subTest = command('sub-test')
 .withVersion('1.0.6')
 .withDescription('A description, which could be long.')
 .withFlag({ name: 'force', short: 'f', long: 'force', description: 'a flag', default: false })
-.withNumberArg({ name: 'number', short: 'n', long: 'number', description: 'a number', default: 66 })
-.withStringArg({
+.withFlag({ name: 'gorce', short: 'g', long: 'gorce', description: 'another flag', default: false })
+.withNumberOption(option('number', 'n', 'a number', 66))
+.withStringOption({
   name: 'string',
   short: 's',
   long: 'string',
   description: 'a string',
   default: 'test',
 })
-.withStringArrayArg({
+.withStringOption({
   name: 'array',
   short: 'a',
   long: 'array',
   description: 'a string array',
+  multiple: true,
   default: ['test'],
 })
 .withPositionalString({ name: 'pos1', description: 'a positional string', default: 'test' })
@@ -92,8 +95,9 @@ const subTest = Command.create('sub-test')
   return state.set('runtime', 'state');
 })
 .withSubCommand(
-  Command.create('sub')
+  command('sub')
   .withPreProcessor((_, state) => {
+    console.log('pre2');
     return state.set('runtime2', 'state2');
   })
   .withHandler((cmd, state) => {
@@ -101,7 +105,7 @@ const subTest = Command.create('sub-test')
     console.log(JSON.stringify(state));
   })
   .withSubCommand(
-    Command.create('sub2')
+    command('sub')
     .withPreProcessor((_, state) => {
       console.log('pre3');
       return state.set('runtime3', 'state3');
@@ -117,6 +121,23 @@ const subTest = Command.create('sub-test')
   console.log(JSON.stringify(state));
 });
 
+console.log('\n$ sub-test');
 subTest.run();
+console.log('\n$ sub-test help');
+subTest.withRuntimeArgs(['help']).run();
+console.log('\n$ sub-test sub');
 subTest.withRuntimeArgs(['sub']).run();
+console.log('\n$ sub-test sub help');
+subTest.withRuntimeArgs(['sub', 'help']).run();
+console.log('\n$ sub-test sub sub2');
 subTest.withRuntimeArgs(['sub', 'sub2']).run();
+console.log('\n$ sub-test sub sub2 help');
+subTest.withRuntimeArgs(['sub', 'sub2', 'help']).run();
+console.log('\n$ sub-test sub sub2 --help');
+subTest.withRuntimeArgs(['sub', 'sub2', '--help']).run();
+// console.log('\n$ sub-test sub sub2 -f -g --gorce -a arr1 -a arr2 pos1 -- --pos2');
+// subTest.withRuntimeArgs([
+//   'sub', 'sub2', '-f', '-g', '--gorce', '-a', 'arr1', '-a', 'arr2', 'pos1', '--', '--pos2',
+// ]).run();
+
+subTest.withRuntimeArgs(process.argv.slice(2)).run();

@@ -1,10 +1,10 @@
-import Command, { ReturnValue } from '../Command';
+import { command, ReturnValue } from '../index';
 
 describe('Command', () => {
   test('can create a command with a name', () => {
-    expect(() => Command.create('testCmd')).not.toThrowError();
+    expect(() => command('testCmd')).not.toThrowError();
     expect(
-      Command.create('testCmd').run(),
+      command('testCmd').run(),
     ).resolves.toBe(ReturnValue.SUCCESS);
   });
 });

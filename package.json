@@ -12,7 +12,7 @@
     "compile": "npm run clean && tsc -p .",
     "watch": "tsc -w -p .",
     "docs": "esdoc -c esdoc.json",
-    "prepare": "npm run compile",
+    "prepublish-only": "npm run compile",
     "release": "npm run compile && npm run test && npm version patch && git push --follow-tags"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
@@ -38,8 +38,6 @@
     "chalk": "^2.4.1",
     "immutable": "^4.0.0-rc.11",
     "minimist": "^1.2.0",
-    "string.prototype.repeat": "^0.2.0",
-    "strip-ansi": "^5.0.0",
-    "ts-polyfill": "^3.0.1"
+    "strip-ansi": "^5.0.0"
   }
 }

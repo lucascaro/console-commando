@@ -3,7 +3,7 @@
 import debug from './debug';
 import Commando, { OptionHash } from './Commando';
 
-import immutable from 'immutable';
+import * as immutable from 'immutable';
 import { stringify } from 'querystring';
 
 /**

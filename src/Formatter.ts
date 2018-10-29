@@ -7,9 +7,6 @@ import debug from './debug';
 //
 const stripAnsi = require('strip-ansi');
 
-// Polyfills
-require('string.prototype.repeat');
-
 export interface Formatter {
   padCommand: () => (options: any) => string;
   padSubCommand: () => (options: any) => string;
