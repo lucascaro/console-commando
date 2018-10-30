@@ -1,9 +1,10 @@
 import * as immutable from 'immutable';
 import { Option, Command, withState } from './Command';
-export { Command, Option, Argument, Handler, PreProcessor, ReturnValue } from './Command';
 import * as Debug from 'debug';
 
 const debug = Debug('console-commando:main');
+
+export { Command, Option, Argument, Handler, PreProcessor, ReturnValue } from './Command';
 
 /**
  * Command factory. Returns a new command with default state and a given name.
