@@ -1,9 +1,9 @@
 {
   "name": "console-commando",
-  "version": "5.0.0",
+  "version": "6.0.0-alpha.0",
   "description": "A tool for creating console commands",
-  "main": "./lib/Commando.js",
-  "types": "./lib/Commando.d.ts",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "clean": "rm -rf lib/*",
     "lint": "tslint -c tslint.json -p ./tsconfig.json src/**/*.ts",
