@@ -147,11 +147,8 @@ _${appName}_completions()
 
     cur_word="\${COMP_WORDS[COMP_CWORD]}"
     args=$(printf "%s " "\${COMP_WORDS[@]}")
-    echo "ARGS" $args > ./completion.log
-    echo "CURR" $cur_word > ./completion.log
     # ask app to generate completions.
     type_list=$(${appPath} get-completions -- $args)
-    echo "TYPEL" $type_list > ./completion.log
 
     COMPREPLY=( $(compgen -W "\${type_list}" -- \${cur_word}) )
 
