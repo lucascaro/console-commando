@@ -3,6 +3,7 @@ import { addOption, combinedOptions, combinedArguments, parseArgv } from './help
 import colors from './helpers/colors';
 import { formatParsedArgs, formatHelp } from './helpers/format';
 import * as Debug from 'debug';
+import * as completion from './helpers/completion';
 
 const debug = Debug('console-commando:Command');
 
@@ -254,7 +255,7 @@ export function withState(initialState: CommandState): Command {
     console.log(formatHelp(cmd.state));
   }
 
-  function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
+  async function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
     debug('running command:', cmd.state.name);
     const parsedArgs = cmd.state.parsedRuntimeArgs || immutable.Map();
     const positionalArgs = parsedArgs.get('_', []) as string[];
@@ -263,10 +264,27 @@ export function withState(initialState: CommandState): Command {
     const shouldRunSubCommand = !!arg0 && cmd.state.subCommands.has(arg0);
     const helpRequested = arg0 === 'help' || parsedArgs.get('help', false);
 
-    // Show help text if requested.
+    // Default subcommands:
+    // help: Show help text if requested.
     if (!shouldRunSubCommand && helpRequested) {
       cmd.showHelp();
-      return Promise.resolve(ReturnValue.SUCCESS);
+      return ReturnValue.SUCCESS;
+    }
+
+    // completion: Show help text if requested.
+    if (arg0 === 'completion') {
+      console.log(completion.bashCompletion(cmd));
+      return ReturnValue.SUCCESS;
+    }
+
+    if (arg0 === 'get-completions') {
+      console.log(completion.getCompletions(cmd));
+      return ReturnValue.SUCCESS;
+    }
+
+    if (!shouldRunSubCommand && helpRequested) {
+      cmd.showHelp();
+      return ReturnValue.SUCCESS;
     }
 
     // Allow optional preprocessor to modify run-time state.
@@ -275,7 +293,7 @@ export function withState(initialState: CommandState): Command {
 
     // If a subCommand exists with name as the first argument, recurse into it.
     if (shouldRunSubCommand) {
-      // We know arg0 is defined because is checked in shouldRunSubCommand.
+      // We know arg0 is defined because is checked
       const subCommand = cmd.state.subCommands.get(arg0!)!;
       const subArgs = parsedArgs.get('_', []) as string[];
       return subCommand
@@ -286,10 +304,10 @@ export function withState(initialState: CommandState): Command {
     if (!cmd.state.handler) {
       console.warn(colors.yellow(`No handler defined for command ${cmd.state.name}`));
       cmd.showHelp();
-      return Promise.resolve(ReturnValue.FAILURE);
+      return ReturnValue.FAILURE;
     }
     // Handle the current command.
-    return cmd.state.handler(cmd, runtimeState) || Promise.resolve(ReturnValue.SUCCESS);
+    return cmd.state.handler(cmd, runtimeState) || ReturnValue.SUCCESS;
   }
 
   return Object.freeze(cmd);
