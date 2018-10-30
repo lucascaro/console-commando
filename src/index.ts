@@ -1,13 +1,16 @@
 import * as immutable from 'immutable';
 import { Option, Command, withState } from './Command';
-
 export { Command, Option, Argument, Handler, PreProcessor, ReturnValue } from './Command';
+import * as Debug from 'debug';
+
+const debug = Debug('console-commando:main');
 
 /**
  * Command factory. Returns a new command with default state and a given name.
  * @param name a name for the new command.
  */
 export function command(name: string): Command {
+  debug(`creating new command: ${name}`);
   return withState({
     name,
     flags: immutable.Map(),
@@ -37,6 +40,7 @@ export function option<T>(
   defaultValue?: T,
   required: boolean = false,
 ): Option<T> {
+  debug('creating option:', { long, short, description, defaultValue, required });
   return {
     long,
     short,
@@ -60,6 +64,7 @@ export function multiOption<T>(
   defaultValue?: T[],
   required: boolean = false,
 ): Option<T> {
+  debug('creating multi option:', { long, short, description, defaultValue, required });
   return {
     long,
     short,

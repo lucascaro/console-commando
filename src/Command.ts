@@ -1,6 +1,10 @@
 import * as immutable from 'immutable';
-import argvParser from './helpers/argvParser';
+import { addOption, combinedOptions, combinedArguments, parseArgv } from './helpers/args';
 import colors from './helpers/colors';
+import { formatParsedArgs, formatHelp } from './helpers/format';
+import * as Debug from 'debug';
+
+const debug = Debug('console-commando:Command');
 
 export enum ReturnValue {
   FAILURE = 0,
@@ -70,7 +74,7 @@ export interface Command {
   state: CommandState;
 }
 
-interface CommandState {
+export interface CommandState {
   name: string;
   version?: string;
   description?: string;
@@ -112,18 +116,22 @@ export function withState(initialState: CommandState): Command {
   };
 
   function withVersion(version: string): Command {
+    debug('adding version:', version);
     return withState({ ...cmd.state, version });
   }
 
   function withDescription(description: string): Command {
+    debug('adding description:', description);
     return withState({ ...cmd.state, description });
   }
 
   function withFlag(definition: Option<boolean>): Command {
+    debug('adding flag:', definition);
     return addOption(cmd.state, { ...definition, typeName: '' }, 'flags');
   }
 
   function withHelp() :Command {
+    debug('adding auto help.');
     return cmd.withFlag({
       name: 'help',
       long: 'help',
@@ -133,6 +141,7 @@ export function withState(initialState: CommandState): Command {
   }
 
   function withStringOption(definition: Option<string>): Command {
+    debug('adding string option:', definition);
     if (definition.default !== undefined
       && !!definition.multiple !== Array.isArray(definition.default)
     ) {
@@ -142,18 +151,22 @@ export function withState(initialState: CommandState): Command {
   }
 
   function withNumberOption(definition: Option<number>): Command {
+    debug('adding number optino:', definition);
     return addOption(cmd.state, { ...definition, typeName: 'number' }, 'numberOptions');
   }
 
   function withPositionalString(definition: Argument<string>): Command {
+    debug('adding positional string:', definition);
     return addOption(cmd.state, { ...definition, typeName: 'string' }, 'positionalStringArgs');
   }
 
   function withPositionalNumber(definition: Argument<number>): Command {
+    debug('adding positional number:', definition);
     return addOption(cmd.state, { ...definition, typeName: 'number' }, 'positionalNumberArgs');
   }
 
   function withSubCommand(subCommand: Command): Command {
+    debug('adding subcommand:', subCommand.state.name);
     if (cmd.state.subCommands.has(subCommand.state.name)) {
       throw new TypeError(`arg already exists: ${subCommand.state.name}`);
     }
@@ -162,12 +175,14 @@ export function withState(initialState: CommandState): Command {
   }
 
   function withRuntimeArgs(args?: string[], parsed?: ParsedRuntimeArgs): Command {
+    debug('adding runtime arguments:', args);
+    debug('inheriting parsed arguments:', parsed);
     const commandArgs = args || process.argv.slice(2);
     const runtimeArgs = cmd.state.runtimeArgs.push(...commandArgs);
     const cmdWithHelp = withHelp();
     if (commandArgs) {
       try {
-        const parsedRuntimeArgs = argvParser.parse(
+        const parsedRuntimeArgs = parseArgv(
           commandArgs,
           cmdWithHelp.state.flags,
           combinedOptions(cmdWithHelp.state),
@@ -236,57 +251,36 @@ export function withState(initialState: CommandState): Command {
   }
 
   function showHelp(): void {
-    const s = cmd.state;
-    console.log(colors.green(s.name), colors.yellow(s.version || ''));
-    if (s.description) {
-      console.log(s.description);
-    }
-    const options = combinedOptions(cmd.state);
-    const optsHelp = !options.isEmpty() ? '[...options]' : '';
-
-    const args = combinedArguments(cmd.state);
-    const argsHelp = formatArgHelp(args);
-
-    console.log(colors.yellow('\nUsage:'));
-    console.log(`    ${colors.green(s.name)} ${optsHelp} ${argsHelp}`);
-
-    if (!options.isEmpty()) {
-      console.log(colors.yellow('\nOptions:'));
-      printOptions(options);
-    }
-
-    if (!s.subCommands.isEmpty()) {
-      console.log(colors.yellow('\nSub Commands:'));
-      printSubCommands(s.subCommands);
-    }
-    console.log('');
+    console.log(formatHelp(cmd.state));
   }
 
-  function run(state?: RuntimeState): Promise<ReturnValue> {
+  function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
+    debug('running command:', cmd.state.name);
     const parsedArgs = cmd.state.parsedRuntimeArgs || immutable.Map();
     const positionalArgs = parsedArgs.get('_', []) as string[];
     const arg0 = positionalArgs[0] as string | undefined;
+    const preProcessor = cmd.state.preProcessor;
+    const shouldRunSubCommand = !!arg0 && cmd.state.subCommands.has(arg0);
+    const helpRequested = arg0 === 'help' || parsedArgs.get('help', false);
 
-    let runtimeState: RuntimeState = state || immutable.Map();
-    if (cmd.state.preProcessor) {
-      // Allow preprocessors that do not return a new runtime state.
-      runtimeState = cmd.state.preProcessor(cmd, runtimeState) || runtimeState;
+    // Show help text if requested.
+    if (!shouldRunSubCommand && helpRequested) {
+      cmd.showHelp();
+      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
+    // Allow optional preprocessor to modify run-time state.
+    // TODO: allow async preprocessors.
+    const runtimeState = preProcessor ? preProcessor(cmd, state) || state : state;
+
     // If a subCommand exists with name as the first argument, recurse into it.
-    if (arg0 && cmd.state.subCommands.has(arg0)) {
-      const subCommand = cmd.state.subCommands.get(arg0)!;
+    if (shouldRunSubCommand) {
+      // We know arg0 is defined because is checked in shouldRunSubCommand.
+      const subCommand = cmd.state.subCommands.get(arg0!)!;
       const subArgs = parsedArgs.get('_', []) as string[];
-      console.log('FPA', formatParsedArgs(parsedArgs));
       return subCommand
       .withRuntimeArgs(cmd.state.runtimeArgs.toArray(), parsedArgs.set('_', subArgs.slice(1)))
       .run(runtimeState);
-    }
-
-      // Show help text if requested, or if no handler is defined.
-    if (arg0 === 'help' || parsedArgs.get('help', false)) {
-      cmd.showHelp();
-      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     if (!cmd.state.handler) {
@@ -299,98 +293,4 @@ export function withState(initialState: CommandState): Command {
   }
 
   return Object.freeze(cmd);
-}
-
-function checkUniqueDefinition<T>(definition: Option<T>, list: AllStoredOptions) {
-  if (list.has(definition.name)
-    || list.some(o => !!(o.short && o.short === definition.short))
-    || list.some(o => !!(o.long && o.long === definition.long))
-  ) {
-    throw new TypeError(
-      `arg already exists: ${definition.name} -${definition.short} --${definition.long}`,
-    );
-  }
-}
-
-function addOption<T>(
-  state: CommandState,
-  definition: TypeNamedOption<T>,
-  key: keyof CommandState,
-): Command {
-  const map = state[key] as StoredOption<T>;
-  checkUniqueDefinition(definition, combinedOptions(state));
-  const val = map.set(definition.name, Object.freeze(definition));
-  return withState({ ...state, [key]: val });
-}
-
-function printColumns(columns: immutable.Map<string, string[]>) {
-  if (columns.isEmpty()) { return []; }
-  const nCols = (columns.first() as string[]).length;
-  const colWidths = columns
-    .map(o => o.map(c => c.length))
-    .reduce(
-      // Reduce to the maximum lengts for each column.
-      (p, c) => {
-        return p.map((v, i) => Math.max(v, c[i]));
-      },
-      Array(nCols).fill(0),
-    );
-  // Pad all cells to the maximum cell width in that column + 3
-  const padded = columns.map((o, k) => {
-    return o.map((v, i) => v.padEnd(colWidths[i] + 2));
-  });
-
-  padded.forEach((opt) => {
-    console.log('   ', ...opt);
-  });
-}
-function printOptions(options: AllStoredOptions) {
-  const longParam = <T>(o: TypeNamedOption<T>) =>
-    o.long && o.typeName !== '' ? `=<${o.typeName}>` : '';
-  const optHelp = options.map((o) => {
-    const short = o.short ? `-${o.short}` : '';
-    const long = o.long ? `--${o.long + longParam(o)}` :'';
-    const name = [short, long].filter(n => n !== '').join(',');
-    return [name, o.description || ''];
-  });
-  printColumns(optHelp);
-}
-
-function printSubCommands(commands: SubCommands) {
-  const columns = commands.map((c) => {
-    return [c.state.name, c.state.description || ''];
-  });
-  printColumns(columns);
-}
-
-function formatArgHelp(args: AllStoredArguments): string {
-  return args
-  .map(({ required, name }) => required ? `<${name}>` : `[${name}]`)
-  .join(' ');
-}
-
-function combinedOptions(state: CommandState): AllStoredOptions {
-  const res = state.flags.merge(
-    state.stringOptions as AllStoredOptions,
-    state.numberOptions,
-  ).sort((a, b) => a.name.localeCompare(b.name));
-  return res;
-}
-
-function combinedArguments(state: CommandState): AllStoredArguments {
-  const res = state.positionalNumberArgs.merge(
-    state.positionalStringArgs,
-  ).sort((a, b) => a.name.localeCompare(b.name));
-  return res;
-}
-
-function formatParsedArgs(parsed: ParsedRuntimeArgs): string[] {
-  const argv = parsed.toArray().map(([key, val]) => {
-    const name = key.length === 1 ? `-${key}` : `--${key}`;
-    if (Array.isArray(val)) {
-      return ([] as string[]).concat(...val.map(v => [name, String(v)]));
-    }
-    return [name, String(val)];
-  });
-  return ([] as string[]).concat(...argv);
 }

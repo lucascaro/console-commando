@@ -101,6 +101,17 @@ const subTest = command('sub-test')
     return state.set('runtime2', 'state2');
   })
   .withHandler((cmd, state) => {
+    console.log('SUBCOMMAND2!');
+    console.log(JSON.stringify(state));
+  }),
+)
+.withSubCommand(
+  command('sub2')
+  .withPreProcessor((_, state) => {
+    console.log('pre2');
+    return state.set('runtime2', 'state2');
+  })
+  .withHandler((cmd, state) => {
     console.log('SUBCOMMAND!');
     console.log(JSON.stringify(state));
   })

@@ -4,11 +4,18 @@ import {
   StoredOption,
   Option,
   ParsedRuntimeArgs,
+  CommandState,
+  TypeNamedOption,
+  Command,
+  withState,
 } from '../Command';
 import * as minimist from 'minimist';
 import * as immutable from 'immutable';
+import * as Debug from 'debug';
 
-export function parse(
+const debug = Debug('console-commando:args');
+
+export function parseArgv(
   argv: string[],
   flags: StoredOption<boolean>,
   options: AllStoredOptions,
@@ -20,7 +27,7 @@ export function parse(
     parsed = parsed.merge(merge);
   }
   const resultOptions = new Map<string, boolean|string|number|string[]>();
-  console.log(parsed);
+  debug('parsed argv:', parsed);
   flags.forEach((f) => {
     if (f.short && parsed.has(f.short) && f.long && parsed.has(f.long)) {
       throw new Error(`flag should be either ${f.short} or ${f.long}`);
@@ -31,7 +38,6 @@ export function parse(
   });
 
   options.forEach((o) => {
-    console.log(o);
     if (o.short && parsed.has(o.short) && o.long && parsed.has(o.long)) {
       throw new Error(`option should be either ${o.short} or ${o.long}, not both.`);
     }
@@ -41,7 +47,7 @@ export function parse(
     }
     if (value) {
       // Make sure value is of the correct type.
-      console.log(o, value);
+      debug(`found value for option: ${o.name}=${value}`);
       if (o.typeName === 'number') {
         if (Number.isNaN(Number(value))) {
           throw new Error(`expected number value for --${o.long} but got '${value}'`);
@@ -80,6 +86,40 @@ function getValue<T>(o: Option<T>, parsed: immutable.Map<string, any>): T | T[] 
     return o.default;
   }
 }
-export default {
-  parse,
-};
+
+export function addOption<T>(
+  state: CommandState,
+  definition: TypeNamedOption<T>,
+  key: keyof CommandState,
+): Command {
+  const map = state[key] as StoredOption<T>;
+  checkUniqueDefinition(definition, combinedOptions(state));
+  const val = map.set(definition.name, Object.freeze(definition));
+  return withState({ ...state, [key]: val });
+}
+
+export function combinedOptions(state: CommandState): AllStoredOptions {
+  const res = state.flags.merge(
+    state.stringOptions as AllStoredOptions,
+    state.numberOptions,
+  ).sort((a, b) => a.name.localeCompare(b.name));
+  return res;
+}
+
+export function combinedArguments(state: CommandState): AllStoredArguments {
+  const res = state.positionalNumberArgs.merge(
+    state.positionalStringArgs,
+  ).sort((a, b) => a.name.localeCompare(b.name));
+  return res;
+}
+
+export function checkUniqueDefinition<T>(definition: Option<T>, list: AllStoredOptions) {
+  if (list.has(definition.name)
+    || list.some(o => !!(o.short && o.short === definition.short))
+    || list.some(o => !!(o.long && o.long === definition.long))
+  ) {
+    throw new TypeError(
+      `arg already exists: ${definition.name} -${definition.short} --${definition.long}`,
+    );
+  }
+}
