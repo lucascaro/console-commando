@@ -13,10 +13,10 @@ import { flatten } from './array';
  * @return a list of possible completions.
  */
 export function getCompletions(command: Command): string {
-  // const args = command.state.parsedRuntimeArgs.get('_') as string[];
-  // debug('INITIAL ARGS', args);
-  // // Drop the 'get-completions' argument as well as the command name.
-  // return getArgCompletions(command, args.slice(2)).join(' ');
+  const args = command.state.parsedRuntimeArgs.get('_') as string[];
+  debug('INITIAL ARGS', args);
+  // Drop the 'get-completions' argument as well as the command name.
+  return getArgCompletions(command, args.slice(2)).join(' ');
   return '';
 }
 /**
