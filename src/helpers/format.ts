@@ -1,15 +1,12 @@
 import * as immutable from 'immutable';
 import colors from './colors';
 import {
-  AllStoredOptions,
-  TypeNamedOption,
   SubCommands,
-  AllStoredArguments,
   CommandState,
-  ParsedRuntimeArgs,
+  StoredOptions,
+  Option,
+  StoredArguments,
 } from '../Command';
-import { combinedOptions, combinedArguments } from './args';
-import { flatten } from './array';
 
 export function formatHelp(s: CommandState): string {
   const helpText = [] as string[];
@@ -18,18 +15,18 @@ export function formatHelp(s: CommandState): string {
   if (s.description) {
     helpText.push(s.description);
   }
-  const options = combinedOptions(s);
-  const optsHelp = !options.isEmpty() ? '[...options]' : '';
 
-  const args = combinedArguments(s);
+  const optsHelp = !s.options.isEmpty() ? '[...options]' : '';
+
+  const args = s.arguments;
   const argsHelp = formatArgHelp(args);
 
   helpText.push(colors.yellow('\nUsage:'));
   helpText.push(`    ${colors.green(s.name)} ${optsHelp} ${argsHelp}`);
 
-  if (!options.isEmpty()) {
+  if (!s.options.isEmpty()) {
     helpText.push(colors.yellow('\nOptions:'));
-    helpText.push(formatOptions(options));
+    helpText.push(formatOptions(s.options));
   }
 
   if (!s.subCommands.isEmpty()) {
@@ -61,9 +58,9 @@ export function formatColumns(columns: immutable.Map<string, string[]>): string 
 
   return padded.join('\n');
 }
-export function formatOptions(options: AllStoredOptions): string {
-  const longParam = <T>(o: TypeNamedOption<T>) =>
-    o.long && o.typeName !== '' ? `=<${o.typeName}>` : '';
+export function formatOptions(options: StoredOptions): string {
+  const longParam = (o: Option) =>
+    o.long ? `=<${o.kind}>` : '';
   const optHelp = options.map((o) => {
     const short = o.short ? `-${o.short}` : '';
     const long = o.long ? `--${o.long + longParam(o)}` :'';
@@ -80,20 +77,8 @@ export function formatSubCommands(commands: SubCommands): string {
   return formatColumns(columns);
 }
 
-export function formatArgHelp(args: AllStoredArguments): string {
+export function formatArgHelp(args: StoredArguments): string {
   return args
   .map(({ required, name }) => required ? `<${name}>` : `[${name}]`)
   .join(' ');
-}
-
-export function formatParsedArgs(parsed: ParsedRuntimeArgs): string[] {
-  const argv = parsed.toArray()
-  .map(([key, val]) => {
-    const name = key.length === 1 ? `-${key}` : `--${key}`;
-    if (Array.isArray(val)) {
-      return flatten(val.map(v => [name, String(v)]));
-    }
-    return [name, String(val)];
-  });
-  return flatten(argv);
 }

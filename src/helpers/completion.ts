@@ -5,7 +5,6 @@ const debug = Debug('console-commando:completion');
 
 import * as immutable from 'immutable';
 import { Command } from '../Command';
-import { combinedArguments, combinedOptions } from './args';
 import { flatten } from './array';
 
 /**
@@ -14,10 +13,11 @@ import { flatten } from './array';
  * @return a list of possible completions.
  */
 export function getCompletions(command: Command): string {
-  const args = command.state.parsedRuntimeArgs.get('_') as string[];
-  debug('INITIAL ARGS', args);
-  // Drop the 'get-completions' argument as well as the command name.
-  return getArgCompletions(command, args.slice(2)).join(' ');
+  // const args = command.state.parsedRuntimeArgs.get('_') as string[];
+  // debug('INITIAL ARGS', args);
+  // // Drop the 'get-completions' argument as well as the command name.
+  // return getArgCompletions(command, args.slice(2)).join(' ');
+  return '';
 }
 /**
  * Utility function to return valid list of args.
@@ -88,10 +88,9 @@ function completeSubcommands(command: Command, prefix: string = ''): string[] {
  */
 function completeOptions(cmd: Command, prefix: string = ''): string[] {
   debug(`complete options with prefix ${prefix}`);
-  const options = combinedOptions(cmd.state);
   return flatten(
     Array.from(
-      options.map((o) => {
+      cmd.state.options.map((o) => {
         const completions = [];
         const short = o.short ? `-${o.short}` : undefined;
         const long  = o.long ? `--${o.long}` : undefined;
@@ -112,8 +111,7 @@ function completeOptions(cmd: Command, prefix: string = ''): string[] {
  * Utility function to get completions for arguments in a command.
  */
 function completeArguments(cmd: Command): string[] {
-  const allArguments = combinedArguments(cmd.state);
-  return Array.from(allArguments.map(a => a.name).values());
+  return Array.from(cmd.state.arguments.map(a => a.name).values());
 }
 
 /**

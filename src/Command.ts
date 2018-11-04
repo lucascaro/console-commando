@@ -1,9 +1,10 @@
 import * as immutable from 'immutable';
-import { addOption, combinedOptions, combinedArguments, parseArgv } from './helpers/args';
+import { parseArgv, parseOptions, getOptionOrParentOption } from './helpers/args';
 import colors from './helpers/colors';
-import { formatParsedArgs, formatHelp } from './helpers/format';
+import { formatHelp } from './helpers/format';
 import * as Debug from 'debug';
 import * as completion from './helpers/completion';
+import { command } from '.';
 
 const debug = Debug('console-commando:Command');
 
@@ -12,59 +13,101 @@ export enum ReturnValue {
   SUCCESS = 1,
 }
 
-export interface Option<T> {
+export interface GenericOption {
   name: string;
   short?: string;
   long?: string;
   description?: string;
   multiple?: boolean;
+}
+export interface BooleanOption extends GenericOption {
+  kind: 'boolean';
   required?: boolean;
-  default?: T | T[];
+  default?: never;
+  value?: boolean;
 }
 
-export interface TypeNamedOption<T> extends Option<T>{
-  typeName: string;
+export interface StringOption extends GenericOption {
+  kind: 'string';
+  multiple?: false;
+  required?: boolean;
+  default?: string;
+  value?: string;
 }
 
-export interface Argument<T> {
+export interface MultiStringOption extends GenericOption {
+  kind: 'string';
+  multiple: true;
+  required?: boolean;
+  default?: string[];
+  value?: string[];
+}
+
+export interface NumericOption extends GenericOption {
+  kind: 'number';
+  required?: boolean;
+  default?: number;
+  value?: number;
+}
+
+export type Option = BooleanOption | StringOption | NumericOption | MultiStringOption;
+export type OptionValue = boolean | string | number | string[] | undefined;
+
+export interface StringArgument {
+  kind: 'string';
+  name: string;
+  description?: string;
+  required?: boolean;
+  multiple?: false;
+  default?: string;
+  value?: string;
+}
+
+export interface NumericArgument {
+  kind: 'number';
   name: string;
   description?: string;
   required?: boolean;
   multiple?: boolean;
-  default?: T | T [];
+  default?: number;
+  value?: number;
+}
+export interface MultiStringArgument {
+  kind: 'string';
+  name: string;
+  description?: string;
+  required?: boolean;
+  multiple: true;
+  default?: string[];
+  value?: string[];
 }
 
-export interface TypeNamedArgument<T> extends Argument<T> {
-  typeName: string;
-}
+export type Argument = StringArgument | MultiStringArgument | NumericArgument;
 
 export type RuntimeState = immutable.Map<string, any>;
 export type Handler = (command: Command, runtimeState: RuntimeState) => Promise<ReturnValue> | void;
 export type PreProcessor = (command: Command, runtimeState: RuntimeState) => RuntimeState | void;
 
-export type StoredOption<T> = immutable.Map<string, Readonly<TypeNamedOption<T>>>;
-export type AllStoredOptions = StoredOption<boolean|string|number>;
+export type StoredOptions = immutable.Map<string, Readonly<Option>>;
+export type StoredArguments = immutable.Map<string, Readonly<Argument>>;
+export type OptionsOrArguments = StoredOptions | StoredArguments;
 
-export type StoredArgument<T> = immutable.Map<string, Readonly<TypeNamedArgument<T>>>;
-export type AllStoredArguments = StoredArgument<string|number>;
-export type ParsedRuntimeArgs = immutable.Map<string, boolean|string|number|string[]>;
+export type ParsedRuntimeArgs = immutable.Map<string, Readonly<OptionValue>>;
 
 export type SubCommands = immutable.Map<string, Command>;
 
 export interface Command {
   withVersion: (version: string) => Command;
   withDescription: (description: string) => Command;
-  withFlag: (definition: Option<boolean>) => Command;
-  withStringOption: (definition: Option<string>) => Command;
-  withNumberOption: (definition: Option<number>) => Command;
-  withPositionalString: (definition: Argument<string>) => Command;
-  withPositionalNumber: (definition: Argument<number>) => Command;
+  withOption: (definition: Option) => Command;
+  withArgument: (definition: Argument) => Command;
   getFlag: (name: string) => boolean;
-  getStringOption: (name: string) => string;
-  getNumberOption: (name: string) => number;
-  getStringArrayOption: (name: string) => string[];
-  getPositionalString: (name: string) => string;
-  getPositionalNumber: (name: string) => number;
+  getStringOption: (name: string) => string | undefined;
+  getNumericOption: (name: string) => number | undefined;
+  getMultiStringOption: (name: string) => string[];
+  getStringArg: (name: string) => string | undefined;
+  getNumericArg: (name: string) => number | undefined;
+  getMultiStringArg: (name: string) => string[];
   withSubCommand: (subCommand: Command) => Command;
   withRuntimeArgs: (args?: string[], parsed?: ParsedRuntimeArgs) => Command;
   withHandler: (fn: Handler) => Command;
@@ -81,11 +124,10 @@ export interface CommandState {
   description?: string;
   handler?: Handler;
   preProcessor?: PreProcessor;
-  flags: StoredOption<boolean>;
-  stringOptions: StoredOption<string>;
-  numberOptions: StoredOption<number>;
-  positionalStringArgs: StoredArgument<string>;
-  positionalNumberArgs: StoredArgument<number>;
+  options: StoredOptions;
+  arguments: StoredArguments;
+  parentOptions: StoredOptions;
+  parentArguments: StoredArguments;
   subCommands: SubCommands;
   runtimeArgs: immutable.List<string>;
   parsedRuntimeArgs: ParsedRuntimeArgs;
@@ -95,17 +137,15 @@ export function withState(initialState: CommandState): Command {
   const cmd: Command = {
     withVersion,
     withDescription,
-    withFlag,
-    withStringOption,
-    withNumberOption,
-    withPositionalString,
-    withPositionalNumber,
+    withOption,
+    withArgument,
     getFlag,
     getStringOption,
-    getNumberOption,
-    getStringArrayOption,
-    getPositionalString,
-    getPositionalNumber,
+    getNumericOption,
+    getMultiStringOption,
+    getStringArg,
+    getNumericArg,
+    getMultiStringArg,
     withSubCommand,
     withRuntimeArgs,
     withHandler,
@@ -126,14 +166,26 @@ export function withState(initialState: CommandState): Command {
     return withState({ ...cmd.state, description });
   }
 
-  function withFlag(definition: Option<boolean>): Command {
-    debug('adding flag:', definition);
-    return addOption(cmd.state, { ...definition, typeName: '' }, 'flags');
+  function withOption(definition: Option): Command {
+    debug('adding option:', definition);
+    const map = cmd.state.options;
+    if (map.has(definition.name)
+      || map.some(o => !!(o.short && o.short === definition.short))
+      || map.some(o => !!(o.long && o.long === definition.long))
+    ) {
+      throw new TypeError(
+        `option already exists: ${definition.name} -${definition.short} --${definition.long}`,
+      );
+    }
+
+    const options = map.set(definition.name, Object.freeze(definition));
+    return withState({ ...cmd.state, options });
   }
 
   function withHelp() :Command {
     debug('adding auto help.');
-    return cmd.withFlag({
+    return cmd.withOption({
+      kind: 'boolean',
       name: 'help',
       long: 'help',
       short: 'h',
@@ -141,29 +193,17 @@ export function withState(initialState: CommandState): Command {
     });
   }
 
-  function withStringOption(definition: Option<string>): Command {
-    debug('adding string option:', definition);
-    if (definition.default !== undefined
-      && !!definition.multiple !== Array.isArray(definition.default)
-    ) {
-      throw new TypeError('Default value should be an array if multiple is set.');
+  function withArgument(definition: Argument): Command {
+    debug('adding argument:', definition);
+    const map = cmd.state.arguments;
+    if (map.has(definition.name)) {
+      throw new TypeError(
+        `argument with this name already exists: ${definition.name}`,
+      );
     }
-    return addOption(cmd.state, { ...definition, typeName: 'string' }, 'stringOptions');
-  }
 
-  function withNumberOption(definition: Option<number>): Command {
-    debug('adding number optino:', definition);
-    return addOption(cmd.state, { ...definition, typeName: 'number' }, 'numberOptions');
-  }
-
-  function withPositionalString(definition: Argument<string>): Command {
-    debug('adding positional string:', definition);
-    return addOption(cmd.state, { ...definition, typeName: 'string' }, 'positionalStringArgs');
-  }
-
-  function withPositionalNumber(definition: Argument<number>): Command {
-    debug('adding positional number:', definition);
-    return addOption(cmd.state, { ...definition, typeName: 'number' }, 'positionalNumberArgs');
+    const args = map.set(definition.name, Object.freeze(definition));
+    return withState({ ...cmd.state, arguments: args });
   }
 
   function withSubCommand(subCommand: Command): Command {
@@ -175,72 +215,69 @@ export function withState(initialState: CommandState): Command {
     return withState({ ...cmd.state, subCommands });
   }
 
-  function withRuntimeArgs(args?: string[], parsed?: ParsedRuntimeArgs): Command {
-    debug('adding runtime arguments:', args);
-    debug('inheriting parsed arguments:', parsed);
-    const commandArgs = args || process.argv.slice(2);
-    const runtimeArgs = cmd.state.runtimeArgs.push(...commandArgs);
-    const cmdWithHelp = withHelp();
-    if (commandArgs) {
-      try {
-        const parsedRuntimeArgs = parseArgv(
-          commandArgs,
-          cmdWithHelp.state.flags,
-          combinedOptions(cmdWithHelp.state),
-          combinedArguments(cmdWithHelp.state),
-          parsed,
-        );
-        return withState({ ...cmdWithHelp.state, runtimeArgs, parsedRuntimeArgs });
-      } catch (e) {
-        console.error(colors.red(`\nError: ${e.message}\n`));
-        showHelp();
-        process.exit(ReturnValue.FAILURE);
-      }
-    }
-    if (parsed) {
-      return withState({ ...cmdWithHelp.state, runtimeArgs, parsedRuntimeArgs: parsed });
-    }
-    return withState({ ...cmdWithHelp.state, runtimeArgs });
-  }
-
   function getFlag(name: string): boolean {
-    return !!cmd.state.parsedRuntimeArgs.get(name);
+    const opt = getOptionOrParentOption(name, cmd.state.options, cmd.state.parentOptions);
+    if (opt.kind !== 'boolean' || opt.multiple) {
+      throw new TypeError(`${name} is not a flag`);
+    }
+    return !!opt.value;
   }
 
-  function getStringOption(name: string): string {
-    if (!cmd.state.stringOptions.has(name)) {
-      throw new TypeError(`${name} is not a string argument`);
+  function getStringOption(name: string): string | undefined {
+    const opt = getOptionOrParentOption(name, cmd.state.options, cmd.state.parentOptions);
+    if (opt.kind !== 'string' || opt.multiple) {
+      throw new TypeError(`${name} is not a string option`);
     }
-    return cmd.state.parsedRuntimeArgs.get(name) as string;
+    return opt.value || opt.default;
   }
 
-  function getNumberOption(name: string): number {
-    if (!cmd.state.numberOptions.has(name)) {
-      throw new TypeError(`${name} is not a numeric argument`);
+  function getNumericOption(name: string): number | undefined {
+    const opt = getOptionOrParentOption(name, cmd.state.options, cmd.state.parentOptions);
+    if (opt.kind !== 'number' || opt.multiple) {
+      throw new TypeError(`${name} is not a numeric option`);
     }
-    return cmd.state.parsedRuntimeArgs.get(name) as number;
+    return opt.value || opt.default;
   }
 
-  function getStringArrayOption(name: string): string[] {
-    const args = cmd.state.stringOptions;
-    if (!args.has(name) || !args.get(name)!.multiple) {
-      throw new TypeError(`${name} is not a multi argument`);
+  function getMultiStringOption(name: string): string[] {
+    const opt = getOptionOrParentOption(name, cmd.state.options, cmd.state.parentOptions);
+    if (opt.kind !== 'string' || !opt.multiple) {
+      throw new TypeError(`${name} is not a multi string option`);
     }
-    return cmd.state.parsedRuntimeArgs.get(name) as string[];
+    return opt.value || opt.default || [];
   }
 
-  function getPositionalString(name: string): string {
-    if (!cmd.state.positionalStringArgs.has(name)) {
-      throw new TypeError(`${name} is not a string positional argument`);
+  function getStringArg(name: string): string | undefined {
+    const opt = cmd.state.arguments.get(name);
+    if (!opt) {
+      throw new TypeError(`${name} is not a known option`);
     }
-    return cmd.state.parsedRuntimeArgs.get(name) as string;
+    if (opt.kind !== 'string' || opt.multiple) {
+      throw new TypeError(`${name} is not a string option`);
+    }
+    return opt.value || opt.default;
   }
 
-  function getPositionalNumber(name: string): number {
-    if (!cmd.state.positionalNumberArgs.has(name)) {
-      throw new TypeError(`${name} is not a string positional argument`);
+  function getNumericArg(name: string): number | undefined {
+    const opt = cmd.state.arguments.get(name);
+    if (!opt) {
+      throw new TypeError(`${name} is not a known option`);
     }
-    return cmd.state.parsedRuntimeArgs.get(name) as number;
+    if (opt.kind !== 'number' || opt.multiple) {
+      throw new TypeError(`${name} is not a numeric option`);
+    }
+    return opt.value || opt.default;
+  }
+
+  function getMultiStringArg(name: string): string[] {
+    const opt = cmd.state.arguments.get(name);
+    if (!opt) {
+      throw new TypeError(`${name} is not a known option`);
+    }
+    if (opt.kind !== 'string' || !opt.multiple) {
+      throw new TypeError(`${name} is not a multi string option`);
+    }
+    return opt.value || opt.default || [];
   }
 
   function withHandler(fn: Handler): Command {
@@ -255,10 +292,35 @@ export function withState(initialState: CommandState): Command {
     console.log(formatHelp(cmd.state));
   }
 
+  function withRuntimeArgs(args?: string[], parsed?: ParsedRuntimeArgs): Command {
+    debug('adding runtime arguments:', args);
+    const commandArgs = args || process.argv.slice(2);
+    const runtimeArgs = cmd.state.runtimeArgs.push(...commandArgs);
+    if (!cmd.state.options.has('help')) {
+      return withHelp().withRuntimeArgs(args, parsed);
+    }
+    if (commandArgs && commandArgs.length > 0) {
+      try {
+        const parsedRuntimeArgs = parseArgv(commandArgs, cmd.state.parsedRuntimeArgs);
+        const options = parseOptions(parsedRuntimeArgs, cmd.state.options);
+        // const options = cmd.state.options.merge(parsedRuntimeArgs.options);
+        // const args = cmd.state.positionalNumberArgs.merge(parsedRuntimeArgs.options);
+        debug('PARSED', parsedRuntimeArgs);
+        return withState({ ...cmd.state, runtimeArgs, parsedRuntimeArgs, options });
+      } catch (e) {
+        console.error(colors.red(`\nError: ${e.message}\n`));
+        showHelp();
+        process.exit(ReturnValue.FAILURE);
+      }
+    }
+
+    return withState({ ...cmd.state, runtimeArgs });
+  }
+
   async function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
     debug('running command:', cmd.state.name);
-    const parsedArgs = cmd.state.parsedRuntimeArgs || immutable.Map();
-    const positionalArgs = parsedArgs.get('_', []) as string[];
+    const parsedArgs = cmd.state.options.map(o => o.value || o.default);
+    const positionalArgs = cmd.state.parsedRuntimeArgs.get('_', []) as string[];
     const arg0 = positionalArgs[0] as string | undefined;
     const preProcessor = cmd.state.preProcessor;
     const shouldRunSubCommand = !!arg0 && cmd.state.subCommands.has(arg0);
@@ -294,7 +356,11 @@ export function withState(initialState: CommandState): Command {
     // If a subCommand exists with name as the first argument, recurse into it.
     if (shouldRunSubCommand) {
       // We know arg0 is defined because is checked
-      const subCommand = cmd.state.subCommands.get(arg0!)!;
+      const subCommand = withState({
+        ...cmd.state.subCommands.get(arg0!)!.state,
+        parentOptions: cmd.state.options.merge(cmd.state.parentOptions),
+        parentArguments: cmd.state.arguments.merge(cmd.state.parentArguments),
+      });
       const subArgs = parsedArgs.get('_', []) as string[];
       return subCommand
       .withRuntimeArgs(cmd.state.runtimeArgs.toArray(), parsedArgs.set('_', subArgs.slice(1)))

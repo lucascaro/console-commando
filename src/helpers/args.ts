@@ -1,13 +1,14 @@
 import {
-  AllStoredOptions,
-  AllStoredArguments,
-  StoredOption,
+  StoredOptions,
   Option,
   ParsedRuntimeArgs,
   CommandState,
-  TypeNamedOption,
   Command,
   withState,
+  Argument,
+  StoredArguments,
+  OptionValue,
+  OptionsOrArguments,
 } from '../Command';
 import * as minimist from 'minimist';
 import * as immutable from 'immutable';
@@ -15,29 +16,26 @@ import * as Debug from 'debug';
 
 const debug = Debug('console-commando:args');
 
+export type ParsingResults = {
+  options: StoredOptions;
+  arguments: StoredArguments;
+  raw: immutable.Map<string, OptionValue>;
+};
+
 export function parseArgv(
   argv: string[],
-  flags: StoredOption<boolean>,
-  options: AllStoredOptions,
-  args: AllStoredArguments,
-  merge?: ParsedRuntimeArgs,
+  merge: ParsedRuntimeArgs = immutable.Map(),
 ): ParsedRuntimeArgs {
-  let parsed = immutable.Map(minimist(argv));
-  if (merge) {
-    parsed = parsed.merge(merge);
-  }
-  const resultOptions = new Map<string, boolean|string|number|string[]>();
-  debug('parsed argv:', parsed);
-  flags.forEach((f) => {
-    if (f.short && parsed.has(f.short) && f.long && parsed.has(f.long)) {
-      throw new Error(`flag should be either ${f.short} or ${f.long}`);
-    }
+  return immutable.Map(minimist(argv)).merge(merge);
+}
 
-    const value = !!getValue(f, parsed);
-    resultOptions.set(f.name, value);
-  });
+export function parseOptions(
+  parsed: ParsedRuntimeArgs,
+  options: StoredOptions,
+): StoredOptions {
 
-  options.forEach((o) => {
+  debug('parsing options for:', parsed);
+  return options.map((o): Option => {
     if (o.short && parsed.has(o.short) && o.long && parsed.has(o.long)) {
       throw new Error(`option should be either ${o.short} or ${o.long}, not both.`);
     }
@@ -45,35 +43,41 @@ export function parseArgv(
     if (Array.isArray(value) && !o.multiple) {
       throw new Error(`option can only be specified once: ${o.long}`);
     }
-    if (value) {
-      // Make sure value is of the correct type.
-      debug(`found value for option: ${o.name}=${value}`);
-      if (o.typeName === 'number') {
-        if (Number.isNaN(Number(value))) {
-          throw new Error(`expected number value for --${o.long} but got '${value}'`);
-        }
-        resultOptions.set(o.name, Number(value));
-      } else if (o.typeName === 'string') {
-        if (!o.multiple) {
-          resultOptions.set(o.name, String(value));
-          return;
-        }
-        if (Array.isArray(value)) {
-          resultOptions.set(o.name, value.map(String));
-        } else {
-          resultOptions.set(o.name, [String(value)]);
-        }
-      }
-
+    if (value === undefined) {
+      return o;
     }
-  });
 
-  // TODO: Validate arguments
-  resultOptions.set('_', parsed.get('_'));
-  return immutable.Map(resultOptions);
+    // Make sure value is of the correct type.
+    debug(`found value for option: ${o.name}=${value}`);
+    if (o.kind === 'boolean') {
+      if (typeof value !== 'boolean') {
+        throw new Error(`--${o.long} does not take a value but got '${value}'`);
+      }
+      return { ...o, value };
+    }
+    if (o.kind === 'number') {
+      if (Number.isNaN(Number(value))) {
+        throw new Error(`expected number value for --${o.long} but got '${value}'`);
+      }
+      return { ...o, value: Number(value) };
+    }
+    if (o.kind === 'string') {
+      if (!o.multiple) {
+        if (Array.isArray(value)) {
+          throw new Error(`Option --${o.long} can be specified only once`);
+        }
+        return { ...o, value: String(value) };
+      }
+      if (Array.isArray(value)) {
+        return { ...o, value: value.map(String) };
+      }
+      return { ...o, value: [String(value)] };
+    }
+    return o;
+  });
 }
 
-function getValue<T>(o: Option<T>, parsed: immutable.Map<string, any>): T | T[] | void {
+function getValue<T>(o: Option, parsed: immutable.Map<string, any>): any {
   if (o.short && parsed.has(o.short)) {
     return parsed.get(o.short);
   }
@@ -87,39 +91,28 @@ function getValue<T>(o: Option<T>, parsed: immutable.Map<string, any>): T | T[] 
   }
 }
 
-export function addOption<T>(
-  state: CommandState,
-  definition: TypeNamedOption<T>,
-  key: keyof CommandState,
-): Command {
-  const map = state[key] as StoredOption<T>;
-  checkUniqueDefinition(definition, combinedOptions(state));
-  const val = map.set(definition.name, Object.freeze(definition));
-  return withState({ ...state, [key]: val });
-}
-
-export function combinedOptions(state: CommandState): AllStoredOptions {
-  const res = state.flags.merge(
-    state.stringOptions as AllStoredOptions,
-    state.numberOptions,
-  ).sort((a, b) => a.name.localeCompare(b.name));
-  return res;
-}
-
-export function combinedArguments(state: CommandState): AllStoredArguments {
-  const res = state.positionalNumberArgs.merge(
-    state.positionalStringArgs,
-  ).sort((a, b) => a.name.localeCompare(b.name));
-  return res;
-}
-
-export function checkUniqueDefinition<T>(definition: Option<T>, list: AllStoredOptions) {
-  if (list.has(definition.name)
-    || list.some(o => !!(o.short && o.short === definition.short))
-    || list.some(o => !!(o.long && o.long === definition.long))
-  ) {
-    throw new TypeError(
-      `arg already exists: ${definition.name} -${definition.short} --${definition.long}`,
-    );
+export function getOptionOrParentOption(
+  name: string,
+  map1: StoredOptions,
+  map2: StoredOptions,
+): Option {
+  const opt1 = map1.get(name);
+  const opt2 = map2.get(name);
+  if (!opt1 && !opt2) {
+    throw new TypeError(`${name} is not a known option`);
   }
+  return (opt1 || opt2)!;
+}
+
+export function getArgOrParentArg(
+  name: string,
+  map1: StoredArguments,
+  map2: StoredArguments,
+): Argument {
+  const opt1 = map1.get(name);
+  const opt2 = map2.get(name);
+  if (!opt1 && !opt2) {
+    throw new TypeError(`${name} is not a known argument`);
+  }
+  return (opt1 || opt2)!;
 }

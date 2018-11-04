@@ -1,5 +1,15 @@
 import * as immutable from 'immutable';
-import { Option, Command, withState } from './Command';
+import {
+  Command,
+  withState,
+  StringOption,
+  MultiStringOption,
+  NumericOption,
+  BooleanOption,
+  MultiStringArgument,
+  NumericArgument,
+  StringArgument,
+} from './Command';
 import * as Debug from 'debug';
 
 const debug = Debug('console-commando:main');
@@ -14,11 +24,10 @@ export function command(name: string): Command {
   debug(`creating new command: ${name}`);
   return withState({
     name,
-    flags: immutable.Map(),
-    stringOptions: immutable.Map(),
-    numberOptions: immutable.Map(),
-    positionalStringArgs: immutable.Map(),
-    positionalNumberArgs: immutable.Map(),
+    options: immutable.Map(),
+    parentOptions: immutable.Map(),
+    arguments: immutable.Map(),
+    parentArguments: immutable.Map(),
     subCommands: immutable.Map(),
     runtimeArgs: immutable.List(),
     parsedRuntimeArgs: immutable.Map(),
@@ -34,13 +43,31 @@ export function command(name: string): Command {
  * @param defaultValue optional default value to be used if the option is not specified.
  * @param required whether this option is mandatory. Defaults to false.
  */
-export function option<T>(
+export function flag(
   long: string,
   short?: string,
   description?: string,
-  defaultValue?: T,
   required: boolean = false,
-): Option<T> {
+): BooleanOption {
+  debug('creating option:', { long, short, description, required });
+  return {
+    long,
+    short,
+    description,
+    required,
+    name: long,
+    multiple: false,
+    kind: 'boolean',
+  };
+}
+
+export function stringOption(
+  long: string,
+  short?: string,
+  description?: string,
+  defaultValue?: string,
+  required: boolean = false,
+): StringOption {
   debug('creating option:', { long, short, description, defaultValue, required });
   return {
     long,
@@ -50,29 +77,97 @@ export function option<T>(
     name: long,
     default: defaultValue,
     multiple: false,
+    kind: 'string',
   };
 }
 
-/**
- * Convenience factory for multi valued Option<T>.
- *
- * @see option()
- */
-export function multiOption<T>(
+export function numericOption(
   long: string,
   short?: string,
   description?: string,
-  defaultValue?: T[],
+  defaultValue?: number,
   required: boolean = false,
-): Option<T> {
-  debug('creating multi option:', { long, short, description, defaultValue, required });
+): NumericOption {
+  debug('creating option:', { long, short, description, defaultValue, required });
   return {
     long,
     short,
     description,
     required,
-    multiple: true,
     name: long,
     default: defaultValue,
+    multiple: false,
+    kind: 'number',
+  };
+}
+
+export function multiStringOption(
+  long: string,
+  short?: string,
+  description?: string,
+  defaultValue?: string[],
+  required: boolean = false,
+): MultiStringOption {
+  debug('creating option:', { long, short, description, defaultValue, required });
+  return {
+    long,
+    short,
+    description,
+    required,
+    name: long,
+    default: defaultValue,
+    multiple: true,
+    kind: 'string',
+  };
+}
+
+export function stringArg(
+  name: string,
+  description?: string,
+  defaultValue?: string,
+  required: boolean = false,
+): StringArgument {
+  debug('creating argument:', { name, description, defaultValue, required });
+  return {
+    name,
+    description,
+    required,
+    default: defaultValue,
+    multiple: false,
+    kind: 'string',
+  };
+}
+
+export function numericArg(
+  name: string,
+  description?: string,
+  defaultValue?: number,
+  required: boolean = false,
+): NumericArgument {
+  debug('creating argument:', { name, description, defaultValue, required });
+  return {
+    name,
+    description,
+    required,
+    default: defaultValue,
+    multiple: false,
+    kind: 'number',
+  };
+}
+
+export function multiStringArg(
+  name: string,
+  description?: string,
+  defaultValue?: string[],
+  required: boolean = false,
+): MultiStringArgument {
+  debug('creating argument:', { name, description, defaultValue, required });
+  return {
+    name,
+    description,
+    required,
+    default: defaultValue,
+    multiple: true,
+    kind: 'string',
   };
 }

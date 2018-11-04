@@ -1,4 +1,4 @@
-import { command, option, multiOption } from '../src/index';
+import { command, numericOption, multiStringOption, stringArg, numericArg } from '../src/index';
 
 command('name-only')
 .run();
@@ -16,24 +16,26 @@ command('with-flags')
 .withVersion('1.0.2')
 // tslint:disable-next-line:max-line-length
 .withDescription('A description, which could be long or even very long. Note how flags can never have the same short or long names.')
-.withFlag({ name: 'force', short: 'f', long: 'force' })
-.withFlag({ name: 'gorce', short: 'g', long: 'gorce', description: 'a flag' })
-.withFlag({ name: 'horce', short: 'h', long: 'horce', description: 'a flag', default: true })
+.withOption({ kind: 'boolean', name: 'force', short: 'f', long: 'force' })
+.withOption({ kind: 'boolean', name: 'gorce', short: 'g', long: 'gorce', description: 'a flag' })
+.withOption({ kind: 'boolean', name: 'horce', short: 'h', long: 'horce', description: 'a flag' })
 .run();
 
 const withHandler = command('with-handler')
 .withVersion('1.0.4')
 .withDescription('A description, which could be long.')
-.withFlag({ name: 'force', short: 'f', long: 'force', description: 'a flag', default: false })
-.withNumberOption(option('number', 'n', 'a number', 66))
-.withStringOption({
+.withOption({ kind: 'boolean', name: 'force', short: 'f', long: 'force', description: 'a flag' })
+.withOption(numericOption('number', 'n', 'a number', 66))
+.withOption({
+  kind: 'string',
   name: 'string',
   short: 's',
   long: 'string',
   description: 'a string',
   default: 'test',
 })
-.withStringOption({
+.withOption({
+  kind: 'string',
   name: 'array',
   short: 'a',
   long: 'array',
@@ -41,8 +43,8 @@ const withHandler = command('with-handler')
   multiple: true,
   default: ['test'],
 })
-.withPositionalString({ name: 'pos1', description: 'a positional string', default: 'test' })
-.withPositionalNumber({ name: 'pos2', description: 'a positional number', default: 10 });
+.withArgument({ kind: 'string', name: 'pos1', description: 'a positional string', default: 'test' })
+.withArgument({ kind: 'number', name: 'pos2', description: 'a positional number', default: 10 });
 withHandler.run();
 
 withHandler.withHandler(cmd => console.log('HANDLER!'))
@@ -51,12 +53,13 @@ withHandler.withHandler(cmd => console.log('HANDLER!'))
 const fullTest = command('full-test')
 .withVersion('1.0.5')
 .withDescription('A description, which could be long.')
-.withFlag({ name: 'force', short: 'f', long: 'force', description: 'a flag' })
-.withNumberOption(option('number', 'n', 'a number'))
-.withStringOption({ name: 'string', short: 's', long: 'string', description: 'a string' })
-.withStringOption(multiOption('array', 'a', 'a string array'))
-.withPositionalString({ name: 'pos1', description: 'a positional string' })
-.withPositionalNumber({ name: 'pos2', description: 'a positional number' })
+.withOption({ kind: 'boolean', name: 'force', short: 'f', long: 'force', description: 'a flag' })
+.withOption(numericOption('number', 'n', 'a number'))
+.withOption({
+  kind: 'string', name: 'string', short: 's', long: 'string', description: 'a string' })
+.withOption(multiStringOption('array', 'a', 'a string array'))
+.withArgument(stringArg('pos1', 'a positional string'))
+.withArgument(numericArg('pos2', 'a positional number'))
 .withPreProcessor((_, state) => {
   return state.set('runtime', 'state');
 });
@@ -70,17 +73,19 @@ fullTest.withHandler((cmd, state) => {
 const subTest = command('sub-test')
 .withVersion('1.0.6')
 .withDescription('A description, which could be long.')
-.withFlag({ name: 'force', short: 'f', long: 'force', description: 'a flag', default: false })
-.withFlag({ name: 'gorce', short: 'g', long: 'gorce', description: 'another flag', default: false })
-.withNumberOption(option('number', 'n', 'a number', 66))
-.withStringOption({
+.withOption({ kind: 'boolean', name: 'force', short: 'f', long: 'force', description: 'a flag' })
+.withOption({ kind: 'boolean', name: 'gorce', short: 'g', long: 'gorce', description: 'another' })
+.withOption(numericOption('number', 'n', 'a number', 66))
+.withOption({
+  kind: 'string',
   name: 'string',
   short: 's',
   long: 'string',
   description: 'a string',
   default: 'test',
 })
-.withStringOption({
+.withOption({
+  kind: 'string',
   name: 'array',
   short: 'a',
   long: 'array',
@@ -88,8 +93,8 @@ const subTest = command('sub-test')
   multiple: true,
   default: ['test'],
 })
-.withPositionalString({ name: 'pos1', description: 'a positional string', default: 'test' })
-.withPositionalNumber({ name: 'pos2', description: 'a positional number', default: 10 })
+.withArgument(stringArg('pos1', 'a positional string', 'test'))
+.withArgument(numericArg('pos2', 'a positional number', 10))
 .withPreProcessor((_, state) => {
   console.log('pre1');
   return state.set('runtime', 'state');
