@@ -317,7 +317,7 @@ export function withState(initialState: CommandState): Command {
     return withState({ ...cmd.state, runtimeArgs });
   }
 
-  async function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
+  function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
     debug('running command:', cmd.state.name);
     const parsedArgs = cmd.state.options.map(o => o.value || o.default);
     const positionalArgs = cmd.state.parsedRuntimeArgs.get('_', []) as string[];
@@ -330,23 +330,23 @@ export function withState(initialState: CommandState): Command {
     // help: Show help text if requested.
     if (!shouldRunSubCommand && helpRequested) {
       cmd.showHelp();
-      return ReturnValue.SUCCESS;
+      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     // completion: Show help text if requested.
     if (arg0 === 'completion') {
       console.log(completion.bashCompletion(cmd));
-      return ReturnValue.SUCCESS;
+      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     if (arg0 === 'get-completions') {
       console.log(completion.getCompletions(cmd));
-      return ReturnValue.SUCCESS;
+      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     if (!shouldRunSubCommand && helpRequested) {
       cmd.showHelp();
-      return ReturnValue.SUCCESS;
+      return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     // Allow optional preprocessor to modify run-time state.
@@ -370,10 +370,10 @@ export function withState(initialState: CommandState): Command {
     if (!cmd.state.handler) {
       console.warn(colors.yellow(`No handler defined for command ${cmd.state.name}`));
       cmd.showHelp();
-      return ReturnValue.FAILURE;
+      return Promise.resolve(ReturnValue.FAILURE);
     }
     // Handle the current command.
-    return cmd.state.handler(cmd, runtimeState) || ReturnValue.SUCCESS;
+    return cmd.state.handler(cmd, runtimeState) || Promise.resolve(ReturnValue.SUCCESS);
   }
 
   return Object.freeze(cmd);
