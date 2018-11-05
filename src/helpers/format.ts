@@ -54,7 +54,7 @@ export function formatColumns(columns: immutable.Map<string, string[]>): string 
   const padded = columns.map((o, k) => {
     return o.map((v, i) => v.padEnd(colWidths[i] + 2)).join('');
   })
-  .map(l => `    ${l}`);
+    .map(l => `    ${l}`);
 
   return padded.join('\n');
 }
@@ -63,7 +63,7 @@ export function formatOptions(options: StoredOptions): string {
     o.long ? `=<${o.kind}>` : '';
   const optHelp = options.map((o) => {
     const short = o.short ? `-${o.short}` : '';
-    const long = o.long ? `--${o.long + longParam(o)}` :'';
+    const long = o.long ? `--${o.long + longParam(o)}` : '';
     const name = [short, long].filter(n => n !== '').join(',');
     return [name, o.description || ''];
   });
@@ -79,6 +79,6 @@ export function formatSubCommands(commands: SubCommands): string {
 
 export function formatArgHelp(args: StoredArguments): string {
   return args
-  .map(({ required, name }) => required ? `<${name}>` : `[${name}]`)
-  .join(' ');
+    .map(({ required, name }) => required ? `<${name}>` : `[${name}]`)
+    .join(' ');
 }

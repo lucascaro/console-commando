@@ -48,7 +48,7 @@ function getArgCompletions(command: Command, args: string[] = []): string[] {
     // Let the subcommand handle completions.
     const subArgs = args.slice(1);
     debug(`complete subcommand '${subcommand.state.name}' with args: ${subArgs}`);
-    return  [
+    return [
       ...completeOptions(command),
       ...getArgCompletions(subcommand, subArgs),
     ];
@@ -93,7 +93,7 @@ function completeOptions(cmd: Command, prefix: string = ''): string[] {
       cmd.state.options.map((o) => {
         const completions = [];
         const short = o.short ? `-${o.short}` : undefined;
-        const long  = o.long ? `--${o.long}` : undefined;
+        const long = o.long ? `--${o.long}` : undefined;
         if (short && short.startsWith(prefix)) {
           completions.push(short);
         }
@@ -102,7 +102,7 @@ function completeOptions(cmd: Command, prefix: string = ''): string[] {
         }
         return completions;
       })
-      .values(),
+        .values(),
     ),
   );
 }
