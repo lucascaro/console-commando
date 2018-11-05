@@ -77,6 +77,49 @@ export function parseOptions(
   });
 }
 
+export function parseArguments(
+  parsed: ParsedRuntimeArgs,
+  args: StoredArguments,
+): StoredArguments {
+  let positional = parsed.get('_', []);
+  if (!Array.isArray(positional)) {
+    throw new Error(`error parsing positional arguments: ${positional}.`);
+  }
+  positional = (positional as any[]).map(String);
+
+  debug('parsing arguments for:', parsed, positional);
+  return args.map((a) => {
+    positional = positional as string[];
+    debug(`parsing ${a.name}`);
+    if (positional.length === 0) {
+      if (a.required) {
+        throw new Error(`argument ${a.name} is required but no value was specified.`);
+      }
+      return a;
+    }
+    // multi arguments consume all.
+    if (a.kind === 'string' && a.multiple) {
+      return { ...a, value: positional };
+    }
+
+    const value = positional.shift() as string;
+
+    if (a.kind === 'number') {
+      const nArg = Number(value);
+      if (Number.isNaN(nArg)) {
+        throw new Error(`argument ${a.name} should be a number. Received: ${value}.`);
+      }
+      return { ...a, value: nArg };
+    }
+
+    if (a.kind === 'string' && !a.multiple) {
+      return { ...a, value };
+    }
+
+    return a;
+  });
+}
+
 function getValue<T>(o: Option, parsed: immutable.Map<string, any>): any {
   if (o.short && parsed.has(o.short)) {
     return parsed.get(o.short);

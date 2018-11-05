@@ -3,6 +3,7 @@ import {
   parseArgv,
   parseOptions,
   getOptionOrParentOption,
+  parseArguments,
 } from './helpers/args';
 import colors from './helpers/colors';
 import { formatHelp } from './helpers/format';
@@ -338,28 +339,30 @@ export function withState(initialState: CommandState): Command {
     if (!cmd.state.options.has('help')) {
       return withHelp().withRuntimeArgs(args, parsed);
     }
-    if (commandArgs && commandArgs.length > 0) {
-      try {
-        const parsedRuntimeArgs = parseArgv(
-          commandArgs,
-          parsed || cmd.state.parsedRuntimeArgs,
-        );
-        const options = parseOptions(parsedRuntimeArgs, cmd.state.options);
-        debug('PARSED', parsedRuntimeArgs);
-        return withState({
-          ...cmd.state,
-          runtimeArgs,
-          options,
-          parsedRuntimeArgs,
-        });
-      } catch (e) {
-        console.error(colors.red(`\nError: ${e.message}\n`));
-        showHelp();
-        process.exit(ReturnValue.FAILURE);
-      }
+
+    try {
+      const parsedRuntimeArgs = parseArgv(
+        commandArgs,
+        parsed || cmd.state.parsedRuntimeArgs,
+      );
+      const options = parseOptions(parsedRuntimeArgs, cmd.state.options);
+      const args = parseArguments(parsedRuntimeArgs, cmd.state.arguments);
+      debug('PARSED', parsedRuntimeArgs);
+      return withState({
+        ...cmd.state,
+        runtimeArgs,
+        options,
+        parsedRuntimeArgs,
+        arguments: args,
+      });
+    } catch (e) {
+      console.error(colors.red(`\nError: ${e.message}\n`));
+      showHelp();
+      process.exit(ReturnValue.FAILURE);
     }
 
-    return withState({ ...cmd.state, runtimeArgs });
+    // never reached.
+    return cmd;
   }
 
   function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
@@ -397,9 +400,10 @@ export function withState(initialState: CommandState): Command {
 
     // Allow optional preprocessor to modify run-time state.
     // TODO: allow async preprocessors.
-    const runtimeState = preProcessor
+    const processedState = preProcessor
       ? preProcessor(cmd, state) || state
       : state;
+    const runtimeState = processedState.set('root', processedState.get('root', cmd));
 
     // If a subCommand exists with name as the first argument, recurse into it.
     if (shouldRunSubCommand) {
