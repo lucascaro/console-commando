@@ -14,7 +14,15 @@ import * as Debug from 'debug';
 
 const debug = Debug('console-commando:main');
 
-export { Command, Option, Argument, Handler, PreProcessor, ReturnValue } from './Command';
+export {
+  Command,
+  Option,
+  Argument,
+  Handler,
+  PreProcessor,
+  ReturnValue,
+  RuntimeState,
+} from './Command';
 
 /**
  * Command factory. Returns a new command with default state and a given name.

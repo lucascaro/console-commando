@@ -342,17 +342,15 @@ export function withState(initialState: CommandState): Command {
       try {
         const parsedRuntimeArgs = parseArgv(
           commandArgs,
-          cmd.state.parsedRuntimeArgs,
+          parsed || cmd.state.parsedRuntimeArgs,
         );
         const options = parseOptions(parsedRuntimeArgs, cmd.state.options);
-        // const options = cmd.state.options.merge(parsedRuntimeArgs.options);
-        // const args = cmd.state.positionalNumberArgs.merge(parsedRuntimeArgs.options);
         debug('PARSED', parsedRuntimeArgs);
         return withState({
           ...cmd.state,
           runtimeArgs,
-          parsedRuntimeArgs,
           options,
+          parsedRuntimeArgs,
         });
       } catch (e) {
         console.error(colors.red(`\nError: ${e.message}\n`));
@@ -366,8 +364,9 @@ export function withState(initialState: CommandState): Command {
 
   function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
     debug('running command:', cmd.state.name);
-    const parsedArgs = cmd.state.options.map(o => o.value || o.default);
+    const parsedArgs = cmd.state.parsedRuntimeArgs;
     const positionalArgs = cmd.state.parsedRuntimeArgs.get('_', []) as string[];
+    debug('positional args:', positionalArgs);
     const arg0 = positionalArgs[0] as string | undefined;
     const preProcessor = cmd.state.preProcessor;
     const shouldRunSubCommand = !!arg0 && cmd.state.subCommands.has(arg0);
