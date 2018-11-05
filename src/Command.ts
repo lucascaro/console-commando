@@ -358,11 +358,8 @@ export function withState(initialState: CommandState): Command {
     } catch (e) {
       console.error(colors.red(`\nError: ${e.message}\n`));
       showHelp();
-      process.exit(ReturnValue.FAILURE);
+      return process.exit(ReturnValue.FAILURE);
     }
-
-    // never reached.
-    return cmd;
   }
 
   function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
