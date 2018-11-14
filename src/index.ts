@@ -1,4 +1,11 @@
 import * as immutable from 'immutable';
+
+import colors from './helpers/colors';
+export { colors };
+
+import * as io from './helpers/io';
+export { io };
+
 import {
   Command,
   withState,
@@ -76,7 +83,13 @@ export function stringOption(
   defaultValue?: string,
   required: boolean = false,
 ): StringOption {
-  debug('creating option:', { long, short, description, defaultValue, required });
+  debug('creating option:', {
+    long,
+    short,
+    description,
+    defaultValue,
+    required,
+  });
   return {
     long,
     short,
@@ -96,7 +109,13 @@ export function numericOption(
   defaultValue?: number,
   required: boolean = false,
 ): NumericOption {
-  debug('creating option:', { long, short, description, defaultValue, required });
+  debug('creating option:', {
+    long,
+    short,
+    description,
+    defaultValue,
+    required,
+  });
   return {
     long,
     short,
@@ -116,7 +135,13 @@ export function multiStringOption(
   defaultValue?: string[],
   required: boolean = false,
 ): MultiStringOption {
-  debug('creating option:', { long, short, description, defaultValue, required });
+  debug('creating option:', {
+    long,
+    short,
+    description,
+    defaultValue,
+    required,
+  });
   return {
     long,
     short,

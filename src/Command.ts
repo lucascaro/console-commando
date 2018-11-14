@@ -97,7 +97,7 @@ export type RuntimeState = immutable.Map<string, any>;
 export type Handler = (
   command: Command,
   runtimeState: RuntimeState,
-) => Promise<ReturnValue> | void;
+) => Promise<ReturnValue | void> | void;
 export type PreProcessor = (
   command: Command,
   runtimeState: RuntimeState,
@@ -146,6 +146,7 @@ export interface CommandState {
   subCommands: SubCommands;
   runtimeArgs: immutable.List<string>;
   parsedRuntimeArgs: ParsedRuntimeArgs;
+  sealed?: boolean;
 }
 
 export function withState(initialState: CommandState): Command {
@@ -182,6 +183,11 @@ export function withState(initialState: CommandState): Command {
   }
 
   function withOption(definition: Option): Command {
+    if (!cmd.state.parsedRuntimeArgs.isEmpty()) {
+      throw new TypeError(
+        `arguments cannot be added after runtime arguments are set: ${definition.name}`,
+      );
+    }
     debug('adding option:', definition);
     const map = cmd.state.options;
     if (
@@ -212,6 +218,11 @@ export function withState(initialState: CommandState): Command {
   }
 
   function withArgument(definition: Argument): Command {
+    if (cmd.state.runtimeArgs.size > 0) {
+      throw new TypeError(
+        `arguments cannot be added after runtime arguments are set: ${definition.name}`,
+      );
+    }
     debug('adding argument:', definition);
     const map = cmd.state.arguments;
     if (map.has(definition.name)) {
@@ -428,8 +439,8 @@ export function withState(initialState: CommandState): Command {
     }
     // Handle the current command.
     return (
-      cmd.state.handler(cmd, runtimeState) ||
-      Promise.resolve(ReturnValue.SUCCESS)
+      Promise.resolve(cmd.state.handler(cmd, runtimeState))
+        .then(retval => retval || ReturnValue.SUCCESS)
     );
   }
 

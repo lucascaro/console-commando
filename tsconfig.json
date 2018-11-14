@@ -1,17 +1,16 @@
 {
-    "compileOnSave": true,
-    "compilerOptions": {
-        "removeComments": true,
-        "sourceMap": true,
-        "strict": true,
-        "declaration": true,
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "target": "ES2018",
-        "outDir": "lib",
-        "lib": ["es2018", "scripthost"]
-    },
-    "include": [
-        "src/**/*"
-    ]
+  "compileOnSave": true,
+  "compilerOptions": {
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true,
+    "declaration": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2018",
+    "outDir": "lib",
+    "lib": ["es2018", "scripthost"],
+    "plugins": [{ "name": "typescript-tslint-plugin" }]
+  },
+  "include": ["src/**/*"]
 }

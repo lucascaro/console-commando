@@ -322,4 +322,10 @@ describe('multiStringOption', () => {
       ])
       .run();
   });
+  test('can\'t add option after runtime arguments are passed', () => {
+    const c = command('test')
+      .withOption(multiStringOption('opt', 'o'))
+      .withRuntimeArgs();
+    expect(() => c.withOption(multiStringOption('opt2', 'p'))).toThrowError();
+  });
 });
