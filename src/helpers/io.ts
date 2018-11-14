@@ -6,7 +6,10 @@ export function ask(prompt: string, defaultValue: string = ''): Promise<string> 
       input: process.stdin,
       output: process.stdout,
     });
-    rl.question(`${prompt} [${defaultValue}]`, (answer) => {
+    const suffix = defaultValue !== ''
+      ? `[${defaultValue}] `
+      : '';
+    rl.question(`${prompt} ${suffix}`, (answer) => {
       resolve(answer || defaultValue);
       rl.close();
     });
