@@ -1,5 +1,5 @@
-import * as path from "path";
-import { command } from "..";
+import path from "path";
+import { command } from "../bundle";
 
 /**
  * Simple command example

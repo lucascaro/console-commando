@@ -1,4 +1,4 @@
-import * as path from "path";
+import path from "path";
 import { command, Command, flag } from "..";
 import { RuntimeState } from "../src";
 

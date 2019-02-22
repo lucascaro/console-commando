@@ -1,6 +1,6 @@
 "use strict";
 
-import * as Debug from "debug";
+import Debug from "debug";
 import { Command } from "../Command";
 import { flatten } from "./array";
 const debug = Debug("console-commando:completion");

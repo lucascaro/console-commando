@@ -1,4 +1,4 @@
-import * as Debug from "debug";
+import Debug from "debug";
 import * as immutable from "immutable";
 import {
   getOptionOrParentOption,
@@ -7,7 +7,7 @@ import {
   parseOptions,
 } from "./helpers/args";
 import colors from "./helpers/colors";
-import * as completion from "./helpers/completion";
+import { bashCompletion, getCompletions } from "./helpers/completion";
 import { formatHelp } from "./helpers/format";
 
 const debug = Debug("console-commando:Command");
@@ -395,12 +395,12 @@ export function withState(initialState: CommandState): Command {
 
     // completion: Show help text if requested.
     if (arg0 === "completion") {
-      console.log(completion.bashCompletion(cmd));
+      console.log(bashCompletion(cmd));
       return Promise.resolve(ReturnValue.SUCCESS);
     }
 
     if (arg0 === "get-completions") {
-      console.log(completion.getCompletions(cmd));
+      console.log(getCompletions(cmd));
       return Promise.resolve(ReturnValue.SUCCESS);
     }
 

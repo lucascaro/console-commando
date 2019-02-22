@@ -1,4 +1,4 @@
-import * as Debug from "debug";
+import Debug from "debug";
 import * as immutable from "immutable";
 import {
   BooleanOption,
@@ -12,7 +12,7 @@ import {
   withState,
 } from "./Command";
 import colors from "./helpers/colors";
-import * as io from "./helpers/io";
+import io from "./helpers/io";
 
 export {
   Argument,

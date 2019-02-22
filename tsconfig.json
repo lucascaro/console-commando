@@ -1,6 +1,7 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "removeComments": true,
     "sourceMap": true,
     "strict": true,

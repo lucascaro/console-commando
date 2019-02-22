@@ -1,6 +1,6 @@
-import * as Debug from "debug";
+import Debug from "debug";
 import * as immutable from "immutable";
-import * as minimist from "minimist";
+import minimist from "minimist";
 import {
   Argument,
   Option,
