@@ -1,35 +1,32 @@
-import * as immutable from 'immutable';
-
-import colors from './helpers/colors';
-export { colors };
-
-import * as io from './helpers/io';
-export { io };
-
+import * as Debug from "debug";
+import * as immutable from "immutable";
 import {
-  Command,
-  withState,
-  StringOption,
-  MultiStringOption,
-  NumericOption,
   BooleanOption,
+  Command,
   MultiStringArgument,
+  MultiStringOption,
   NumericArgument,
+  NumericOption,
   StringArgument,
-} from './Command';
-import * as Debug from 'debug';
-
-const debug = Debug('console-commando:main');
+  StringOption,
+  withState,
+} from "./Command";
+import colors from "./helpers/colors";
+import * as io from "./helpers/io";
 
 export {
-  Command,
-  Option,
   Argument,
+  Command,
   Handler,
+  Option,
   PreProcessor,
   ReturnValue,
   RuntimeState,
-} from './Command';
+} from "./Command";
+export { colors };
+export { io };
+
+const debug = Debug("console-commando:main");
 
 /**
  * Command factory. Returns a new command with default state and a given name.
@@ -64,7 +61,7 @@ export function flag(
   description?: string,
   required: boolean = false,
 ): BooleanOption {
-  debug('creating option:', { long, short, description, required });
+  debug("creating option:", { long, short, description, required });
   return {
     long,
     short,
@@ -72,7 +69,7 @@ export function flag(
     required,
     name: long,
     multiple: false,
-    kind: 'boolean',
+    kind: "boolean",
   };
 }
 
@@ -83,7 +80,7 @@ export function stringOption(
   defaultValue?: string,
   required: boolean = false,
 ): StringOption {
-  debug('creating option:', {
+  debug("creating option:", {
     long,
     short,
     description,
@@ -98,7 +95,7 @@ export function stringOption(
     name: long,
     default: defaultValue,
     multiple: false,
-    kind: 'string',
+    kind: "string",
   };
 }
 
@@ -109,7 +106,7 @@ export function numericOption(
   defaultValue?: number,
   required: boolean = false,
 ): NumericOption {
-  debug('creating option:', {
+  debug("creating option:", {
     long,
     short,
     description,
@@ -124,7 +121,7 @@ export function numericOption(
     name: long,
     default: defaultValue,
     multiple: false,
-    kind: 'number',
+    kind: "number",
   };
 }
 
@@ -135,7 +132,7 @@ export function multiStringOption(
   defaultValue?: string[],
   required: boolean = false,
 ): MultiStringOption {
-  debug('creating option:', {
+  debug("creating option:", {
     long,
     short,
     description,
@@ -150,7 +147,7 @@ export function multiStringOption(
     name: long,
     default: defaultValue,
     multiple: true,
-    kind: 'string',
+    kind: "string",
   };
 }
 
@@ -160,14 +157,14 @@ export function stringArg(
   defaultValue?: string,
   required: boolean = false,
 ): StringArgument {
-  debug('creating argument:', { name, description, defaultValue, required });
+  debug("creating argument:", { name, description, defaultValue, required });
   return {
     name,
     description,
     required,
     default: defaultValue,
     multiple: false,
-    kind: 'string',
+    kind: "string",
   };
 }
 
@@ -177,14 +174,14 @@ export function numericArg(
   defaultValue?: number,
   required: boolean = false,
 ): NumericArgument {
-  debug('creating argument:', { name, description, defaultValue, required });
+  debug("creating argument:", { name, description, defaultValue, required });
   return {
     name,
     description,
     required,
     default: defaultValue,
     multiple: false,
-    kind: 'number',
+    kind: "number",
   };
 }
 
@@ -194,13 +191,13 @@ export function multiStringArg(
   defaultValue?: string[],
   required: boolean = false,
 ): MultiStringArgument {
-  debug('creating argument:', { name, description, defaultValue, required });
+  debug("creating argument:", { name, description, defaultValue, required });
   return {
     name,
     description,
     required,
     default: defaultValue,
     multiple: true,
-    kind: 'string',
+    kind: "string",
   };
 }

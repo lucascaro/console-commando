@@ -1,67 +1,9 @@
-'use strict';
+"use strict";
 
-import * as Debug from 'debug';
-const debug = Debug('console-commando:completion');
-
-import * as immutable from 'immutable';
-import { Command } from '../Command';
-import { flatten } from './array';
-
-/**
- * Get valid completion values for a command and a list of arguments.
- *
- * @return a list of possible completions.
- */
-export function getCompletions(command: Command): string {
-  const args = command.state.parsedRuntimeArgs.get('_') as string[];
-  debug('INITIAL ARGS', args);
-  // Drop the 'get-completions' argument as well as the command name.
-  return getArgCompletions(command, args.slice(2)).join(' ');
-  return '';
-}
-/**
- * Utility function to return valid list of args.
- *
- * @param command      A command command.
- * @param args  A list of arguments. (for internal use)
- *
- * @return {string} a list of possible completions.
- * @access private
- */
-function getArgCompletions(command: Command, args: string[] = []): string[] {
-  debug('args', args);
-  debug('command', command.state.name);
-
-  const firstArg = args[0] as string | undefined;
-  const subcommand = firstArg ? command.state.subCommands.get(firstArg) : undefined;
-
-  if (!firstArg || firstArg === '') {
-    // Return all available options if no argument is passed.
-    return [
-      ...completeOptions(command),
-      ...completeArguments(command),
-      ...completeSubcommands(command),
-    ];
-  }
-  debug('subcommand?', firstArg, subcommand && subcommand.state);
-  if (subcommand) {
-    // Let the subcommand handle completions.
-    const subArgs = args.slice(1);
-    debug(`complete subcommand '${subcommand.state.name}' with args: ${subArgs}`);
-    return [
-      ...completeOptions(command),
-      ...getArgCompletions(subcommand, subArgs),
-    ];
-  }
-
-  if (firstArg[0] === '-') {
-    return completeOptions(command, firstArg);
-  }
-
-  // At this point, firstArg is a non-empty string that doesn't start with '-'
-  return completeSubcommands(command, firstArg);
-
-}
+import * as Debug from "debug";
+import { Command } from "../Command";
+import { flatten } from "./array";
+const debug = Debug("console-commando:completion");
 
 /**
  * Utility function to get completions for subcommands.
@@ -71,8 +13,8 @@ function getArgCompletions(command: Command, args: string[] = []): string[] {
  * @param  prefix       An optional prefix to filter subcommands.
  * @access private
  */
-function completeSubcommands(command: Command, prefix: string = ''): string[] {
-  debug('complete subcommands', { prefix, command: command.state });
+function completeSubcommands(command: Command, prefix: string = ""): string[] {
+  debug("complete subcommands", { prefix, command: command.state });
   const names = Array.from(command.state.subCommands.keys());
   return prefix ? names.filter(n => n.startsWith(prefix)) : names;
 }
@@ -86,22 +28,23 @@ function completeSubcommands(command: Command, prefix: string = ''): string[] {
  * @param  prefix      An optional prefix to filter subcommands.
  * @access private
  */
-function completeOptions(cmd: Command, prefix: string = ''): string[] {
+function completeOptions(cmd: Command, prefix: string = ""): string[] {
   debug(`complete options with prefix ${prefix}`);
   return flatten(
     Array.from(
-      cmd.state.options.map((o) => {
-        const completions = [];
-        const short = o.short ? `-${o.short}` : undefined;
-        const long = o.long ? `--${o.long}` : undefined;
-        if (short && short.startsWith(prefix)) {
-          completions.push(short);
-        }
-        if (long && long.startsWith(prefix)) {
-          completions.push(long);
-        }
-        return completions;
-      })
+      cmd.state.options
+        .map(o => {
+          const completions = [];
+          const short = o.short ? `-${o.short}` : undefined;
+          const long = o.long ? `--${o.long}` : undefined;
+          if (short && short.startsWith(prefix)) {
+            completions.push(short);
+          }
+          if (long && long.startsWith(prefix)) {
+            completions.push(long);
+          }
+          return completions;
+        })
         .values(),
     ),
   );
@@ -160,4 +103,64 @@ _${appName}_completions()
 complete -F _${appName}_completions ${appName}
 ###-end-${appName}-completions-###
 `;
+}
+
+/**
+ * Utility function to return valid list of args.
+ *
+ * @param command      A command command.
+ * @param args  A list of arguments. (for internal use)
+ *
+ * @return {string} a list of possible completions.
+ * @access private
+ */
+function getArgCompletions(command: Command, args: string[] = []): string[] {
+  debug("args", args);
+  debug("command", command.state.name);
+
+  const firstArg = args[0] as string | undefined;
+  const subcommand = firstArg
+    ? command.state.subCommands.get(firstArg)
+    : undefined;
+
+  if (!firstArg || firstArg === "") {
+    // Return all available options if no argument is passed.
+    return [
+      ...completeOptions(command),
+      ...completeArguments(command),
+      ...completeSubcommands(command),
+    ];
+  }
+  debug("subcommand?", firstArg, subcommand && subcommand.state);
+  if (subcommand) {
+    // Let the subcommand handle completions.
+    const subArgs = args.slice(1);
+    debug(
+      `complete subcommand '${subcommand.state.name}' with args: ${subArgs}`,
+    );
+    return [
+      ...completeOptions(command),
+      ...getArgCompletions(subcommand, subArgs),
+    ];
+  }
+
+  if (firstArg[0] === "-") {
+    return completeOptions(command, firstArg);
+  }
+
+  // At this point, firstArg is a non-empty string that doesn't start with '-'
+  return completeSubcommands(command, firstArg);
+}
+
+/**
+ * Get valid completion values for a command and a list of arguments.
+ *
+ * @return a list of possible completions.
+ */
+export function getCompletions(command: Command): string {
+  const args = command.state.parsedRuntimeArgs.get("_") as string[];
+  debug("INITIAL ARGS", args);
+  // Drop the 'get-completions' argument as well as the command name.
+  return getArgCompletions(command, args.slice(2)).join(" ");
+  return "";
 }

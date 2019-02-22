@@ -1,26 +1,22 @@
+import * as Debug from "debug";
+import * as immutable from "immutable";
+import * as minimist from "minimist";
 import {
-  StoredOptions,
-  Option,
-  ParsedRuntimeArgs,
-  CommandState,
-  Command,
-  withState,
   Argument,
-  StoredArguments,
+  Option,
   OptionValue,
-  OptionsOrArguments,
-} from '../Command';
-import * as minimist from 'minimist';
-import * as immutable from 'immutable';
-import * as Debug from 'debug';
+  ParsedRuntimeArgs,
+  StoredArguments,
+  StoredOptions,
+} from "../Command";
 
-const debug = Debug('console-commando:args');
+const debug = Debug("console-commando:args");
 
-export type ParsingResults = {
+export interface ParsingResults {
   options: StoredOptions;
   arguments: StoredArguments;
   raw: immutable.Map<string, OptionValue>;
-};
+}
 
 export function parseArgv(
   argv: string[],
@@ -29,98 +25,10 @@ export function parseArgv(
   return immutable.Map(minimist(argv)).merge(merge);
 }
 
-export function parseOptions(
-  parsed: ParsedRuntimeArgs,
-  options: StoredOptions,
-): StoredOptions {
-
-  debug('parsing options for:', parsed);
-  return options.map((o): Option => {
-    if (o.short && parsed.has(o.short) && o.long && parsed.has(o.long)) {
-      throw new Error(`option should be either ${o.short} or ${o.long}, not both.`);
-    }
-    const value = getValue(o, parsed);
-    if (Array.isArray(value) && !o.multiple) {
-      throw new Error(`option can only be specified once: ${o.long}`);
-    }
-    if (value === undefined) {
-      return o;
-    }
-
-    // Make sure value is of the correct type.
-    debug(`found value for option: ${o.name}=${value}`);
-    if (o.kind === 'boolean') {
-      if (typeof value !== 'boolean') {
-        throw new Error(`--${o.long} does not take a value but got '${value}'`);
-      }
-      return { ...o, value };
-    }
-    if (o.kind === 'number') {
-      if (Number.isNaN(Number(value))) {
-        throw new Error(`expected number value for --${o.long} but got '${value}'`);
-      }
-      return { ...o, value: Number(value) };
-    }
-    if (o.kind === 'string') {
-      if (!o.multiple) {
-        if (Array.isArray(value)) {
-          throw new Error(`Option --${o.long} can be specified only once`);
-        }
-        return { ...o, value: String(value) };
-      }
-      if (Array.isArray(value)) {
-        return { ...o, value: value.map(String) };
-      }
-      return { ...o, value: [String(value)] };
-    }
-    return o;
-  });
-}
-
-export function parseArguments(
-  parsed: ParsedRuntimeArgs,
-  args: StoredArguments,
-): StoredArguments {
-  let positional = parsed.get('_', []);
-  if (!Array.isArray(positional)) {
-    throw new Error(`error parsing positional arguments: ${positional}.`);
-  }
-  positional = (positional as any[]).map(String);
-
-  debug('parsing arguments for:', parsed, positional);
-  return args.map((a) => {
-    positional = positional as string[];
-    debug(`parsing ${a.name}`);
-    if (positional.length === 0) {
-      if (a.required) {
-        throw new Error(`argument ${a.name} is required but no value was specified.`);
-      }
-      return a;
-    }
-    // multi arguments consume all.
-    if (a.kind === 'string' && a.multiple) {
-      return { ...a, value: positional };
-    }
-
-    const value = positional.shift() as string;
-
-    if (a.kind === 'number') {
-      const nArg = Number(value);
-      if (Number.isNaN(nArg)) {
-        throw new Error(`argument ${a.name} should be a number. Received: ${value}.`);
-      }
-      return { ...a, value: nArg };
-    }
-
-    if (a.kind === 'string' && !a.multiple) {
-      return { ...a, value };
-    }
-
-    return a;
-  });
-}
-
-function getValue<T>(o: Option, parsed: immutable.Map<string, any>): any {
+function getValue(
+  o: Option,
+  parsed: immutable.Map<string, OptionValue>,
+): OptionValue | undefined {
   if (o.short && parsed.has(o.short)) {
     return parsed.get(o.short);
   }
@@ -132,6 +40,108 @@ function getValue<T>(o: Option, parsed: immutable.Map<string, any>): any {
   if (o.default !== undefined) {
     return o.default;
   }
+}
+
+export function parseOptions(
+  parsed: ParsedRuntimeArgs,
+  options: StoredOptions,
+): StoredOptions {
+  debug("parsing options for:", parsed);
+  return options.map(
+    (o: Option): Option => {
+      if (o.short && parsed.has(o.short) && o.long && parsed.has(o.long)) {
+        throw new Error(
+          `option should be either ${o.short} or ${o.long}, not both.`,
+        );
+      }
+      const value = getValue(o, parsed);
+      if (Array.isArray(value) && !o.multiple) {
+        throw new Error(`option can only be specified once: ${o.long}`);
+      }
+      if (value === undefined) {
+        return o;
+      }
+
+      // Make sure value is of the correct type.
+      debug(`found value for option: ${o.name}=${value}`);
+      if (o.kind === "boolean") {
+        if (typeof value !== "boolean") {
+          throw new Error(
+            `--${o.long} does not take a value but got '${value}'`,
+          );
+        }
+        return { ...o, value };
+      }
+      if (o.kind === "number") {
+        if (Number.isNaN(Number(value))) {
+          throw new Error(
+            `expected number value for --${o.long} but got '${value}'`,
+          );
+        }
+        return { ...o, value: Number(value) };
+      }
+      if (o.kind === "string") {
+        if (!o.multiple) {
+          if (Array.isArray(value)) {
+            throw new Error(`Option --${o.long} can be specified only once`);
+          }
+          return { ...o, value: String(value) };
+        }
+        if (Array.isArray(value)) {
+          return { ...o, value: value.map(String) };
+        }
+        return { ...o, value: [String(value)] };
+      }
+      return o;
+    },
+  );
+}
+
+export function parseArguments(
+  parsed: ParsedRuntimeArgs,
+  args: StoredArguments,
+): StoredArguments {
+  let positional = parsed.get("_", []);
+  if (!Array.isArray(positional)) {
+    throw new Error(`error parsing positional arguments: ${positional}.`);
+  }
+  positional = (positional as (string | number | boolean)[]).map(String);
+
+  debug("parsing arguments for:", parsed, positional);
+  return args.map(a => {
+    positional = positional as string[];
+    debug(`parsing ${a.name}`);
+    if (positional.length === 0) {
+      if (a.required) {
+        throw new Error(
+          `argument ${a.name} is required but no value was specified.`,
+        );
+      }
+      return a;
+    }
+    // multi arguments consume all.
+    if (a.kind === "string" && a.multiple) {
+      return { ...a, value: positional };
+    }
+
+    const value = positional.shift() as string;
+
+    if (a.kind === "number") {
+      const nArg = Number(value);
+      if (Number.isNaN(nArg)) {
+        throw new Error(
+          `argument ${a.name} should be a number. Received: ${value}.`,
+        );
+      }
+      return { ...a, value: nArg };
+    }
+
+    if (a.kind === "string" && !a.multiple) {
+      return { ...a, value };
+    }
+
+    return a;
+  });
 }
 
 export function getOptionOrParentOption(
