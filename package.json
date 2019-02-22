@@ -22,8 +22,8 @@
     "url": "git@github.com:lucascaro/console-commando.git"
   },
   "devDependencies": {
-    "@types/debug": "0.0.31",
-    "@types/jest": "^23.3.8",
+    "@types/debug": "^4.1.2",
+    "@types/jest": "^24.0.6",
     "@types/minimist": "^1.1.29",
     "@types/node": "^10.12.0",
     "@types/strip-ansi": "^3.0.0",
@@ -33,15 +33,15 @@
     "eslint": "^5.14.1",
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-prettier": "^3.0.1",
-    "jest": "^23.6.0",
+    "jest": "^24.1.0",
     "prettier": "^1.16.4",
-    "ts-jest": "^23.10.4",
-    "ts-node": "^7.0.1",
+    "ts-jest": "^24.0.0",
+    "ts-node": "^8.0.2",
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "debug": "^4.1.0",
-    "immutable": "^4.0.0-rc.11",
+    "debug": "^4.1.1",
+    "immutable": "^4.0.0-rc.12",
     "minimist": "^1.2.0"
   }
 }
