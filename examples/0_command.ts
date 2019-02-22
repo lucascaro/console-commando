@@ -82,7 +82,7 @@ const withHandler = command("with-handler")
   });
 withHandler.run();
 
-withHandler.withHandler(cmd => console.log("HANDLER!")).run();
+withHandler.withHandler(() => console.log("HANDLER!")).run();
 
 const fullTest = command("full-test")
   .withVersion("1.0.5")
