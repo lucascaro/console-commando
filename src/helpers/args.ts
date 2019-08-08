@@ -128,7 +128,7 @@ export function parseArguments(
         >;
       }
 
-      const value = String(positional.slice(1));
+      const value = String(positional[0]);
 
       if (a.kind === "number") {
         const nArg = Number(value);
