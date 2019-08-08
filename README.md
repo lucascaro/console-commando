@@ -1,6 +1,8 @@
 # Console Commando
+
 [![Build Status](https://travis-ci.org/lucascaro/console-commando.svg?branch=master)](https://travis-ci.org/lucascaro/console-commando)
-[![Documentation](https://doc.esdoc.org/github.com/lucascaro/console-commando/badge.svg)](https://doc.esdoc.org/github.com/lucascaro/console-commando/)
+
+<!-- [![Documentation](https://doc.esdoc.org/github.com/lucascaro/console-commando/badge.svg)](https://doc.esdoc.org/github.com/lucascaro/console-commando/) -->
 
 A library for creating command line tools with node.
 
@@ -9,15 +11,16 @@ A library for creating command line tools with node.
 ```
 npm install --save console-commando
 ```
+
 ## Why use this instead of [insert library here]
 
-This library is greatly inspired in Commander, but optimized for recursive
+This library is inspired by Commander, but optimized for functional nested
 commands. I couldn't find a library that would let me easily set up simple
 commands as well as complicated command structures in a consistent way.
 
 This library aims to provide a very simple way of creating all kinds of
-commands, from simple commands with options, to semantic commands with
-several levels of recursion.
+commands, from simple CLI tools with a few options, to semantic CLIs with
+several levels of nesting.
 
 With this library you can create commands that make sense very easily. The
 following for example would be trivial to set up:
@@ -26,7 +29,10 @@ following for example would be trivial to set up:
 mycommand my-resource my-action --an-option --another=option and arbitrary arguments
 ```
 
-This library also produces easy to read help automatically.
+This library also produces easy to read help automatically as well as bash
+completion for sub commands (beta).
+
+Console-commando is functional and immutable. No more classes, `new` or `this`.
 
 ## Usage
 
@@ -37,72 +43,76 @@ The action will be called with any options.
 
 ```js
 // Using CommonJS modules
-import Commando from 'console-commando'
+import { command, stringOption, numericOption, flag } from "console-commando";
 
 // Create a new command, with name, version and description.
-var command = new Commando('command-name')
-  .version('1.0.1')
-  .description('')
+command("command-name")
+  .withVersion("1.0.1")
+  .withDescription("")
 
   // Add global options.
-  .option('-h --host <host>', 'Host name')
-  .option('-p --port <port>', 'Port number', '8080')
-  .option('-d --debug', 'Log all output', true)
+  // -h or --host, with description and default value
+  .withOption(stringOption("host", "h", "Host name", "localhost"))
+  // Options are strictly typed.
+  .withOption(numericOption("port", "p", "Port number", 8080))
+  // Flags have no value (i.e.)
+  .withOption(flag("debug", "d", "Enable debugging"))
 
-  // Define an action.
-  .action(function (command) {
-
-  });
+  // Define a handler.
+  .withHandler((cmd, state) => {
+    console.log(JSON.stringify(state));
+  })
 
   // Pass arguments to the command and run it.
-  commando.args(process.argv.slice(2)).run();
+  .withRuntimeArgs()
+  .run();
 ```
 
-###  Subcommands
+### Subcommands
 
 You can add subcommands to your command any time by using the `command` method:
 
 ```js
 // Using node's require
-var Commando = require('console-commando').default
+import { commando, flag, stringOption } from "console-commando";
 
 // Create a new command, with name, version and description.
-var command = new Commando('command-name')
-  .version('1.0.1')
-  .description('')
+command("command-name")
+  .withVersion("1.0.1")
+  .withDescription("")
 
   // Add global options.
-  .option('-v --verbose', 'Log more output', true)
+  .withOption(flag("verbose", "-v", "Log more output", true))
 
   // Act on global options, before any sub commands are executed.
-  .before(function (command) {
-
-  })
+  // State is immutable yet a preprocessor can return a new state.
+  .withPreProcessor((_, state) => state.set("runtime", "state"));
+)
 
   // Add a subcommand.
-  .command(
+  .withSubCommand(
     // Sub commands are also commands.
-    new Commando('subcommand')
+    command("subcommand")
       // You can add options.
-      .option('-s --sub-option [subOption]', 'An option for the subcommand')
+      .withOption(stringOption("sub-option", "s", "An option for the subcommand"))
       // Define an action for this sub command.
-      .action(function (command, rootCommand) {
-        // You can access the current subcomand or the root command.
+      .withHandler((command, state) => {
         // Get options for this command.
-        var subOption = command.getOption('subOption');
+        const subOption = command.getStringOption("subOption");
         // Or get global options for the root command.
-        var verbose = rootCommand.getOption('verbose');
+        const verbose = command.getFlag("verbose");
       })
 
       // And you can add sub commands to sub commands too.
-      .command(
-        // ...
-        // and so on, and so forth
-      )
-  );
+      //.withSubCommand(...)
+      // ...
+      // and so on, and so forth
+      (),
+  )
 
   // Pass arguments to the command and run it.
-  commando.args(process.argv.slice(2)).run();
+  .withRuntimeArgs()
+  .run();
 ```
 
 ## CLI auto completion
@@ -115,65 +125,108 @@ Simply run the following in your terminal:
 source <(your-command completion)
 ```
 
-Note that this assumes the command has been installed as an exacutable command with the name specified in the root `Commando`.
+Note that this assumes the command has been installed as an executable command with the name specified in the root `command`.
 
 After doing this you should be able to auto complete your command, subcommands and options when hitting the `tab` key twice.
 
 ## API
 
-Console commando's public API is based in the `Commando` class. Instances of
-Commando are are immutable, via [immutable.js](https://facebook.github.io/immutable-js/).
+Console commando's public API is a series of pure functions that produce
+immutable intermediate Command objects. Command objects are are immutable, via [immutable.js](https://facebook.github.io/immutable-js/).
 
-### Commando
+### Defining the Command
 
-The `Commando` class is in charge of creating commands, sub commands, adding
-options, parsing arguments, etc.
+The `Command` interface defines the main functionality of console-commando programs.
 
-#### `#Commando()` constructor
+#### `command(): Command` factory
 
-The `Commando` constructor can be used in a few different ways:
-
-```js
-new Commando(): Commando
+```ts
+command(name);
 ```
 
-Creates and returns a new command with default (empty) values. This can be used
-as a base for all commands.
+Creates a new `Command` with a given `name`.
 
-```js
-new Commando(string: name): Commando
+#### `withVersion: (version: string) => Command`
+
+```ts
+command(name).withVersion("1.0.0");
 ```
 
-Creates and returns a new command with a `name` as its name.
+Returns a copy of the `Command` with the given version string.
 
-```js
-new Commando(object: config): Commando
+#### `withDescription: (description: string) => Command`
+
+```ts
+command(name).withDescription("some text");
 ```
 
-Creates and returns a new command with a set of options.
+Returns a copy of the `Command` with the given description string.
 
-#### `#name(value: string): Commando`
-#### `#version(value: string): Commando`
-#### `#description(value: string): Commando`
+#### `withOption: (definition: Option) => Command`
 
-Setters for the `name`, `version`, and `description` properties of a command. Returns a command based on the original, with the respective property set to `value`.
+Returns a copy of the `Command` with the given option.
 
-#### `#option(optString: string, description: string, defaultValue: any): Commando`
+#### `withArgument: (definition: Argument) => Command`
 
-Returns a command with a new option based on the given `optString`, `description`, and `defaultValue`.
+Returns a copy of the `Command` with the given argument.
 
-#### `#command(command: Commando): Commando`
+#### `withSubCommand: (subCommand: Command) => Command`
 
-Returns a command with a new subcommand attached to it.
+Returns a `Command` with a new subcommand attached to it.
 
-#### `#action(action: (Commando, Commando): Boolean): Commando`
+#### `withHandler: (fn: Handler) => Command`
 
-Returns a command with it's action property set to `action`. This is
+Returns a command with the given action handler. This is
 the function that will be called when this command or subcommand is
 invoked.
 
-The action can return a value of `Commando.RETURN_VALUE_SUCCESS` or
-`Commando.RETURN_VALUE_FAILURE` to indicate the exit state.
+The action can return a value of `ReturnValue.SUCCESS` or
+`ReturnValue.FAILURE` to indicate the exit status.
+
+#### `withPreProcessor: (fn: PreProcessor) => Command`
+
+Returns a new `Command` with the given pre-processor. This function will
+be executed before any handlers and can be used to mutate the global state.
+
+#### `getFlag: (name: string) => boolean`
+
+When used within a handler, it returns the value of a boolean option.
+
+#### `getStringOption: (name: string) => string | undefined`
+
+When used within a handler, it returns the value of a string option.
+
+#### `getNumericOption: (name: string) => number | undefined`
+
+When used within a handler, it returns the value of a numeric option.
+
+#### `getMultiStringOption: (name: string) => string[]`
+
+When used within a handler, it returns the value of a multi-string option.
+
+#### `getStringArg: (name: string) => string | undefined`
+
+When used within a handler, it returns the value of a string argument.
+
+#### `getNumericArg: (name: string) => number | undefined`
+
+When used within a handler, it returns the value of a numeric argument.
+
+#### `getMultiStringArg: (name: string) => string[]`
+
+When used within a handler, it returns the value of a multi-string argument.
+
+### Running the command
+
+#### `withRuntimeArgs: (args?: string[], parsed?: ParsedRuntimeArgs) => Command`
+
+Adds runtime arguments to the command. If invoked without arguments it will
+default to `process.argv.slice(2)`, i.e. the command line arguments after the
+command name.
+
+#### `run: (state?: RuntimeState) => Promise<ReturnValue>`
+
+Runs the command. Required for anything to happen.
 
 ## Contributing
 
@@ -188,5 +241,5 @@ The main points of improvement at the moment are:
 - better test case coverage.
 - documentation improvements.
 - stronger option parsing and validation.
-- option to manually set help text.
-- and any issues that are still open in github.
+- option to override help text.
+- and any issues/bugs that are still open in github.
