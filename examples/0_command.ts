@@ -1,6 +1,8 @@
 import {
   command,
   multiStringOption,
+  stringOption,
+  flag,
   numericArg,
   numericOption,
   stringArg,
@@ -94,14 +96,9 @@ const fullTest = command("full-test")
     long: "force",
     description: "a flag",
   })
+  .withOption(flag("enable", "e", "a flag"))
   .withOption(numericOption("number", "n", "a number"))
-  .withOption({
-    kind: "string",
-    name: "string",
-    short: "s",
-    long: "string",
-    description: "a string",
-  })
+  .withOption(stringOption("string", "s", "a string", "default"))
   .withOption(multiStringOption("array", "a", "a string array"))
   .withArgument(stringArg("pos1", "a positional string"))
   .withArgument(numericArg("pos2", "a positional number"))
