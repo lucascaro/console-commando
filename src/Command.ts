@@ -59,7 +59,12 @@ export type Option =
   | StringOption
   | NumericOption
   | MultiStringOption;
-export type OptionValue = boolean | string | number | string[] | undefined;
+export type OptionValue =
+  | boolean
+  | string
+  | number
+  | Readonly<string[]>
+  | undefined;
 
 export interface StringArgument {
   kind: "string";
@@ -184,9 +189,7 @@ export function withState(initialState: CommandState): Command {
   function withOption(definition: Option): Command {
     if (!cmd.state.parsedRuntimeArgs.isEmpty()) {
       throw new TypeError(
-        `arguments cannot be added after runtime arguments are set: ${
-          definition.name
-        }`,
+        `arguments cannot be added after runtime arguments are set: ${definition.name}`,
       );
     }
     debug("adding option:", definition);
@@ -197,9 +200,7 @@ export function withState(initialState: CommandState): Command {
       map.some(o => !!(o.long && o.long === definition.long))
     ) {
       throw new TypeError(
-        `option already exists: ${definition.name} -${definition.short} --${
-          definition.long
-        }`,
+        `option already exists: ${definition.name} -${definition.short} --${definition.long}`,
       );
     }
 
@@ -221,9 +222,7 @@ export function withState(initialState: CommandState): Command {
   function withArgument(definition: Argument): Command {
     if (cmd.state.runtimeArgs.size > 0) {
       throw new TypeError(
-        `arguments cannot be added after runtime arguments are set: ${
-          definition.name
-        }`,
+        `arguments cannot be added after runtime arguments are set: ${definition.name}`,
       );
     }
     debug("adding argument:", definition);

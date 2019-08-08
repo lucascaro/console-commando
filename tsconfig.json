@@ -2,6 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "removeComments": true,
     "sourceMap": true,
     "strict": true,
