@@ -1,5 +1,7 @@
 /node_modules/
 /coverage/
-/docs/
 /lib/
+/src/
+/docs/
+/examples/
 .rpt2_cache
