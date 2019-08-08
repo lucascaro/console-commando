@@ -11,8 +11,7 @@
     "moduleResolution": "node",
     "target": "ES2018",
     "outDir": "lib",
-    "lib": ["es2018", "scripthost"],
-    "plugins": [{ "name": "typescript-tslint-plugin" }]
+    "lib": ["es2018", "scripthost"]
   },
   "include": ["src/**/*"]
 }

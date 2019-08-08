@@ -8,6 +8,7 @@ import {
   ParsedRuntimeArgs,
   StoredArguments,
   StoredOptions,
+  MultiStringArgument,
 } from "../Command";
 
 const debug = Debug("console-commando:args");
@@ -108,40 +109,44 @@ export function parseArguments(
   positional = (positional as (string | number | boolean)[]).map(String);
 
   debug("parsing arguments for:", parsed, positional);
-  return args.map(a => {
-    positional = positional as string[];
-    debug(`parsing ${a.name}`);
-    if (positional.length === 0) {
-      if (a.required) {
-        throw new Error(
-          `argument ${a.name} is required but no value was specified.`,
-        );
+  return args.map(
+    (a): Readonly<Argument> => {
+      positional = positional as string[];
+      debug(`parsing ${a.name}`);
+      if (positional.length === 0) {
+        if (a.required) {
+          throw new Error(
+            `argument ${a.name} is required but no value was specified.`,
+          );
+        }
+        return a;
       }
+      // multi arguments consume all.
+      if (a.kind === "string" && a.multiple) {
+        return Object.freeze({ ...a, value: positional }) as Readonly<
+          MultiStringArgument
+        >;
+      }
+
+      const value = String(positional.slice(1));
+
+      if (a.kind === "number") {
+        const nArg = Number(value);
+        if (Number.isNaN(nArg)) {
+          throw new Error(
+            `argument ${a.name} should be a number. Received: ${value}.`,
+          );
+        }
+        return { ...a, value: nArg };
+      }
+
+      if (a.kind === "string" && !a.multiple) {
+        return { ...a, value };
+      }
+
       return a;
-    }
-    // multi arguments consume all.
-    if (a.kind === "string" && a.multiple) {
-      return { ...a, value: positional };
-    }
-
-    const value = positional.shift() as string;
-
-    if (a.kind === "number") {
-      const nArg = Number(value);
-      if (Number.isNaN(nArg)) {
-        throw new Error(
-          `argument ${a.name} should be a number. Received: ${value}.`,
-        );
-      }
-      return { ...a, value: nArg };
-    }
-
-    if (a.kind === "string" && !a.multiple) {
-      return { ...a, value };
-    }
-
-    return a;
-  });
+    },
+  );
 }
 
 export function getOptionOrParentOption(
