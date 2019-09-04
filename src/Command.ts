@@ -232,6 +232,11 @@ export function withState(initialState: CommandState): Command {
         `argument with this name already exists: ${definition.name}`,
       );
     }
+    if (map.find(a => !!a.multiple)) {
+      throw new TypeError(
+        `Cannot add argument after multi argument: ${definition.name}`,
+      );
+    }
 
     const args = map.set(definition.name, Object.freeze(definition));
     return withState({ ...cmd.state, arguments: args });

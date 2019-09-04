@@ -106,14 +106,17 @@ export function parseArguments(
   if (!Array.isArray(positional)) {
     throw new Error(`error parsing positional arguments: ${positional}.`);
   }
-  positional = (positional as (string | number | boolean)[]).map(String);
+  let positionalStr = Array.from(positional as (
+    | string
+    | number
+    | boolean)[]).map(String) as string[];
 
   debug("parsing arguments for:", parsed, positional);
   return args.map(
     (a): Readonly<Argument> => {
-      positional = positional as string[];
+      // positional = positional as string[];
       debug(`parsing ${a.name}`);
-      if (positional.length === 0) {
+      if (positionalStr.length === 0) {
         if (a.required) {
           throw new Error(
             `argument ${a.name} is required but no value was specified.`,
@@ -123,12 +126,12 @@ export function parseArguments(
       }
       // multi arguments consume all.
       if (a.kind === "string" && a.multiple) {
-        return Object.freeze({ ...a, value: positional }) as Readonly<
-          MultiStringArgument
-        >;
+        const value = Array.from(positionalStr);
+        positionalStr = [];
+        return Object.freeze({ ...a, value }) as Readonly<MultiStringArgument>;
       }
 
-      const value = String(positional[0]);
+      const value = positionalStr.shift();
 
       if (a.kind === "number") {
         const nArg = Number(value);
