@@ -60,6 +60,9 @@ export function parseOptions(
         throw new Error(`option can only be specified once: ${o.long}`);
       }
       if (value === undefined) {
+        if (o.required) {
+          throw new Error(`option is required: ${o.long}`);
+        }
         return o;
       }
 
