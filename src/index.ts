@@ -43,6 +43,7 @@ export function command(name: string): Command {
     subCommands: immutable.Map(),
     runtimeArgs: immutable.List(),
     parsedRuntimeArgs: immutable.Map(),
+    preProcessors: immutable.List(),
   });
 }
 

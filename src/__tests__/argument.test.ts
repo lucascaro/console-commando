@@ -1,4 +1,4 @@
-import { stringOption, stringArg, command, multiStringArg } from "../index";
+import { stringArg, command, multiStringArg } from "../index";
 import { Command } from "../Command";
 
 describe("arguments", () => {
@@ -63,6 +63,15 @@ describe("arguments", () => {
   test("cannot add args after multi string arg", () => {
     expect(() => {
       command("test")
+        .withArgument(multiStringArg("arg1"))
+        .withArgument(stringArg("arg2"));
+    }).toThrow();
+  });
+
+  test("cannot add args with sub commands", () => {
+    expect(() => {
+      command("test")
+        .withSubCommand(command("test2"))
         .withArgument(multiStringArg("arg1"))
         .withArgument(stringArg("arg2"));
     }).toThrow();

@@ -142,7 +142,7 @@ export interface CommandState {
   version?: string;
   description?: string;
   handler?: Handler;
-  preProcessor?: PreProcessor;
+  preProcessors: immutable.List<PreProcessor>;
   options: StoredOptions;
   arguments: StoredArguments;
   parentOptions: StoredOptions;
@@ -225,6 +225,11 @@ export function withState(initialState: CommandState): Command {
         `arguments cannot be added after runtime arguments are set: ${definition.name}`,
       );
     }
+    if (cmd.state.subCommands.size > 0) {
+      throw new TypeError(
+        `positional arguments cannot be added to a command with sub-commands defined: ${definition.name}`,
+      );
+    }
     debug("adding argument:", definition);
     const map = cmd.state.arguments;
     if (map.has(definition.name)) {
@@ -246,6 +251,12 @@ export function withState(initialState: CommandState): Command {
     debug("adding subcommand:", subCommand.state.name);
     if (cmd.state.subCommands.has(subCommand.state.name)) {
       throw new TypeError(`arg already exists: ${subCommand.state.name}`);
+    }
+    if (cmd.state.arguments.size > 0) {
+      console.log(cmd.state.arguments);
+      throw new TypeError(
+        `sub commands cannot be added to a command with positional arguments defined: ${subCommand.state.name}`,
+      );
     }
     const subCommands = cmd.state.subCommands.set(
       subCommand.state.name,
@@ -340,7 +351,10 @@ export function withState(initialState: CommandState): Command {
   }
 
   function withPreProcessor(fn: PreProcessor): Command {
-    return withState({ ...cmd.state, preProcessor: fn });
+    return withState({
+      ...cmd.state,
+      preProcessors: cmd.state.preProcessors.push(fn),
+    });
   }
 
   function showHelp(): void {
@@ -386,7 +400,7 @@ export function withState(initialState: CommandState): Command {
     const positionalArgs = cmd.state.parsedRuntimeArgs.get("_", []) as string[];
     debug("positional args:", positionalArgs);
     const arg0 = positionalArgs[0] as string | undefined;
-    const preProcessor = cmd.state.preProcessor;
+    const preProcessors = cmd.state.preProcessors;
     const shouldRunSubCommand = !!arg0 && cmd.state.subCommands.has(arg0);
     const helpRequested = arg0 === "help" || parsedArgs.get("help", false);
 
@@ -413,11 +427,13 @@ export function withState(initialState: CommandState): Command {
       return Promise.resolve(ReturnValue.SUCCESS);
     }
 
-    // Allow optional preprocessor to modify run-time state.
+    // Allow optional preprocessors to modify run-time state.
     // TODO: allow async preprocessors.
-    const processedState = preProcessor
-      ? preProcessor(cmd, state) || state
-      : state;
+    const processedState = preProcessors.reduce(
+      (p, c) => c(cmd, p) || p,
+      state,
+    );
+
     const runtimeState = processedState.set(
       "root",
       processedState.get("root", cmd),

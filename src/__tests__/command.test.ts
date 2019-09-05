@@ -4,6 +4,7 @@ import {
   stringOption,
   numericOption,
   multiStringOption,
+  multiStringArg,
 } from "../index";
 
 describe("command", () => {
@@ -81,6 +82,14 @@ describe("sub command", () => {
     expect(subCmdPre).toBeCalledTimes(1);
     expect(subCmdHandler2).toBeCalledTimes(0);
     expect(subCmdPre2).toBeCalledTimes(0);
+  });
+
+  test("cannot add sub command with positional arguments", () => {
+    expect(() => {
+      command("test")
+        .withArgument(multiStringArg("arg1"))
+        .withSubCommand(command("test2"));
+    }).toThrow();
   });
 });
 
