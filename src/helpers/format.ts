@@ -66,10 +66,10 @@ export function formatHelp(s: CommandState): string {
   if (s.description) {
     helpText.push(s.description);
   }
-
-  const optsHelp = !s.options.isEmpty() ? "[...options]" : "";
-
+  const options = s.parentOptions.merge(s.options);
   const args = s.arguments;
+
+  const optsHelp = !options.isEmpty() ? "[...options]" : "";
   const argsHelp = formatArgHelp(args);
 
   helpText.push(colors.yellow("\nUsage:"));
@@ -77,7 +77,7 @@ export function formatHelp(s: CommandState): string {
 
   if (!s.options.isEmpty()) {
     helpText.push(colors.yellow("\nOptions:"));
-    helpText.push(formatOptions(s.parentOptions.merge(s.options)));
+    helpText.push(formatOptions(options));
   }
 
   if (!s.subCommands.isEmpty()) {
