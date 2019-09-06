@@ -193,7 +193,7 @@ export function withState(initialState: CommandState): Command {
       );
     }
     debug("adding option:", definition);
-    const map = cmd.state.options;
+    const map = cmd.state.options.merge(cmd.state.parentOptions);
     if (
       map.has(definition.name) ||
       map.some(o => !!(o.short && o.short === definition.short)) ||
@@ -204,7 +204,10 @@ export function withState(initialState: CommandState): Command {
       );
     }
 
-    const options = map.set(definition.name, Object.freeze(definition));
+    const options = cmd.state.options.set(
+      definition.name,
+      Object.freeze(definition),
+    );
     return withState({ ...cmd.state, options });
   }
 
@@ -368,7 +371,7 @@ export function withState(initialState: CommandState): Command {
     debug("adding runtime arguments:", args);
     const commandArgs = args || process.argv.slice(2);
     const runtimeArgs = cmd.state.runtimeArgs.push(...commandArgs);
-    if (!cmd.state.options.has("help")) {
+    if (!cmd.state.options.merge(cmd.state.parentOptions).has("help")) {
       return withHelp().withRuntimeArgs(args, parsed);
     }
 
