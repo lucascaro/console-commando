@@ -35,12 +35,14 @@ export function formatColumns(
 }
 export function formatOptions(options: StoredOptions): string {
   const longParam = (o: Option): string => (o.long ? `=<${o.kind}>` : "");
-  const optHelp = options.map(o => {
-    const short = o.short ? `-${o.short}` : "";
-    const long = o.long ? `--${o.long + longParam(o)}` : "";
-    const name = [short, long].filter(n => n !== "").join(",");
-    return [name, o.description || ""];
-  });
+  const optHelp = options
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(o => {
+      const short = o.short ? `-${o.short}` : "";
+      const long = o.long ? `--${o.long + longParam(o)}` : "";
+      const name = [short, long].filter(n => n !== "").join(",");
+      return [name, o.description || ""];
+    });
   return formatColumns(optHelp);
 }
 
@@ -75,7 +77,7 @@ export function formatHelp(s: CommandState): string {
 
   if (!s.options.isEmpty()) {
     helpText.push(colors.yellow("\nOptions:"));
-    helpText.push(formatOptions(s.options));
+    helpText.push(formatOptions(s.parentOptions.merge(s.options)));
   }
 
   if (!s.subCommands.isEmpty()) {

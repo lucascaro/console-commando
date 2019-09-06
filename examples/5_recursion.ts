@@ -27,14 +27,21 @@ command(path.basename(__filename))
   // No handler in the main command will display the help text by default.
   .withSubCommand(
     command("sub1")
+      .withOption(flag("sub-1"))
       .withHandler(subHandler)
       .withSubCommand(
         command("sub2")
+          .withOption(flag("sub-2"))
           .withHandler(subHandler)
           .withSubCommand(
             command("sub3")
+              .withOption(flag("sub-3"))
               .withHandler(subHandler)
-              .withSubCommand(command("sub4").withHandler(subHandler)),
+              .withSubCommand(
+                command("sub4")
+                  .withOption(flag("sub-4"))
+                  .withHandler(subHandler),
+              ),
           ),
       ),
   )
