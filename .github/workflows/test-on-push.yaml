@@ -3,8 +3,22 @@ on: push
 jobs:
   test-on-mac:
     name: Test on mac
-    runs-on: macOS-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          [
+            ubuntu-16.04,
+            ubuntu-18.04,
+            ubuntu-latest,
+            macOS-latest,
+            windows-latest,
+          ]
+        node: [10, 12]
     steps:
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
       - name: Run tests
         run: |
           npm ci
