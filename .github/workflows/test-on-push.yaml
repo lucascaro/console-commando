@@ -1,8 +1,8 @@
 name: Test on push
 on: push
 jobs:
-  test-on-mac:
-    name: Test on mac
+  test:
+    name: Test on ${{ matrix.os }} (Node v${{ matrix.node }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -20,8 +20,5 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: Run tests
-        run: |
-          npm ci
-          npm t
-        # uses: ./.github/actions/npm-run-test
+      - run: npm ci
+      - run: npm t
