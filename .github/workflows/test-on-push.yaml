@@ -14,7 +14,7 @@ jobs:
             macOS-latest,
             windows-latest,
           ]
-        node: [10, 12]
+        node: ["10.x", "12.x"]
     steps:
       - uses: actions/setup-node@v1
         with:
