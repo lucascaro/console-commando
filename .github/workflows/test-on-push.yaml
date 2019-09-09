@@ -1,0 +1,12 @@
+name: Test on push
+on: push
+jobs:
+  test-on-mac:
+    name: Test on mac
+    runs-on: macOS-latest
+    steps:
+      - name: Run tests
+        run: |
+          npm ci
+          npm t
+        # uses: ./.github/actions/npm-run-test
