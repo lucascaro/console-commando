@@ -1,4 +1,4 @@
-workflow "Publish on version tag" {
+workflow "(OLD) Publish on version tag" {
   on = "push"
   resolves = ["npm publish"]
 }
@@ -15,7 +15,7 @@ action "npm publish" {
   secrets = ["NPM_AUTH_TOKEN"]
 }
 
-workflow "Test on Push" {
+workflow "(OLD) Test on Push" {
   on = "push"
   resolves = [
     "npm test only",
