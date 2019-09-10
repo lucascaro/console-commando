@@ -12,7 +12,7 @@
     "compile": "npm run clean && tsc -p .",
     "rollup": "rollup -c rollup.config.js",
     "watch": "tsc -w -p .",
-    "docs": "typedoc --out docs src",
+    "docs": "rm -rf docs && typedoc --out docs src",
     "prepublish-only": "npm run test && npm run compile && npm run rollup",
     "release": "npm run compile && npm run test && npm version patch && git push --follow-tags"
   },
