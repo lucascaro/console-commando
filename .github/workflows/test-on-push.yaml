@@ -1,5 +1,9 @@
 name: Test on push
-on: push
+on:
+  push:
+    paths:
+      - "src/*"
+      - "*.*"
 jobs:
   test:
     name: Test on ${{ matrix.os }} (Node v${{ matrix.node }})
