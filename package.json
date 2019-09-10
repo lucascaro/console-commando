@@ -14,7 +14,8 @@
     "watch": "tsc -w -p .",
     "docs": "rm -rf docs && typedoc --out docs src",
     "prepublish-only": "npm run test && npm run compile && npm run rollup",
-    "release": "npm run compile && npm run test && npm version patch && git push --follow-tags"
+    "release": "npm run compile && npm run test && npm version patch && git push --follow-tags",
+    "prerelease": "npm run compile && npm run test && npm version prerelease && git push --follow-tags"
   },
   "author": "Lucas Caro <lucascaro@gmail.com>",
   "license": "MIT",
