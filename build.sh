@@ -2,7 +2,7 @@
 
 VERSION=$(git describe --tags --abbrev=0)
 
-rm -rf $VERSION && mkdir -p $VERSION
+rm -rf versions/$VERSION && mkdir -p versions/$VERSION
 cp -r docs/* $VERSION
 rm -rf assets enums interfaces modules *.html
 cp -r docs/* .
