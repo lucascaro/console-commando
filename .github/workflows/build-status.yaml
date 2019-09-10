@@ -1,6 +1,11 @@
-name: Pull requests
+name: build-status
 on:
-  pull_request:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/*"
+      - "*.*"
 jobs:
   test:
     name: Test on ${{ matrix.os }} (Node v${{ matrix.node }})

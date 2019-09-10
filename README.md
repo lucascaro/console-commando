@@ -1,6 +1,6 @@
 # Console Commando
 
-[![Build Status](https://travis-ci.org/lucascaro/console-commando.svg?branch=master)](https://travis-ci.org/lucascaro/console-commando)
+[![Actions Status](https://github.com/lucascaro/console-commando/workflows/build-status/badge.svg)](https://github.com/lucascaro/console-commando/actions)
 [![Typedoc](https://img.shields.io/badge/docs-read-green)](http://lucascaro.github.io/console-commando/)
 
 <!-- [![Documentation](https://doc.esdoc.org/github.com/lucascaro/console-commando/badge.svg)](https://doc.esdoc.org/github.com/lucascaro/console-commando/) -->
