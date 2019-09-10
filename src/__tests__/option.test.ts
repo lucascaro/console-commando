@@ -41,7 +41,7 @@ describe("option", () => {
         const opt2 = cmd.getNumericOption("opt2");
         const opt3 = cmd.getMultiStringOption("opt3");
         expect(opt1).toEqual("value1");
-        expect(opt2).toEqual(2);
+        expect(opt2).toEqual(22);
         expect(opt3).toEqual(["o31", "o32"]);
         done();
       })
