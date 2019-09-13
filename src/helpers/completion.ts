@@ -13,7 +13,7 @@ const debug = Debug("console-commando:completion");
  * @param  prefix       An optional prefix to filter subcommands.
  * @access private
  */
-function completeSubcommands(command: Command, prefix: string = ""): string[] {
+function completeSubcommands(command: Command, prefix = ""): string[] {
   debug("complete subcommands", { prefix, command: command.state });
   const names = Array.from(command.state.subCommands.keys());
   return prefix ? names.filter(n => n.startsWith(prefix)) : names;
@@ -28,7 +28,7 @@ function completeSubcommands(command: Command, prefix: string = ""): string[] {
  * @param  prefix      An optional prefix to filter subcommands.
  * @access private
  */
-function completeOptions(cmd: Command, prefix: string = ""): string[] {
+function completeOptions(cmd: Command, prefix = ""): string[] {
   debug(`complete options with prefix ${prefix}`);
   return flatten(
     Array.from(

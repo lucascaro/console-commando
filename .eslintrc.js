@@ -13,5 +13,9 @@ module.exports = {
   rules: {
     "@typescript-eslint/no-non-null-assertion": "warn",
     "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/explicit-function-return-type": [
+      "warn",
+      { allowExpressions: true },
+    ],
   },
 };

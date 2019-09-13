@@ -1,5 +1,5 @@
 import Debug from "debug";
-import * as immutable from "immutable";
+import { Map as IMap, List as IList } from "immutable";
 import {
   BooleanOption,
   Command,
@@ -36,14 +36,14 @@ export function command(name: string): Command {
   debug(`creating new command: ${name}`);
   return withState({
     name,
-    options: immutable.Map(),
-    parentOptions: immutable.Map(),
-    arguments: immutable.Map(),
-    parentArguments: immutable.Map(),
-    subCommands: immutable.Map(),
-    runtimeArgs: immutable.List(),
-    parsedRuntimeArgs: immutable.Map(),
-    preProcessors: immutable.List(),
+    options: IMap(),
+    parentOptions: IMap(),
+    arguments: IMap(),
+    parentArguments: IMap(),
+    subCommands: IMap(),
+    runtimeArgs: IList(),
+    parsedRuntimeArgs: IMap(),
+    preProcessors: IList(),
   });
 }
 
@@ -60,7 +60,7 @@ export function flag(
   long: string,
   short?: string,
   description?: string,
-  required: boolean = false,
+  required = false,
 ): BooleanOption {
   debug("creating option:", { long, short, description, required });
   return {
@@ -79,7 +79,7 @@ export function stringOption(
   short?: string,
   description?: string,
   defaultValue?: string,
-  required: boolean = false,
+  required = false,
 ): StringOption {
   debug("creating option:", {
     long,
@@ -105,7 +105,7 @@ export function numericOption(
   short?: string,
   description?: string,
   defaultValue?: number,
-  required: boolean = false,
+  required = false,
 ): NumericOption {
   debug("creating option:", {
     long,
@@ -131,7 +131,7 @@ export function multiStringOption(
   short?: string,
   description?: string,
   defaultValue?: string[],
-  required: boolean = false,
+  required = false,
 ): MultiStringOption {
   debug("creating option:", {
     long,
@@ -156,7 +156,7 @@ export function stringArg(
   name: string,
   description?: string,
   defaultValue?: string,
-  required: boolean = false,
+  required = false,
 ): StringArgument {
   debug("creating argument:", { name, description, defaultValue, required });
   return {
@@ -173,7 +173,7 @@ export function numericArg(
   name: string,
   description?: string,
   defaultValue?: number,
-  required: boolean = false,
+  required = false,
 ): NumericArgument {
   debug("creating argument:", { name, description, defaultValue, required });
   return {
@@ -190,7 +190,7 @@ export function multiStringArg(
   name: string,
   description?: string,
   defaultValue?: string[],
-  required: boolean = false,
+  required = false,
 ): MultiStringArgument {
   debug("creating argument:", { name, description, defaultValue, required });
   return {

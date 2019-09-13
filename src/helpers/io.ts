@@ -1,7 +1,7 @@
 import * as readline from "readline";
 
 const io = {
-  ask(prompt: string, defaultValue: string = ""): Promise<string> {
+  ask(prompt: string, defaultValue = ""): Promise<string> {
     return new Promise(resolve => {
       const rl = readline.createInterface({
         input: process.stdin,
