@@ -1,5 +1,4 @@
-import { stringArg, command, multiStringArg } from "../index";
-import { Command } from "../Command";
+import { stringArg, command, multiStringArg, Command } from "../index";
 
 describe("arguments", () => {
   test("can create a option object with minimal parameters", () => {

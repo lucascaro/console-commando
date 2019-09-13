@@ -1,10 +1,4 @@
-import {
-  stringOption,
-  command,
-  numericOption,
-  multiStringOption,
-} from "../index";
-import { Command, ReturnValue, RuntimeState } from "../Command";
+import { command, Command, RuntimeState } from "../index";
 
 describe("preProcessor", () => {
   test("can add a pre processor to a command", done => {

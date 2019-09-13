@@ -256,7 +256,6 @@ export function withState(initialState: CommandState): Command {
       throw new TypeError(`arg already exists: ${subCommand.state.name}`);
     }
     if (cmd.state.arguments.size > 0) {
-      console.log(cmd.state.arguments);
       throw new TypeError(
         `sub commands cannot be added to a command with positional arguments defined: ${subCommand.state.name}`,
       );
