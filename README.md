@@ -13,34 +13,75 @@ A library for creating command line tools with node.
 npm install --save console-commando
 ```
 
-## Why use this instead of [insert library here]
+## Why you want to use this
 
-This library is inspired by Commander, but optimized for functional nested
-commands. I couldn't find a library that would let me easily set up simple
-commands as well as complicated command structures in a consistent way.
+`console-commando` allows you to easily create complex command line utilities in a
+simple, type-safe, testable, modular way.
 
-This library aims to provide a very simple way of creating all kinds of
+Creating both simple and complex commands becomes a trivial task.
+
+This library provides a very simple way of creating all kinds of
 commands, from simple CLI tools with a few options, to semantic CLIs with
 several levels of nesting.
 
-With this library you can create commands that make sense very easily. The
-following for example would be trivial to set up:
+With `console-commando` you can _create cli utilities that make sense_ very easily.
+The following for example would be trivial to set up:
 
 ```js
 mycommand my-resource my-action --an-option --another=option and arbitrary arguments
 ```
 
-This library also produces easy to read help automatically as well as bash
-completion for sub commands (beta).
+`console-commando` also produces easy to read help automatically as well as bash
+completion for sub commands.
 
-Console-commando is functional and immutable. No more classes, `new` or `this`.
+Additionally, everything in `console-commando` is type-safe, functional and
+immutable, reducing ambiguity and the need for `new` or `this`.
 
 ## Usage
 
-### Simple Command
+### Key concepts
 
-You can create simple commands very easily. Just set the options and an action.
-The action will be called with any options.
+#### Command
+
+The core of `console-commando` is the `Command` object. A helper function
+`command()` is provided to easily create new `Command` objects.
+
+```js
+import { command } from "console-commando";
+
+const myCommand = command("a-name");
+// Returns a new Command with the specified name.
+```
+
+#### Options and Arguments
+
+An `Option` is a flag that can be passed to the command and will modify the
+execution behavior. Options are prefixed with `--` (long option) or `-` (short
+option).
+
+There are several types of options and corresponding helper functions to add
+them to a command.
+
+Examples of options could be: `-h`, `--help`, `--flag=value`, or `--flag value`.
+
+An `Argument` is similar to an option, but instead of being specified by name,
+the value is passed to the command positionally.
+
+For example in the following command invocation:
+
+```
+command -f --f2=val --f3 1 arg1 arg2
+```
+
+- `-f` is a boolean option (short) set to true by being present in the invocation.
+- `--f2` is a string option (long), it's value is set to `"val"`
+- `--f3` is a numeric option (long) set to `1`
+- `arg1` and `arg2` are positional arguments (only the values are used).
+
+### Example: Simple Command
+
+You can create simple commands very easily. Just provide a few settings and an
+action. The action will be called with any options passed in the command-line.
 
 ```js
 // Using CommonJS modules
@@ -48,6 +89,8 @@ import { command, stringOption, numericOption, flag } from "console-commando";
 
 // Create a new command, with name, version and description.
 command("command-name")
+  // since everything is immutable, each "with" function returns a new Command
+  // with the specified value set.
   .withVersion("1.0.1")
   .withDescription("")
 
@@ -56,10 +99,10 @@ command("command-name")
   .withOption(stringOption("host", "h", "Host name", "localhost"))
   // Options are strictly typed.
   .withOption(numericOption("port", "p", "Port number", 8080))
-  // Flags have no value (i.e.)
+  // Flags have no value parameter, they are set to true if present.
   .withOption(flag("debug", "d", "Enable debugging"))
 
-  // Define a handler.
+  // A handler is the function that gets called if this command is invoked.
   .withHandler((cmd, state) => {
     console.log(JSON.stringify(state));
   })
@@ -86,7 +129,8 @@ command("command-name")
   .withOption(flag("verbose", "-v", "Log more output", true))
 
   // Act on global options, before any sub commands are executed.
-  // State is immutable yet a preprocessor can return a new state.
+  // State is immutable yet a preprocessor can return a new state that will be
+  // passed to later preprocessors and to the invoked handler.
   .withPreProcessor((_, state) => state.set("runtime", "state"));
 )
 
@@ -118,7 +162,7 @@ command("command-name")
 
 ## CLI auto completion
 
-Similarly to [npm completion](https://docs.npmjs.com/cli/completion), console-commando makes it easy to get auto completion for your commands.
+Similarly to [npm completion](https://docs.npmjs.com/cli/completion), `console-commando` makes it easy to get auto completion for your commands.
 
 Simply run the following in your terminal:
 
@@ -126,18 +170,23 @@ Simply run the following in your terminal:
 source <(your-command completion)
 ```
 
-Note that this assumes the command has been installed as an executable command with the name specified in the root `command`.
+Note that this assumes the command has been installed as an executable command
+with the name specified in the root `command`.
 
-After doing this you should be able to auto complete your command, subcommands and options when hitting the `tab` key twice.
+After doing this you should be able to auto complete your command, subcommands
+and options when hitting the `tab` key twice.
 
 ## API
 
 Console commando's public API is a series of pure functions that produce
-immutable intermediate Command objects. Command objects are are immutable, via [immutable.js](https://facebook.github.io/immutable-js/).
+immutable intermediate Command objects. Command objects are are immutable, via
+[immutable.js](https://facebook.github.io/immutable-js/).
+
+[Read the API Documentation](http://lucascaro.github.io/console-commando/index.html)
 
 ### Defining the Command
 
-The `Command` interface defines the main functionality of console-commando programs.
+The `Command` interface defines the main functionality of `console-commando` programs.
 
 #### `command(): Command` factory
 
