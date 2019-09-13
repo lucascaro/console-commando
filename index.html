@@ -75,34 +75,67 @@
 					<h2>Installation:</h2>
 				</a>
 				<pre><code><span class="hljs-built_in">npm</span> install --save <span class="hljs-built_in">console</span>-commando</code></pre>
-				<a href="#why-use-this-instead-of-insert-library-here" id="why-use-this-instead-of-insert-library-here" style="color: inherit; text-decoration: none;">
-					<h2>Why use this instead of [insert library here]</h2>
+				<a href="#why-you-want-to-use-this" id="why-you-want-to-use-this" style="color: inherit; text-decoration: none;">
+					<h2>Why you want to use this</h2>
 				</a>
-				<p>This library is inspired by Commander, but optimized for functional nested
-					commands. I couldn&#39;t find a library that would let me easily set up simple
-				commands as well as complicated command structures in a consistent way.</p>
-				<p>This library aims to provide a very simple way of creating all kinds of
+				<p><code>console-commando</code> allows you to easily create complex command line utilities in a
+				simple, type-safe, testable, modular way.</p>
+				<p>Creating both simple and complex commands becomes a trivial task.</p>
+				<p>This library provides a very simple way of creating all kinds of
 					commands, from simple CLI tools with a few options, to semantic CLIs with
 				several levels of nesting.</p>
-				<p>With this library you can create commands that make sense very easily. The
-				following for example would be trivial to set up:</p>
+				<p>With <code>console-commando</code> you can <em>create cli utilities that make sense</em> very easily.
+				The following for example would be trivial to set up:</p>
 				<pre><code class="language-js">mycommand my-resource my-action --an-option --another=option and arbitrary <span class="hljs-built_in">arguments</span></code></pre>
-				<p>This library also produces easy to read help automatically as well as bash
-				completion for sub commands (beta).</p>
-				<p>Console-commando is functional and immutable. No more classes, <code>new</code> or <code>this</code>.</p>
+				<p><code>console-commando</code> also produces easy to read help automatically as well as bash
+				completion for sub commands.</p>
+				<p>Additionally, everything in <code>console-commando</code> is type-safe, functional and
+				immutable, reducing ambiguity and the need for <code>new</code> or <code>this</code>.</p>
 				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
 					<h2>Usage</h2>
 				</a>
-				<a href="#simple-command" id="simple-command" style="color: inherit; text-decoration: none;">
-					<h3>Simple Command</h3>
+				<a href="#key-concepts" id="key-concepts" style="color: inherit; text-decoration: none;">
+					<h3>Key concepts</h3>
 				</a>
-				<p>You can create simple commands very easily. Just set the options and an action.
-				The action will be called with any options.</p>
+				<a href="#command" id="command" style="color: inherit; text-decoration: none;">
+					<h4>Command</h4>
+				</a>
+				<p>The core of <code>console-commando</code> is the <code>Command</code> object. A helper function
+				<code>command()</code> is provided to easily create new <code>Command</code> objects.</p>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> { command } <span class="hljs-keyword">from</span> <span class="hljs-string">"console-commando"</span>;
+
+<span class="hljs-keyword">const</span> myCommand = command(<span class="hljs-string">"a-name"</span>);
+<span class="hljs-comment">// Returns a new Command with the specified name.</span></code></pre>
+				<a href="#options-and-arguments" id="options-and-arguments" style="color: inherit; text-decoration: none;">
+					<h4>Options and Arguments</h4>
+				</a>
+				<p>An <code>Option</code> is a flag that can be passed to the command and will modify the
+					execution behavior. Options are prefixed with <code>--</code> (long option) or <code>-</code> (short
+				option).</p>
+				<p>There are several types of options and corresponding helper functions to add
+				them to a command.</p>
+				<p>Examples of options could be: <code>-h</code>, <code>--help</code>, <code>--flag=value</code>, or <code>--flag value</code>.</p>
+				<p>An <code>Argument</code> is similar to an option, but instead of being specified by name,
+				the value is passed to the command positionally.</p>
+				<p>For example in the following command invocation:</p>
+				<pre><code><span class="hljs-keyword">command</span> -f <span class="hljs-params">--f2=val</span> <span class="hljs-params">--f3</span> 1 arg1 arg2</code></pre><ul>
+					<li><code>-f</code> is a boolean option (short) set to true by being present in the invocation.</li>
+					<li><code>--f2</code> is a string option (long), it&#39;s value is set to <code>&quot;val&quot;</code></li>
+					<li><code>--f3</code> is a numeric option (long) set to <code>1</code></li>
+					<li><code>arg1</code> and <code>arg2</code> are positional arguments (only the values are used).</li>
+				</ul>
+				<a href="#example-simple-command" id="example-simple-command" style="color: inherit; text-decoration: none;">
+					<h3>Example: Simple Command</h3>
+				</a>
+				<p>You can create simple commands very easily. Just provide a few settings and an
+				action. The action will be called with any options passed in the command-line.</p>
 				<pre><code class="language-js"><span class="hljs-comment">// Using CommonJS modules</span>
 <span class="hljs-keyword">import</span> { command, stringOption, numericOption, flag } <span class="hljs-keyword">from</span> <span class="hljs-string">"console-commando"</span>;
 
 <span class="hljs-comment">// Create a new command, with name, version and description.</span>
 command(<span class="hljs-string">"command-name"</span>)
+  <span class="hljs-comment">// since everything is immutable, each "with" function returns a new Command</span>
+  <span class="hljs-comment">// with the specified value set.</span>
   .withVersion(<span class="hljs-string">"1.0.1"</span>)
   .withDescription(<span class="hljs-string">""</span>)
 
@@ -111,10 +144,10 @@ command(<span class="hljs-string">"command-name"</span>)
   .withOption(stringOption(<span class="hljs-string">"host"</span>, <span class="hljs-string">"h"</span>, <span class="hljs-string">"Host name"</span>, <span class="hljs-string">"localhost"</span>))
   <span class="hljs-comment">// Options are strictly typed.</span>
   .withOption(numericOption(<span class="hljs-string">"port"</span>, <span class="hljs-string">"p"</span>, <span class="hljs-string">"Port number"</span>, <span class="hljs-number">8080</span>))
-  <span class="hljs-comment">// Flags have no value (i.e.)</span>
+  <span class="hljs-comment">// Flags have no value parameter, they are set to true if present.</span>
   .withOption(flag(<span class="hljs-string">"debug"</span>, <span class="hljs-string">"d"</span>, <span class="hljs-string">"Enable debugging"</span>))
 
-  <span class="hljs-comment">// Define a handler.</span>
+  <span class="hljs-comment">// A handler is the function that gets called if this command is invoked.</span>
   .withHandler(<span class="hljs-function">(<span class="hljs-params">cmd, state</span>) =&gt;</span> {
     <span class="hljs-built_in">console</span>.log(<span class="hljs-built_in">JSON</span>.stringify(state));
   })
@@ -138,7 +171,8 @@ command(<span class="hljs-string">"command-name"</span>)
   .withOption(flag(<span class="hljs-string">"verbose"</span>, <span class="hljs-string">"-v"</span>, <span class="hljs-string">"Log more output"</span>, <span class="hljs-literal">true</span>))
 
   <span class="hljs-comment">// Act on global options, before any sub commands are executed.</span>
-  <span class="hljs-comment">// State is immutable yet a preprocessor can return a new state.</span>
+  <span class="hljs-comment">// State is immutable yet a preprocessor can return a new state that will be</span>
+  <span class="hljs-comment">// passed to later preprocessors and to the invoked handler.</span>
   .withPreProcessor(<span class="hljs-function">(<span class="hljs-params">_, state</span>) =&gt;</span> state.set(<span class="hljs-string">"runtime"</span>, <span class="hljs-string">"state"</span>));
 )
 
@@ -169,20 +203,24 @@ command(<span class="hljs-string">"command-name"</span>)
 				<a href="#cli-auto-completion" id="cli-auto-completion" style="color: inherit; text-decoration: none;">
 					<h2>CLI auto completion</h2>
 				</a>
-				<p>Similarly to <a href="https://docs.npmjs.com/cli/completion">npm completion</a>, console-commando makes it easy to get auto completion for your commands.</p>
+				<p>Similarly to <a href="https://docs.npmjs.com/cli/completion">npm completion</a>, <code>console-commando</code> makes it easy to get auto completion for your commands.</p>
 				<p>Simply run the following in your terminal:</p>
 				<pre><code class="language-sh"><span class="hljs-built_in">source</span> &lt;(your-command completion)</code></pre>
-				<p>Note that this assumes the command has been installed as an executable command with the name specified in the root <code>command</code>.</p>
-				<p>After doing this you should be able to auto complete your command, subcommands and options when hitting the <code>tab</code> key twice.</p>
+				<p>Note that this assumes the command has been installed as an executable command
+				with the name specified in the root <code>command</code>.</p>
+				<p>After doing this you should be able to auto complete your command, subcommands
+				and options when hitting the <code>tab</code> key twice.</p>
 				<a href="#api" id="api" style="color: inherit; text-decoration: none;">
 					<h2>API</h2>
 				</a>
 				<p>Console commando&#39;s public API is a series of pure functions that produce
-				immutable intermediate Command objects. Command objects are are immutable, via <a href="https://facebook.github.io/immutable-js/">immutable.js</a>.</p>
+					immutable intermediate Command objects. Command objects are are immutable, via
+				<a href="https://facebook.github.io/immutable-js/">immutable.js</a>.</p>
+				<p><a href="http://lucascaro.github.io/console-commando/index.html">Read the API Documentation</a></p>
 				<a href="#defining-the-command" id="defining-the-command" style="color: inherit; text-decoration: none;">
 					<h3>Defining the Command</h3>
 				</a>
-				<p>The <code>Command</code> interface defines the main functionality of console-commando programs.</p>
+				<p>The <code>Command</code> interface defines the main functionality of <code>console-commando</code> programs.</p>
 				<a href="#codecommand-commandcode-factory" id="codecommand-commandcode-factory" style="color: inherit; text-decoration: none;">
 					<h4><code>command(): Command</code> factory</h4>
 				</a>
