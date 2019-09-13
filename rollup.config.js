@@ -19,5 +19,5 @@ export default {
     file: "lib/bundle.js",
     format: "cjs",
   },
-  external: ["readline", "os", "tty", "util"],
+  external: ["readline", "os", "tty", "util", "immutable", "minimist"],
 };
