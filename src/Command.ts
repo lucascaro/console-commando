@@ -1,5 +1,5 @@
 import Debug from "debug";
-import * as immutable from "immutable";
+import { Map as IMap, List as IList } from "immutable";
 import {
   getOptionOrParentOption,
   parseArguments,
@@ -97,7 +97,7 @@ export interface MultiStringArgument {
 
 export type Argument = StringArgument | MultiStringArgument | NumericArgument;
 
-export type RuntimeState = immutable.Map<string, any>;
+export type RuntimeState = IMap<string, any>;
 export type Handler = (
   command: Command,
   runtimeState: RuntimeState,
@@ -107,13 +107,13 @@ export type PreProcessor = (
   runtimeState: RuntimeState,
 ) => RuntimeState | void;
 
-export type StoredOptions = immutable.Map<string, Readonly<Option>>;
-export type StoredArguments = immutable.Map<string, Readonly<Argument>>;
+export type StoredOptions = IMap<string, Readonly<Option>>;
+export type StoredArguments = IMap<string, Readonly<Argument>>;
 export type OptionsOrArguments = StoredOptions | StoredArguments;
 
-export type ParsedRuntimeArgs = immutable.Map<string, Readonly<OptionValue>>;
+export type ParsedRuntimeArgs = IMap<string, Readonly<OptionValue>>;
 
-export type SubCommands = immutable.Map<string, Command>;
+export type SubCommands = IMap<string, Command>;
 
 export interface Command {
   withVersion: (version: string) => Command;
@@ -142,13 +142,13 @@ export interface CommandState {
   version?: string;
   description?: string;
   handler?: Handler;
-  preProcessors: immutable.List<PreProcessor>;
+  preProcessors: IList<PreProcessor>;
   options: StoredOptions;
   arguments: StoredArguments;
   parentOptions: StoredOptions;
   parentArguments: StoredArguments;
   subCommands: SubCommands;
-  runtimeArgs: immutable.List<string>;
+  runtimeArgs: IList<string>;
   parsedRuntimeArgs: ParsedRuntimeArgs;
   sealed?: boolean;
 }
@@ -286,7 +286,7 @@ export function withState(initialState: CommandState): Command {
       cmd.state.options,
       cmd.state.parentOptions,
     );
-    if (opt.kind !== "string" || opt.multiple) {
+    if (opt.kind !== "string" || opt.multiple === true) {
       throw new TypeError(`${name} is not a string option`);
     }
     return opt.value || opt.default;
@@ -321,7 +321,7 @@ export function withState(initialState: CommandState): Command {
     if (!opt) {
       throw new TypeError(`${name} is not a known option`);
     }
-    if (opt.kind !== "string" || opt.multiple) {
+    if (opt.kind !== "string" || opt.multiple === true) {
       throw new TypeError(`${name} is not a string option`);
     }
     return opt.value || opt.default;
@@ -397,7 +397,7 @@ export function withState(initialState: CommandState): Command {
     }
   }
 
-  function run(state: RuntimeState = immutable.Map()): Promise<ReturnValue> {
+  function run(state: RuntimeState = IMap()): Promise<ReturnValue> {
     debug("running command:", cmd.state.name);
     const parsedArgs = cmd.state.parsedRuntimeArgs;
     const positionalArgs = cmd.state.parsedRuntimeArgs.get("_", []) as string[];

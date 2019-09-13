@@ -1,5 +1,5 @@
 import Debug from "debug";
-import * as immutable from "immutable";
+import { Map as IMap } from "immutable";
 import minimist from "minimist";
 import {
   Argument,
@@ -16,19 +16,19 @@ const debug = Debug("console-commando:args");
 export interface ParsingResults {
   options: StoredOptions;
   arguments: StoredArguments;
-  raw: immutable.Map<string, OptionValue>;
+  raw: IMap<string, OptionValue>;
 }
 
 export function parseArgv(
   argv: string[],
-  merge: ParsedRuntimeArgs = immutable.Map(),
+  merge: ParsedRuntimeArgs = IMap(),
 ): ParsedRuntimeArgs {
-  return immutable.Map(minimist(argv)).merge(merge);
+  return IMap(minimist(argv)).merge(merge);
 }
 
 function getValue(
   o: Option,
-  parsed: immutable.Map<string, OptionValue>,
+  parsed: IMap<string, OptionValue>,
 ): OptionValue | undefined {
   if (o.short && parsed.has(o.short)) {
     return parsed.get(o.short);

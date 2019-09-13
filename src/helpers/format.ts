@@ -1,4 +1,4 @@
-import * as immutable from "immutable";
+import { Map as IMap } from "immutable";
 import {
   CommandState,
   Option,
@@ -8,9 +8,7 @@ import {
 } from "../Command";
 import colors from "./colors";
 
-export function formatColumns(
-  columns: immutable.Map<string, string[]>,
-): string {
+export function formatColumns(columns: IMap<string, string[]>): string {
   if (columns.isEmpty()) {
     return "";
   }
