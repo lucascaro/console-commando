@@ -9,7 +9,7 @@
     "compile": "npm run clean && tsc -p .",
     "docs": "rm -rf docs && typedoc --out docs src && mkdir -p versions/`npm run --silent version` && cp -r docs/* $_ && mv versions docs",
     "lint": "eslint src/**/*.ts",
-    "prepublish-only": "npm run test && npm run compile && npm run rollup",
+    "prepublishOnly": "npm run test && npm run compile && npm run rollup",
     "prerelease": "npm run compile && npm run test && npm version prerelease && git push --follow-tags",
     "release": "npm run compile && npm run test && npm version patch && git push --follow-tags",
     "rollup": "rollup -c rollup.config.js",
