@@ -11,7 +11,6 @@ const debug = Debug("console-commando:helpers:debug");
 
 if (process.env.NODE_ENV !== "production") {
   _Debug = (name: string): Debug.Debugger => {
-    console.log("returning enabled debugger");
     debug("returning enabled debugger");
     return Debug(name);
   };
