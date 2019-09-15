@@ -1,6 +1,6 @@
 {
   "name": "console-commando",
-  "version": "6.0.5-0",
+  "version": "6.0.5",
   "description": "A tool for creating console commands",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
