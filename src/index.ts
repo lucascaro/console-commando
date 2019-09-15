@@ -1,4 +1,4 @@
-import Debug from "debug";
+import Debug from "./helpers/debug";
 import { Map as IMap, List as IList } from "immutable";
 import {
   BooleanOption,

@@ -1,4 +1,3 @@
-import Debug from "debug";
 import { Map as IMap, List as IList } from "immutable";
 import {
   getOptionOrParentOption,
@@ -10,6 +9,7 @@ import colors from "./helpers/colors";
 import { bashCompletion, getCompletions } from "./helpers/completion";
 import { formatHelp } from "./helpers/format";
 
+import Debug from "./helpers/debug";
 const debug = Debug("console-commando:Command");
 
 export enum ReturnValue {

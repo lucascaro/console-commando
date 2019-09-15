@@ -1,5 +1,5 @@
 import path from "path";
-import { command } from "../src/index";
+import { command } from "..";
 
 /**
  * Simple command example

@@ -6,7 +6,7 @@ import {
   numericArg,
   numericOption,
   stringArg,
-} from "../src/index";
+} from "..";
 
 command("name-only").run();
 

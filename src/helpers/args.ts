@@ -1,4 +1,4 @@
-import Debug from "debug";
+import Debug from "./debug";
 import { Map as IMap } from "immutable";
 import minimist from "minimist";
 import {

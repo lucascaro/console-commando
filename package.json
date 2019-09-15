@@ -7,12 +7,13 @@
   "scripts": {
     "clean": "rm -rf lib/*",
     "check": "tsc -p . --noEmit",
-    "compile": "npm run clean && npm run rollup",
+    "build:dev": "NODE_ENV=development npm run clean && npm run rollup",
+    "build:prod": "NODE_ENV=production npm run clean && npm run rollup",
     "docs": "rm -rf docs && typedoc --out docs src && mkdir -p versions/`npm run --silent version` && cp -r docs/* $_ && mv versions docs",
     "lint": "eslint src/**/*.ts",
-    "prepublishOnly": "npm run test && npm run compile",
-    "prerelease": "npm run compile && npm run test && npm version prerelease && git push --follow-tags",
-    "release": "npm run compile && npm run test && npm version patch && git push --follow-tags",
+    "prepublishOnly": "npm run test && npm run build:prod",
+    "prerelease": "npm run build:prod && npm run test && npm version prerelease && git push --follow-tags",
+    "release": "npm run build:prod && npm run test && npm version patch && git push --follow-tags",
     "rollup": "rollup -c rollup.config.js",
     "test:watch": "jest --watch",
     "test": "jest",
@@ -32,6 +33,7 @@
     "@types/node": "^12.7.5",
     "@typescript-eslint/eslint-plugin": "^2.2.0",
     "@typescript-eslint/parser": "^2.2.0",
+    "debug": "^4.1.1",
     "eslint": "^6.3.0",
     "eslint-config-prettier": "^6.3.0",
     "eslint-plugin-prettier": "^3.1.0",
@@ -39,6 +41,7 @@
     "mock-stdin": "^0.3.1",
     "prettier": "^1.18.2",
     "rollup": "^1.21.2",
+    "rollup-plugin-strip-code": "^0.2.7",
     "rollup-plugin-terser": "^5.1.2",
     "rollup-plugin-typescript2": "^0.24.2",
     "stdio-mock": "^1.1.0",
@@ -48,7 +51,6 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "debug": "^4.1.1",
     "immutable": "^4.0.0-rc.12",
     "minimist": "^1.2.0"
   }
