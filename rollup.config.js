@@ -1,5 +1,3 @@
-import commonjs from "rollup-plugin-commonjs";
-import resolve from "rollup-plugin-node-resolve";
 import typescript from "rollup-plugin-typescript2";
 import { terser } from "rollup-plugin-terser";
 
@@ -11,13 +9,12 @@ export default {
         compilerOptions: { module: "esnext" },
       },
     }),
-    resolve(),
-    commonjs(),
     terser(),
   ],
   output: {
-    file: "lib/bundle.js",
+    file: "lib/index.js",
     format: "cjs",
+    sourcemap: true,
   },
-  external: ["readline", "os", "tty", "util", "immutable", "minimist"],
+  external: ["debug", "immutable", "readline", "minimist"],
 };

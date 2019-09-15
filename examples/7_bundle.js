@@ -3,7 +3,7 @@ const {
   multiStringArg,
   numericArg,
   stringArg,
-} = require("../lib/bundle");
+} = require("../lib/index");
 const path = require("path");
 
 command(path.basename(__filename))
