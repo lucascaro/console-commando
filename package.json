@@ -13,6 +13,7 @@
     "lint": "eslint src/**/*.ts",
     "prepublishOnly": "npm run test && npm run build:prod",
     "release:prerelease": "npm run build:prod && npm run test && npm version prerelease && git push --follow-tags",
+    "release:minor": "npm run build:prod && npm run test && npm version minor && git push --follow-tags",
     "release": "npm run build:prod && npm run test && npm version patch && git push --follow-tags",
     "rollup": "rollup -c rollup.config.js",
     "test:watch": "jest --watch",
