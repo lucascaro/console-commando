@@ -23,24 +23,25 @@ export enum COLOR {
   BGCYAN = "\x1b[46m",
   BGWHITE = "\x1b[47m",
 }
+
+function colorize(color: COLOR, str: string): string {
+  return `${color}${str}${COLOR.RESET}`;
+}
+
+const blue = (str: string) => colorize(COLOR.FGBLUE, str);
+const cyan = (str: string) => colorize(COLOR.FGCYAN, str);
+const green = (str: string) => colorize(COLOR.FGGREEN, str);
+const grey = (str: string) => colorize(COLOR.DIM, str);
+const red = (str: string) => colorize(COLOR.FGRED, str);
+const yellow = (str: string) => colorize(COLOR.FGYELLOW, str);
+
 export default {
-  red(str: string): string {
-    return `${COLOR.FGRED}${str}${COLOR.RESET}`;
-  },
-
-  yellow(str: string): string {
-    return `${COLOR.FGYELLOW}${str}${COLOR.RESET}`;
-  },
-
-  green(str: string): string {
-    return `${COLOR.FGGREEN}${str}${COLOR.RESET}`;
-  },
-
-  grey(str: string): string {
-    return `${COLOR.DIM}${str}${COLOR.RESET}`;
-  },
-
-  colorize(color: COLOR, str: string): string {
-    return `${color}${str}${COLOR.RESET}`;
-  },
+  COLOR,
+  colorize,
+  blue,
+  cyan,
+  green,
+  grey,
+  red,
+  yellow,
 };
