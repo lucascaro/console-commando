@@ -60,7 +60,7 @@ export function formatArgHelp(args: StoredArguments): string {
 export function formatHelp(s: CommandState): string {
   const helpText = [] as string[];
 
-  helpText.push(colors.green(s.name), colors.yellow(s.version || ""));
+  helpText.push(`${colors.green(s.name)} (v${colors.yellow(s.version || "")}`);
   if (s.description) {
     helpText.push(s.description);
   }
