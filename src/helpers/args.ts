@@ -1,15 +1,9 @@
 import Debug from "./debug";
 import { Map as IMap } from "immutable";
 import minimist from "minimist";
-import {
-  Argument,
-  Option,
-  OptionValue,
-  ParsedRuntimeArgs,
-  StoredArguments,
-  StoredOptions,
-  MultiStringArgument,
-} from "../Command";
+import { ParsedRuntimeArgs } from "../Command";
+import { StoredOptions, OptionValue, Option } from "../Options";
+import { StoredArguments, Argument, MultiStringArgument } from "../Arguments";
 
 const debug = Debug("console-commando:args");
 
@@ -105,14 +99,13 @@ export function parseArguments(
   parsed: ParsedRuntimeArgs,
   args: StoredArguments,
 ): StoredArguments {
-  let positional = parsed.get("_", []);
+  const positional = parsed.get("_", []);
   if (!Array.isArray(positional)) {
     throw new Error(`error parsing positional arguments: ${positional}.`);
   }
-  let positionalStr = Array.from(positional as (
-    | string
-    | number
-    | boolean)[]).map(String) as string[];
+  let positionalStr = Array.from(
+    positional as (string | number | boolean)[],
+  ).map(String) as string[];
 
   debug("parsing arguments for:", parsed, positional);
   return args.map(

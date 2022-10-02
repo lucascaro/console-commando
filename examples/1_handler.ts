@@ -9,10 +9,10 @@ command(path.basename(__filename))
   .withDescription(
     "This is a simple command with no arguments. This command has an action that prints text.",
   )
-  .withHandler(cmd => {
+  .withHandler(state => {
     console.log(
       "The command was executed. Try %s help for help.",
-      cmd.state.name,
+      state.get("name"),
     );
   })
   .withRuntimeArgs(/* defaults to process.argv.slice(2) */)

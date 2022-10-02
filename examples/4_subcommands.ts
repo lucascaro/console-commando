@@ -1,9 +1,9 @@
 import path from "path";
-import { command, Command, flag } from "..";
+import { command, flag, CommandState } from "..";
 import { RuntimeState } from "../src";
 
-function subHandler(command: Command, context: RuntimeState): void {
-  console.log("%s was executed.", command.state.name);
+function subHandler(state: CommandState, context: RuntimeState): void {
+  console.log("%s was executed.", state.get("name"));
   console.log("global flag from context: %s", context.get("force"));
 }
 
@@ -14,10 +14,10 @@ command(path.basename(__filename))
   .withVersion("1.0.0-subcommands-example")
   .withDescription("This is a command with sub commands.")
   .withOption(flag("force", "f"))
-  .withPreProcessor((command, context) => {
+  .withPreProcessor((state, context) => {
     // This code will be executed before all actions. You can use this
     // to set runtime context for your command and subcommands.
-    return context.set("force", command.getFlag("force"));
+    return context.set("force", state.getFlag("force"));
   })
   // No handler in the main command will display the help text by default.
   .withSubCommand(command("sub1").withHandler(subHandler))

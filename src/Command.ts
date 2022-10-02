@@ -1,15 +1,13 @@
-import { Map as IMap, List as IList } from "immutable";
-import {
-  getOptionOrParentOption,
-  parseArguments,
-  parseArgv,
-  parseOptions,
-} from "./helpers/args";
+import { Map as IMap } from "immutable";
+import { parseArguments, parseArgv, parseOptions } from "./helpers/args";
 import colors from "./helpers/colors";
 import { bashCompletion, getCompletions } from "./helpers/completion";
 import { formatHelp } from "./helpers/format";
 
 import Debug from "./helpers/debug";
+import { StoredOptions, OptionValue, Option } from "./Options";
+import { StoredArguments, Argument } from "./Arguments";
+import { StateData, CommandState, makeCommandState } from "./CommandState";
 const debug = Debug("console-commando:Command");
 
 export enum ReturnValue {
@@ -17,98 +15,16 @@ export enum ReturnValue {
   SUCCESS = 1,
 }
 
-export interface GenericOption {
-  name: string;
-  short?: string;
-  long?: string;
-  description?: string;
-  multiple?: boolean;
-}
-export interface BooleanOption extends GenericOption {
-  kind: "boolean";
-  required?: boolean;
-  default?: never;
-  value?: boolean;
-}
-
-export interface StringOption extends GenericOption {
-  kind: "string";
-  multiple?: false;
-  required?: boolean;
-  default?: string;
-  value?: string;
-}
-
-export interface MultiStringOption extends GenericOption {
-  kind: "string";
-  multiple: true;
-  required?: boolean;
-  default?: string[];
-  value?: string[];
-}
-
-export interface NumericOption extends GenericOption {
-  kind: "number";
-  required?: boolean;
-  default?: number;
-  value?: number;
-}
-
-export type Option =
-  | BooleanOption
-  | StringOption
-  | NumericOption
-  | MultiStringOption;
-export type OptionValue =
-  | boolean
-  | string
-  | number
-  | Readonly<string[]>
-  | undefined;
-
-export interface StringArgument {
-  kind: "string";
-  name: string;
-  description?: string;
-  required?: boolean;
-  multiple?: false;
-  default?: string;
-  value?: string;
-}
-
-export interface NumericArgument {
-  kind: "number";
-  name: string;
-  description?: string;
-  required?: boolean;
-  multiple?: boolean;
-  default?: number;
-  value?: number;
-}
-export interface MultiStringArgument {
-  kind: "string";
-  name: string;
-  description?: string;
-  required?: boolean;
-  multiple: true;
-  default?: string[];
-  value?: string[];
-}
-
-export type Argument = StringArgument | MultiStringArgument | NumericArgument;
-
-export type RuntimeState = IMap<string, any>;
+export type RuntimeState = IMap<string, unknown>;
 export type Handler = (
-  command: Command,
+  commandState: CommandState,
   runtimeState: RuntimeState,
 ) => Promise<ReturnValue | void> | void;
 export type PreProcessor = (
-  command: Command,
+  command: CommandState,
   runtimeState: RuntimeState,
 ) => RuntimeState | void;
 
-export type StoredOptions = IMap<string, Readonly<Option>>;
-export type StoredArguments = IMap<string, Readonly<Argument>>;
 export type OptionsOrArguments = StoredOptions | StoredArguments;
 
 export type ParsedRuntimeArgs = IMap<string, Readonly<OptionValue>>;
@@ -120,13 +36,6 @@ export interface Command {
   withDescription: (description: string) => Command;
   withOption: (definition: Option) => Command;
   withArgument: (definition: Argument) => Command;
-  getFlag: (name: string) => boolean;
-  getStringOption: (name: string) => string | undefined;
-  getNumericOption: (name: string) => number | undefined;
-  getMultiStringOption: (name: string) => string[];
-  getStringArg: (name: string) => string | undefined;
-  getNumericArg: (name: string) => number | undefined;
-  getMultiStringArg: (name: string) => string[];
   withSubCommand: (subCommand: Command) => Command;
   withRuntimeArgs: (args?: string[], parsed?: ParsedRuntimeArgs) => Command;
   withHandler: (fn: Handler) => Command;
@@ -134,38 +43,15 @@ export interface Command {
   showHelp: () => void;
   run: (state?: RuntimeState) => Promise<ReturnValue>;
 
-  state: CommandState;
+  state: StateData;
 }
 
-export interface CommandState {
-  name: string;
-  version?: string;
-  description?: string;
-  handler?: Handler;
-  preProcessors: IList<PreProcessor>;
-  options: StoredOptions;
-  arguments: StoredArguments;
-  parentOptions: StoredOptions;
-  parentArguments: StoredArguments;
-  subCommands: SubCommands;
-  runtimeArgs: IList<string>;
-  parsedRuntimeArgs: ParsedRuntimeArgs;
-  sealed?: boolean;
-}
-
-export function withState(initialState: CommandState): Command {
+export function withState(initialState: StateData): Command {
   const cmd: Command = {
     withVersion,
     withDescription,
     withOption,
     withArgument,
-    getFlag,
-    getStringOption,
-    getNumericOption,
-    getMultiStringOption,
-    getStringArg,
-    getNumericArg,
-    getMultiStringArg,
     withSubCommand,
     withRuntimeArgs,
     withHandler,
@@ -267,87 +153,6 @@ export function withState(initialState: CommandState): Command {
     return withState({ ...cmd.state, subCommands });
   }
 
-  function getFlag(name: string): boolean {
-    const opt = getOptionOrParentOption(
-      name,
-      cmd.state.options,
-      cmd.state.parentOptions,
-    );
-    if (opt.kind !== "boolean" || opt.multiple) {
-      throw new TypeError(`${name} is not a flag`);
-    }
-    return !!opt.value;
-  }
-
-  function getStringOption(name: string): string | undefined {
-    const opt = getOptionOrParentOption(
-      name,
-      cmd.state.options,
-      cmd.state.parentOptions,
-    );
-    if (opt.kind !== "string" || opt.multiple === true) {
-      throw new TypeError(`${name} is not a string option`);
-    }
-    return opt.value || opt.default;
-  }
-
-  function getNumericOption(name: string): number | undefined {
-    const opt = getOptionOrParentOption(
-      name,
-      cmd.state.options,
-      cmd.state.parentOptions,
-    );
-    if (opt.kind !== "number" || opt.multiple) {
-      throw new TypeError(`${name} is not a numeric option`);
-    }
-    return opt.value || opt.default;
-  }
-
-  function getMultiStringOption(name: string): string[] {
-    const opt = getOptionOrParentOption(
-      name,
-      cmd.state.options,
-      cmd.state.parentOptions,
-    );
-    if (opt.kind !== "string" || !opt.multiple) {
-      throw new TypeError(`${name} is not a multi string option`);
-    }
-    return opt.value || opt.default || [];
-  }
-
-  function getStringArg(name: string): string | undefined {
-    const opt = cmd.state.arguments.get(name);
-    if (!opt) {
-      throw new TypeError(`${name} is not a known option`);
-    }
-    if (opt.kind !== "string" || opt.multiple === true) {
-      throw new TypeError(`${name} is not a string option`);
-    }
-    return opt.value || opt.default;
-  }
-
-  function getNumericArg(name: string): number | undefined {
-    const opt = cmd.state.arguments.get(name);
-    if (!opt) {
-      throw new TypeError(`${name} is not a known option`);
-    }
-    if (opt.kind !== "number" || opt.multiple) {
-      throw new TypeError(`${name} is not a numeric option`);
-    }
-    return opt.value || opt.default;
-  }
-
-  function getMultiStringArg(name: string): string[] {
-    const opt = cmd.state.arguments.get(name);
-    if (!opt) {
-      throw new TypeError(`${name} is not a known option`);
-    }
-    if (opt.kind !== "string" || !opt.multiple) {
-      throw new TypeError(`${name} is not a multi string option`);
-    }
-    return opt.value || opt.default || [];
-  }
-
   function withHandler(fn: Handler): Command {
     return withState({ ...cmd.state, handler: fn });
   }
@@ -431,8 +236,9 @@ export function withState(initialState: CommandState): Command {
 
     // Allow optional preprocessors to modify run-time state.
     // TODO: allow async preprocessors.
+    const commandState = makeCommandState(cmd.state);
     const processedState = preProcessors.reduce(
-      (p, c) => c(cmd, p) || p,
+      (p, c) => c(commandState, p) || p,
       state,
     );
 
@@ -466,9 +272,9 @@ export function withState(initialState: CommandState): Command {
       return Promise.resolve(ReturnValue.FAILURE);
     }
     // Handle the current command.
-    return Promise.resolve(cmd.state.handler(cmd, runtimeState)).then(
-      retval => retval || ReturnValue.SUCCESS,
-    );
+    return Promise.resolve(
+      cmd.state.handler(makeCommandState(cmd.state), runtimeState),
+    ).then(retval => retval || ReturnValue.SUCCESS);
   }
 
   return Object.freeze(cmd);

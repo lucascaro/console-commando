@@ -1,28 +1,30 @@
+import { List as IList, Map as IMap } from "immutable";
+import { Command, withState } from "./Command";
+import colors from "./helpers/colors";
 import Debug from "./helpers/debug";
-import { Map as IMap, List as IList } from "immutable";
+import io from "./helpers/io";
 import {
   BooleanOption,
-  Command,
-  MultiStringArgument,
-  MultiStringOption,
-  NumericArgument,
-  NumericOption,
-  StringArgument,
   StringOption,
-  withState,
-} from "./Command";
-import colors from "./helpers/colors";
-import io from "./helpers/io";
+  NumericOption,
+  MultiStringOption,
+} from "./Options";
+import {
+  StringArgument,
+  NumericArgument,
+  MultiStringArgument,
+} from "./Arguments";
 
 export {
-  Argument,
   Command,
   Handler,
-  Option,
   PreProcessor,
   ReturnValue,
   RuntimeState,
 } from "./Command";
+export { Argument } from "./Arguments";
+export { Option } from "./Options";
+export { CommandState } from "./CommandState";
 export { colors };
 export { io };
 

@@ -16,39 +16,39 @@ command(path.basename(__filename))
   .withArgument(
     multiStringArg("multi", "multi options can be specified more than once"),
   )
-  .withHandler(command => {
+  .withHandler(state => {
     console.log(
       "The command was executed. Try %s help for help.",
-      command.state.name,
+      state.get("name"),
     );
 
-    if (command.getStringArg("required")) {
+    if (state.getStringArg("required")) {
       console.log(
         "Argument `required` was set to %s",
-        command.getStringArg("required"),
+        state.getStringArg("required"),
       );
     }
-    if (command.getStringArg("string")) {
+    if (state.getStringArg("string")) {
       console.log(
         "Argument `string` was set to %s",
-        command.getStringArg("string"),
+        state.getStringArg("string"),
       );
     }
-    if (command.getNumericArg("number")) {
+    if (state.getNumericArg("number")) {
       console.log(
         "Argument `number` was set to %s",
-        command.getNumericArg("number"),
+        state.getNumericArg("number"),
       );
     }
     // Argument with default value will be always set.
     console.log(
       "Argument `default` was set to %s",
-      command.getStringArg("default"),
+      state.getStringArg("default"),
     );
     // Multi valued arguments always return as arrays.
     console.log(
       "Argument `multi` was set to %j",
-      command.getMultiStringArg("multi"),
+      state.getMultiStringArg("multi"),
     );
   })
   .withRuntimeArgs(/* defaults to process.argv.slice(2) */)

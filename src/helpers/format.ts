@@ -1,12 +1,9 @@
 import { Map as IMap } from "immutable";
-import {
-  CommandState,
-  Option,
-  StoredArguments,
-  StoredOptions,
-  SubCommands,
-} from "../Command";
+import { SubCommands } from "../Command";
 import colors from "./colors";
+import { StoredOptions, Option } from "../Options";
+import { StateData } from "../CommandState";
+import { StoredArguments } from "../Arguments";
 
 export function formatColumns(columns: IMap<string, string[]>): string {
   if (columns.isEmpty()) {
@@ -57,10 +54,10 @@ export function formatArgHelp(args: StoredArguments): string {
     .join(" ");
 }
 
-export function formatHelp(s: CommandState): string {
+export function formatHelp(s: StateData): string {
   const helpText = [] as string[];
-
-  helpText.push(`${colors.green(s.name)} (v${colors.yellow(s.version || "")}`);
+  const version = s.version ? `(v${s.version})` : "";
+  helpText.push(`${colors.green(s.name)} ${colors.yellow(version)}`);
   if (s.description) {
     helpText.push(s.description);
   }

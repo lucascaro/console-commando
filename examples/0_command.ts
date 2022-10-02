@@ -148,14 +148,14 @@ const subTest = command("sub-test")
     multiple: true,
     default: ["test"],
   })
-  .withArgument(stringArg("pos1", "a positional string", "test"))
-  .withArgument(numericArg("pos2", "a positional number", 10))
   .withPreProcessor((_, state) => {
     console.log("pre1");
     return state.set("runtime", "state");
   })
   .withSubCommand(
     command("sub")
+      .withArgument(stringArg("pos1", "a positional string", "test"))
+      .withArgument(numericArg("pos2", "a positional number", 10))
       .withPreProcessor((_, state) => {
         console.log("pre2");
         return state.set("runtime2", "state2");
@@ -195,15 +195,13 @@ const subTest = command("sub-test")
 console.log("\n$ sub-test");
 subTest.run();
 console.log("\n$ sub-test help");
-subTest.withRuntimeArgs(["help"]).run();
+subTest.withRuntimeArgs(["--help"]).run();
 console.log("\n$ sub-test sub");
 subTest.withRuntimeArgs(["sub"]).run();
 console.log("\n$ sub-test sub help");
 subTest.withRuntimeArgs(["sub", "help"]).run();
 console.log("\n$ sub-test sub sub2");
 subTest.withRuntimeArgs(["sub", "sub2"]).run();
-console.log("\n$ sub-test sub sub2 help");
-subTest.withRuntimeArgs(["sub", "sub2", "help"]).run();
 console.log("\n$ sub-test sub sub2 --help");
 subTest.withRuntimeArgs(["sub", "sub2", "--help"]).run();
 // console.log('\n$ sub-test sub sub2 -f -g --gorce -a arr1 -a arr2 pos1 -- --pos2');

@@ -1,4 +1,5 @@
-import { stringArg, command, multiStringArg, Command } from "../index";
+import { stringArg, command, multiStringArg } from "../index";
+import { CommandState } from "../CommandState";
 
 describe("arguments", () => {
   test("can create a option object with minimal parameters", () => {
@@ -20,7 +21,7 @@ describe("arguments", () => {
   test("can add an argument to a command", done => {
     command("test")
       .withArgument(stringArg("arg1"))
-      .withHandler((cmd: Command) => {
+      .withHandler((cmd: CommandState) => {
         const arg1 = cmd.getStringArg("arg1");
         expect(arg1).toEqual("value1");
         done();
@@ -34,7 +35,7 @@ describe("arguments", () => {
       .withArgument(stringArg("arg1"))
       .withArgument(stringArg("arg2"))
       .withArgument(stringArg("arg3"))
-      .withHandler((cmd: Command) => {
+      .withHandler((cmd: CommandState) => {
         const arg1 = cmd.getStringArg("arg1");
         const arg2 = cmd.getStringArg("arg2");
         const arg3 = cmd.getStringArg("arg3");
@@ -50,7 +51,7 @@ describe("arguments", () => {
   test("can add a single multi string arg to a command", done => {
     command("test")
       .withArgument(multiStringArg("arg1"))
-      .withHandler((cmd: Command) => {
+      .withHandler((cmd: CommandState) => {
         const arg1 = cmd.getMultiStringArg("arg1");
         expect(arg1).toEqual(["value1", "value2", "value3"]);
         done();

@@ -13,10 +13,10 @@ command(path.basename(__filename))
     // to set runtime context for your command and subcommands.
     return context.set("some_key", { some: "value" });
   })
-  .withHandler((command, context) => {
+  .withHandler((state, context) => {
     console.log(
       "The command was executed. Try %s help for help.",
-      command.state.name,
+      state.get("name"),
     );
     console.log("value from context is", context.get("some_key"));
   })

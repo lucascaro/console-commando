@@ -8,6 +8,7 @@ import {
   ReturnValue,
 } from "../index";
 import { mockStdout, mockStderr } from "./mockstdio";
+import { CommandState } from "../CommandState";
 
 describe("option", () => {
   test("can create a option object with minimal parameters", () => {
@@ -39,7 +40,7 @@ describe("option", () => {
       .withOption(stringOption("opt1"))
       .withOption(numericOption("opt2"))
       .withOption(multiStringOption("opt3"))
-      .withHandler((cmd: Command) => {
+      .withHandler((cmd: CommandState) => {
         const opt1 = cmd.getStringOption("opt1");
         const opt2 = cmd.getNumericOption("opt2");
         const opt3 = cmd.getMultiStringOption("opt3");
@@ -63,7 +64,7 @@ describe("option", () => {
       .withOption(stringOption("opt1", "o"))
       .withOption(numericOption("opt2", "p"))
       .withOption(multiStringOption("opt3", "q"))
-      .withHandler((cmd: Command) => {
+      .withHandler((cmd: CommandState) => {
         const opt1 = cmd.getStringOption("opt1");
         const opt2 = cmd.getNumericOption("opt2");
         const opt3 = cmd.getMultiStringOption("opt3");
@@ -90,7 +91,7 @@ describe("option", () => {
     expect(() => {
       command("test")
         .withOption(stringOption("opt1", "o", "", undefined, true))
-        .withHandler(() => {})
+        .withHandler(() => void 0)
         .withRuntimeArgs([""])
         .run();
     }).toThrow();

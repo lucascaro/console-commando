@@ -32,43 +32,40 @@ command(path.basename(__filename))
       "my default",
     ),
   )
-  .withHandler(command => {
+  .withHandler(state => {
     console.log(
       "The command was executed. Try %s help for help.",
-      command.state.name,
+      state.get("name"),
     );
 
-    if (command.getFlag("flag")) {
+    if (state.getFlag("flag")) {
       console.log('Flag "f" was set');
     }
-    if (command.getStringOption("string")) {
+    if (state.getStringOption("string")) {
       // works with either -s or --string
-      console.log(
-        "Option string has value:",
-        command.getStringOption("string"),
-      );
+      console.log("Option string has value:", state.getStringOption("string"));
     }
-    if (command.getNumericOption("number")) {
+    if (state.getNumericOption("number")) {
       console.log(
         "Numeric option was specified with value %d",
-        command.getNumericOption("number"),
+        state.getNumericOption("number"),
       );
     }
-    if (command.getStringOption("required")) {
+    if (state.getStringOption("required")) {
       // The value for this one will always be set by the user.
       console.log(
         "Option required was selected with value %s",
-        command.getStringOption("required"),
+        state.getStringOption("required"),
       );
     }
-    if (command.getMultiStringOption("multi")) {
+    if (state.getMultiStringOption("multi")) {
       // The value for multi strings are always a string[].
       console.log(
         "Option required was selected with value %s",
-        command.getMultiStringOption("multi"),
+        state.getMultiStringOption("multi"),
       );
     }
-    console.log("default value:", command.getStringOption("default"));
+    console.log("default value:", state.getStringOption("default"));
   })
   .withRuntimeArgs(/* defaults to process.argv.slice(2) */)
   .run();
