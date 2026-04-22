@@ -42,7 +42,7 @@
     "jest": "^24.9.0",
     "mock-stdin": "^0.3.1",
     "prettier": "^1.18.2",
-    "rollup": "^1.21.2",
+    "rollup": "^2.80.0",
     "rollup-plugin-strip-code": "^0.2.7",
     "rollup-plugin-terser": "^5.1.2",
     "rollup-plugin-typescript2": "^0.24.2",
